@@ -235,7 +235,7 @@ rownames(track) <- sample.names
 head(track)
 tail(track)
 
-write.csv(track,file="~/Desktop/its2/its2_reads.csv",row.names=TRUE,quote=FALSE)
+write.csv(track,file="its2_reads.csv",row.names=TRUE,quote=FALSE)
 
 #~############################~#
 ##### Assign Taxonomy ##########
@@ -248,11 +248,11 @@ unname(head(taxa))
 saveRDS(seqtab.nochim, file="~/Desktop/its2/mrits2_seqtab.nochim.rds")
 saveRDS(taxa, file="~/Desktop/its2/mrits2_taxa.rds")
 
-write.csv(seqtab.nochim, file="~/Desktop/its2/mrits2_seqtab.nochim.csv")
+write.csv(seqtab.nochim, file="mrits2_seqtab.nochim.csv")
 write.csv(taxa, file="~/Desktop/its2/mrits2_taxa.csv")
 
 #If you need to read in previously saved datafiles
-seqtab.nochim <- readRDS("~/Google Drive/Moorea/ITS2/mrits2_seqtab.nochim.rds")
+seqtab.nochim <- readRDS("mrits2_seqtab.nochim.rds")
 taxa <- readRDS("mrits2_taxa.rds")
 
 #~############################~#
@@ -265,7 +265,7 @@ library('ggplot2')
 library('Rmisc')
 
 #import dataframe holding sample information
-samdf<-read.csv("~/Desktop/its2/mrits_sampledata.csv")
+samdf<-read.csv("mrits_sampledata.csv")
 head(samdf)
 rownames(samdf) <- samdf$Sample
 
@@ -277,15 +277,68 @@ ps <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE),
 ps
 
 #phyloseq object without sample 87, has no data, messes up deseq
-seq <- read.csv("~/Google Drive/Moorea/ITS2/mrits2_seqtab.nochim_no87.csv")
-sam <- read.csv("~/Google Drive/Moorea/ITS2/mrits_sampledata_no87.csv")
+seq <- read.csv("mrits2_seqtab.nochim_no87.csv")
+sam <- read.csv("mrits_sampledata_no87.csv")
 
 ps_no87 <- phyloseq(otu_table(seq, taxa_are_rows=FALSE), 
                sample_data(sam), 
                tax_table(taxa))
 ps_no87
 
+#### DESEQ to normalize counts ####
+#BiocManager::install("DESeq2")
+library("DESeq2")
+#BiocManager::install("edgeR")
+#BiocManager::install("DEFormats")
+library(edgeR)
+library(DEFormats)
+
+#count data
+seq <- read.csv("mrits2_seqtab.nochim_no87.csv")
+row.names(seq) <- seq$X
+seq2 <- seq[,2:119]
+seqt <- t(seq2) #deseq requires count data in columns
+
+#sample data
+sam <- read.csv("mrits_sampledata_no87.csv")
+gr <- sam$site_zone
+
+
+dge = DGEList(seqt, group = gr)
+dds = as.DESeqDataSet(dge)
+dd2 <- DESeq(dds)
+ddcounts <- counts(dd2,normalized=TRUE)
+
+#james method
+deseq_counts <- DESeqDataSetFromMatrix(sort.count_tab, colData = new.new.meta, design = ~side.site)
+#needed to add pos counts because of the zeros
+geo_mean_protected <- function(x) {
+  if (all(x == 0)) {
+    return (0)
+  }
+  exp(mean(log(x[x != 0])))
+}
+
+geoMeans <- apply(counts(deseq_counts), 1, geo_mean_protected)
+deseq_counts <- estimateSizeFactors(deseq_counts, geoMeans = geoMeans)
+deseq_counts <- estimateDispersions(deseq_counts)
+deseq_counts_vst <- varianceStabilizingTransformation(deseq_counts)
+ddcounts <- counts(deseq_counts,normalized=TRUE)
+#pull the counts
+vst_trans_count_tab <- assay(deseq_counts_vst)
+
+#another method
+dds <- DESeqDataSetFromMatrix(countData = seqt, colData = sam, design = ~ site+in_off)
+
+
+
+dds <- estimateSizeFactors(dds)
+normalized_counts <- counts(dds, normalized=TRUE)
+
 #trying to select only the variables I want
+#resource for analysis here:
+#https://bioconductor.org/packages/devel/bioc/vignettes/phyloseq/inst/doc/phyloseq-mixture-models.html
+#https://joey711.github.io/phyloseq-extensions/DESeq2.html
 ps.mnw = subset_samples(ps_no87, site=="MNW")
 ds.mnw = phyloseq_to_deseq2(ps.mnw, ~ in_off)
 dds.mnw <- estimateSizeFactors(ds.mnw,type="poscounts")
@@ -620,25 +673,7 @@ c3k <- subset(ps.luluseq.melt,Class==" C3k")
 ggplot(c3k,aes(x=site_zone,y=Abundance,color=Class))+
   geom_boxplot()
 
-#### DESEQ to normalize counts ####
-#BiocManager::install("DESeq2")
-library("DESeq2")
-#BiocManager::install("edgeR")
-#BiocManager::install("DEFormats")
-library(edgeR)
-library(DEFormats)
-counts = simulateRnaSeqData()
 
-seq <- read.csv("~/Google Drive/Moorea/ITS2/mrits2_seqtab.nochim_no87.csv")
-seqt <- t(seq)
-sam <- read.csv("~/Google Drive/Moorea/ITS2/mrits_sampledata_no87.csv")
-gr <- sam[,8]
-
-dge = DGEList(seqt, group = gr)
-dds = as.DESeqDataSet(dge)
-dd2 <- DESeq(dds)
-ddcounts <- counts(dd2,normalized=TRUE)
-ddcountsn <- counts(dd2,normalized=TRUE)
 
 #Ordinate Samples
 ps.prop <- transform_sample_counts(ps, function(otu) otu/sum(otu))
