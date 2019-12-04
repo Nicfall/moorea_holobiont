@@ -251,6 +251,7 @@ saveRDS(taxa, file="~/Desktop/its2/mrits2_taxa.rds")
 write.csv(seqtab.nochim, file="mrits2_seqtab.nochim.csv")
 write.csv(taxa, file="~/Desktop/its2/mrits2_taxa.csv")
 
+#### Reading in prior data files ####
 #If you need to read in previously saved datafiles
 seqtab.nochim <- readRDS("mrits2_seqtab.nochim.rds")
 taxa <- readRDS("mrits2_taxa.rds")
@@ -279,11 +280,25 @@ ps
 #phyloseq object without sample 87, has no data, messes up deseq
 seq <- read.csv("mrits2_seqtab.nochim_no87.csv")
 sam <- read.csv("mrits_sampledata_no87.csv")
+row.names(sam) <- sam$Sample
+row.names(seq) <- seq$X
+seq2 <- seq[,2:119] #now removing sample name column
 
-ps_no87 <- phyloseq(otu_table(seq, taxa_are_rows=FALSE), 
+ps_no87 <- phyloseq(otu_table(seq2, taxa_are_rows=FALSE), 
                sample_data(sam), 
                tax_table(taxa))
 ps_no87
+
+#checking if my variables have sig different sample reads before normalizing
+sam$new <- sample_sums(ps_no87)
+plot(new~site_zone,data=sam) #MSEO has way more than everyone else
+a1 <- aov(new~site_zone,data=sam)
+summary(a1)
+plot(new~island,data=sam) #even
+plot(new~site,data=sam) #MSE still more
+plot(new~in_off,data=sam) #outer more
+a1 <- aov(new~in_off,data=sam)
+summary(a1) # p = 0.0587 lol
 
 #### DESEQ to normalize counts ####
 #BiocManager::install("DESeq2")
@@ -295,51 +310,114 @@ library(DEFormats)
 
 #count data
 seq <- read.csv("mrits2_seqtab.nochim_no87.csv")
-row.names(seq) <- seq$X
-seq2 <- seq[,2:119]
+row.names(seq) <- seq$X #setting my sample names as row names so I can remove the sample name column
+seq2 <- seq[,2:119] #now removing sample name column
 seqt <- t(seq2) #deseq requires count data in columns
 
 #sample data
 sam <- read.csv("mrits_sampledata_no87.csv")
-gr <- sam$site_zone
+row.names(sam) <- sam$Sample
 
+#method from here:
+#https://astrobiomike.github.io/amplicon/dada2_workflow_ex#dereplication
+deseq_counts <- DESeqDataSetFromMatrix(seqt, colData = sam, design = ~site*in_off) 
+# we have to include the "colData" and "design" arguments because they are 
+# required, as they are needed for further downstream processing by DESeq2, 
+# but for our purposes of simply transforming the data right now, they don't 
+# matter
 
-dge = DGEList(seqt, group = gr)
-dds = as.DESeqDataSet(dge)
-dd2 <- DESeq(dds)
-ddcounts <- counts(dd2,normalized=TRUE)
-
-#james method
-deseq_counts <- DESeqDataSetFromMatrix(sort.count_tab, colData = new.new.meta, design = ~side.site)
-#needed to add pos counts because of the zeros
-geo_mean_protected <- function(x) {
-  if (all(x == 0)) {
-    return (0)
-  }
-  exp(mean(log(x[x != 0])))
-}
-
-geoMeans <- apply(counts(deseq_counts), 1, geo_mean_protected)
-deseq_counts <- estimateSizeFactors(deseq_counts, geoMeans = geoMeans)
-deseq_counts <- estimateDispersions(deseq_counts)
+deseq_counts <- estimateSizeFactors(deseq_counts, type = "poscounts")
+# now followed by the transformation function:
 deseq_counts_vst <- varianceStabilizingTransformation(deseq_counts)
-ddcounts <- counts(deseq_counts,normalized=TRUE)
-#pull the counts
+# NOTE: If you get this error here with your dataset: "Error in
+# estimateSizeFactorsForMatrix(counts(object), locfunc =locfunc, : every
+# gene contains at least one zero, cannot compute log geometric means", that
+# can be because the count table is sparse with many zeroes, which is common
+# with marker-gene surveys. In that case you'd need to use a specific
+# function first that is equipped to deal with that. 
+
+# and here is pulling out our transformed table
 vst_trans_count_tab <- assay(deseq_counts_vst)
+vst_trans_count_tab[vst_trans_count_tab < 0.0] <- 0.0 #getting rid of 0s
 
-#another method
-dds <- DESeqDataSetFromMatrix(countData = seqt, colData = sam, design = ~ site+in_off)
+# back into phyloseq
+vstt <- t(vst_trans_count_tab)
+ps.norm <- phyloseq(otu_table(vstt, taxa_are_rows=FALSE), 
+                    sample_data(sam), 
+                    tax_table(taxa))
+ps.norm
 
+sam$new.norm <- sample_sums(ps.norm)
+plot(new.norm~site_zone,data=sam) #more normalized now
+a1 <- aov(new.norm~site_zone,data=sam)
+summary(a1) #p = 0.0646 lol
+plot(new.norm~island,data=sam) #even
+plot(new.norm~site,data=sam) #MSE still a little more
+plot(new.norm~in_off,data=sam) #outer more
+a1 <- aov(new.norm~in_off,data=sam)
+summary(a1) # p = significant
 
+#### Pcoa #####
 
-dds <- estimateSizeFactors(dds)
-normalized_counts <- counts(dds, normalized=TRUE)
+#before normalizing
+ps.ord <- ordinate(ps_no87, method="MDS", distance="euclidean")
+ps.ord.eigs <- ps.ord$values$Eigenvalues # allows us to scale the axes according to their magnitude of separating apart the samples
+plot_ordination(ps_no87, ps.ord, color="in_off") + 
+  geom_point(size=1) #+ 
+
+#after normalizing
+vst_pcoa <- ordinate(ps.norm, method="MDS", distance="euclidean")
+eigen_vals <- vst_pcoa$values$Eigenvalues # allows us to scale the axes according to their magnitude of separating apart the samples
+plot_ordination(ps.norm, vst_pcoa, color="in_off") + 
+  geom_point(size=1) #+ 
+  #labs(col="type") + 
+  #geom_text(aes(label=rownames(sample_info_tab), hjust=0.3, vjust=-0.4)) + 
+  #coord_fixed(sqrt(eigen_vals[2]/eigen_vals[1])) + ggtitle("PCoA")
+  #scale_color_manual(values=unique(sample_info_tab$color[order(sample_info_tab$char)])) + 
+  #theme(legend.position="none")
+
+#install.packages('dendextend')
+#### hierarchical clustering of samples ####
+library(dendextend)
+# and calculating our Euclidean distance matrix
+euc_dist <- dist(vstt)
+euc_clust <- hclust(euc_dist, method="ward.D2")
+
+# hclust objects like this can be plotted with the generic plot() function
+plot(euc_clust) 
+# but i like to change them to dendrograms for two reasons:
+# 1) it's easier to color the dendrogram plot by groups
+# 2) if wanted you can rotate clusters with the rotate() 
+#    function of the dendextend package
+
+euc_dend <- as.dendrogram(euc_clust, hang=0.1)
+
+sam$color <- sam$site_zone
+sam$color <- gsub("MNWO","darkred",sam$color)
+sam$color <- gsub("MNWI","red",sam$color)
+sam$color <- gsub("MSEI","yellow",sam$color)
+sam$color <- gsub("MSEO","darkgoldenrod1",sam$color)
+sam$color <- gsub("TI","green",sam$color)
+sam$color <- gsub("TO","darkgreen",sam$color)
+dend_cols <- as.character(sam$color[order.dendrogram(euc_dend)])
+
+labels_colors(euc_dend) <- dend_cols
+plot(euc_dend, ylab="VST Euc. dist.")
+#no clustering by sites
+
+#now by in/off
+sam$color2 <- sam$in_off
+sam$color2 <- gsub("Inner","orange",sam$color2)
+sam$color2 <- gsub("Outer","purple",sam$color2)
+dend_cols2 <- as.character(sam$color2[order.dendrogram(euc_dend)])
+labels_colors(euc_dend) <- dend_cols2
+plot(euc_dend, ylab="VST Euc. dist.")
 
 #trying to select only the variables I want
 #resource for analysis here:
 #https://bioconductor.org/packages/devel/bioc/vignettes/phyloseq/inst/doc/phyloseq-mixture-models.html
 #https://joey711.github.io/phyloseq-extensions/DESeq2.html
-ps.mnw = subset_samples(ps_no87, site=="MNW")
+ps.mnw = subset_samples(ps.norm, site=="MNW")
 ds.mnw = phyloseq_to_deseq2(ps.mnw, ~ in_off)
 dds.mnw <- estimateSizeFactors(ds.mnw,type="poscounts")
 stat.mnw = DESeq(dds.mnw, test="Wald", fitType="parametric")
@@ -349,21 +427,22 @@ alpha = 0.1
 sigtab = res[which(res$padj < alpha), ]
 sigtab = cbind(as(sigtab, "data.frame"), as(tax_table(ps.mnw)[rownames(sigtab), ], "matrix"))
 head(sigtab)
-#nothing for MNW, even at 0.1
+#nothing for MNW, even at 0.1 prior to normalized & after
 
-ps.mse = subset_samples(ps_no87, site=="MSE")
+ps.mse = subset_samples(ps.norm, site=="MSE")
 ds.mse = phyloseq_to_deseq2(ps.mse, ~ in_off)
 dds.mse <- estimateSizeFactors(ds.mse,type="poscounts")
 stat.mse = DESeq(dds.mse, test="Wald", fitType="parametric")
 
 res = results(stat.mse, cooksCutoff = FALSE)
-alpha = 0.05
+alpha = 0.1
 sigtab = res[which(res$padj < alpha), ]
 sigtab = cbind(as(sigtab, "data.frame"), as(tax_table(ps.mse)[rownames(sigtab), ], "matrix"))
 dim(sigtab)
-#5 for MSE - must explore
+#5 for MSE - not normalized
+#2 for MSE normalized at 0.1, none for 0.05
 
-ps.t = subset_samples(ps_no87, site=="T")
+ps.t = subset_samples(ps.norm, site=="T")
 ds.t = phyloseq_to_deseq2(ps.t, ~ in_off)
 dds.t <- estimateSizeFactors(ds.t,type="poscounts")
 stat.t = DESeq(dds.t, test="Wald", fitType="parametric")
@@ -374,22 +453,31 @@ sigtab = res[which(res$padj < alpha), ]
 sigtab = cbind(as(sigtab, "data.frame"), as(tax_table(ps.t)[rownames(sigtab), ], "matrix"))
 dim(sigtab)
 #1 for tahiti at 0.05 & 0.1 lol
+#none for tahiti after normalized
 
-#visualizing deseq results
-theme_set(theme_bw())
-scale_fill_discrete <- function(palname = "Set1", ...) {
-  scale_fill_brewer(palette = palname, ...)
-}
-# Phylum order
-x = tapply(sigtab$log2FoldChange, sigtab$Phylum, function(x) max(x))
-x = sort(x, TRUE)
-sigtab$Phylum = factor(as.character(sigtab$Phylum), levels=names(x))
-# Class order
-x = tapply(sigtab$log2FoldChange, sigtab$Class, function(x) max(x))
-x = sort(x, TRUE)
-sigtab$Class = factor(as.character(sigtab$Class), levels=names(x))
-ggplot(sigtab, aes(x=Class, y=log2FoldChange, color=Phylum)) + geom_point(size=6) + 
-  theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust=0.5))
+# #visualizing deseq results - can't do with no results
+# theme_set(theme_bw())
+# scale_fill_discrete <- function(palname = "Set1", ...) {
+#   scale_fill_brewer(palette = palname, ...)
+# }
+# # Phylum order
+# x = tapply(sigtab$log2FoldChange, sigtab$Phylum, function(x) max(x))
+# x = sort(x, TRUE)
+# sigtab$Phylum = factor(as.character(sigtab$Phylum), levels=names(x))
+# # Class order
+# x = tapply(sigtab$log2FoldChange, sigtab$Class, function(x) max(x))
+# x = sort(x, TRUE)
+# sigtab$Class = factor(as.character(sigtab$Class), levels=names(x))
+# ggplot(sigtab, aes(x=Class, y=log2FoldChange, color=Phylum)) + geom_point(size=6) + 
+#   theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust=0.5))
+
+#### stats ####
+library(vegan)
+#assumption of homogeneity of dispersion within groups must be tested
+anova(betadisper(euc_dist, sam$in_off)) #not sig
+#significant means I can't do straight adonis
+#wasn't significnt for inshore/offshore
+adonis(euc_dist~sam$site*sam$in_off) # all sig
 
 #### Alpha diversity #####
 
@@ -516,7 +604,6 @@ library("remotes")
 #install_github("https://github.com/tobiasgf/lulu.git")
 library("lulu")
 
-setwd("~/Google Drive/Moorea/ITS2")
 alldat<-read.csv("mrits_seqtab_newids.csv")
 head(alldat)
 
