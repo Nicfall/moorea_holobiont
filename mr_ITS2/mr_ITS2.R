@@ -552,6 +552,66 @@ ggplot(diver2, aes(x=site, y=InvSimpson,group=zone,color=zone,fill=zone,shape=zo
   theme_bw()+
   theme(text=element_text(family="Gill Sans MT"))
 
+#just checking out normalized stuff 
+plot_richness(ps.norm, x="site", measures=c("Shannon", "Simpson"), color="in_off") + theme_bw()
+
+df.norm <- data.frame(estimate_richness(ps.norm, split=TRUE, measures =c("Shannon","InvSimpson")))
+df.norm$site <- sam$site
+df.norm$zone <- sam$in_off
+
+ggplot(df.norm,aes(x=site,y=Shannon,color=zone))+
+  geom_boxplot()
+
+#### Rarefy ####
+library(vegan)
+
+rare <- seq2 #creating a copy so I can mess with it
+rarecurve(rare, step = 100, label=TRUE)
+#going to remove samples < 2500 reads
+
+rowSums(rare)
+row.names.remove <- c(513, 505, 76, 58, 402, 530)
+seq.less <- rare[!(row.names(rare) %in% row.names.remove), ]
+
+rarecurve(seq.less, step = 100, label=FALSE)
+rowSums(seq.less)
+
+seq.rare <- rrarefy(seq.less,sample=2500)
+rarecurve(seq.rare,step=100,label=FALSE)
+
+ps.rare <- phyloseq(otu_table(seq.rare, taxa_are_rows=FALSE), 
+               sample_data(sam), 
+               tax_table(taxa))
+
+ps.rare
+
+row.names.remove <- c(513, 505, 76, 58, 402, 530)
+sam.rare <- sam[!(row.names(sam) %in% row.names.remove), ]
+
+plot_richness(ps.rare, x="site", measures=c("Shannon", "Simpson"), color="in_off") + theme_bw()
+
+df.rare <- data.frame(estimate_richness(ps.rare, split=TRUE, measures =c("Shannon","InvSimpson")))
+df.rare$site <- sam.rare$site
+df.rare$zone <- sam.rare$in_off
+
+ggplot(df.rare,aes(x=site,y=Shannon,color=zone))+
+  geom_boxplot()
+
+#stats:
+
+wilcox.test(Shannon~zone,data=df.rare)
+
+mnw <- subset(df.rare,site=="MNW")
+mse <- subset(df.rare,site=="MSE")
+tah <- subset(df.rare,site=="T")
+
+wilcox.test(Shannon~zone,data=mnw)
+#not different
+wilcox.test(Shannon~zone,data=mse)
+#very different p-value = 0.005113
+wilcox.test(Shannon~zone,data=tah)
+#not different, p = 0.1077
+
 #~############################~#
 ##### output 'OTU' table #######
 #~############################~#
