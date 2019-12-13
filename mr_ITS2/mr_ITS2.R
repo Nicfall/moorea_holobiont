@@ -82,14 +82,46 @@ library(ShortRead)
 library(Biostrings)
 #packageVersion("Biostrings")
 
-path <- "/Users/nicolakriefall/Desktop/its2/files" # CHANGE ME to the directory containing the fastq files after unzipping.
+path <- "/Users/nicolakriefall/Desktop/its2/files_rd2" # CHANGE ME to the directory containing the fastq files after unzipping.
 
-fnFs <- sort(list.files(path, pattern = "_R1.fastq", full.names = TRUE))
-fnRs <- sort(list.files(path, pattern = "_R2.fastq", full.names = TRUE))
+fnFs <- sort(list.files(path, pattern = "_R1.fastq.gz", full.names = TRUE))
+fnRs <- sort(list.files(path, pattern = "_R2.fastq.gz", full.names = TRUE))
 
 get.sample.name <- function(fname) strsplit(basename(fname), "_")[[1]][1]
 sample.names <- unname(sapply(fnFs, get.sample.name))
 head(sample.names)
+
+#### check for primers ####
+FWD <- "GTGAATTGCAGAACTCCGTG"  ## CHANGE ME to your forward primer sequence
+REV <- "CCTCCGCTTACTTATATGCTT"  ## CHANGE ME...
+
+allOrients <- function(primer) {
+  # Create all orientations of the input sequence
+  require(Biostrings)
+  dna <- DNAString(primer)  # The Biostrings works w/ DNAString objects rather than character vectors
+  orients <- c(Forward = dna, Complement = complement(dna), Reverse = reverse(dna), 
+               RevComp = reverseComplement(dna))
+  return(sapply(orients, toString))  # Convert back to character vector
+}
+FWD.orients <- allOrients(FWD)
+REV.orients <- allOrients(REV)
+FWD.orients
+REV.orients
+
+fnFs.filtN <- file.path(path, "filtN", basename(fnFs)) # Put N-filterd files in filtN/ subdirectory
+fnRs.filtN <- file.path(path, "filtN", basename(fnRs))
+filterAndTrim(fnFs, fnFs.filtN, fnRs, fnRs.filtN, maxN = 0, multithread = TRUE)
+
+primerHits <- function(primer, fn) {
+  # Counts number of reads in which the primer is found
+  nhits <- vcountPattern(primer, sread(readFastq(fn)), fixed = FALSE)
+  return(sum(nhits > 0))
+}
+rbind(FWD.ForwardReads = sapply(FWD.orients, primerHits, fn = fnFs.filtN[[1]]), 
+      FWD.ReverseReads = sapply(FWD.orients, primerHits, fn = fnRs.filtN[[1]]), 
+      REV.ForwardReads = sapply(REV.orients, primerHits, fn = fnFs.filtN[[1]]), 
+      REV.ReverseReads = sapply(REV.orients, primerHits, fn = fnRs.filtN[[1]]))
+#no primers - amazing
 
 ###### Visualizing raw data
 
@@ -110,7 +142,7 @@ if(!file_test("-d", filt_path)) dir.create(filt_path)
 filtFs <- file.path(filt_path, paste0(sample.names, "_F_filt.fastq.gz"))
 filtRs <- file.path(filt_path, paste0(sample.names, "_R_filt.fastq.gz"))
 
-#changing a bit from default settings - maxEE=1 (1 max expected error, more conservative), truncating length at 200 bp for both forward & reverse [leaves ~50bp overlap], added "trimleft" to cut off primers [20 for forward, 21 for reverse]
+#changing a bit from default settings - maxEE=1 (1 max expected error, more conservative), truncating length at 200 bp for both forward & reverse, added "trimleft" to cut off primers [20 for forward, 21 for reverse]
 out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, 
                      truncLen=c(220,200), #leaves overlap
                      maxN=0, #DADA does not allow Ns
@@ -201,11 +233,12 @@ plot(table(nchar(getSequences(seqtab))))
 #columns corresponding to (and named by) the sequence variants. 
 #Sequences that are much longer or shorter than expected may be the result of non-specific priming, and may be worth removing
 
-seqtab2 <- seqtab[,nchar(colnames(seqtab)) %in% seq(268,327)] #again, being fairly conservative wrt length
+#if I wanted to remove some lengths - not recommended by dada2 for its2 data
+#seqtab2 <- seqtab[,nchar(colnames(seqtab)) %in% seq(268,327)] 
 
-table(nchar(getSequences(seqtab2)))
-dim(seqtab2)
-plot(table(nchar(getSequences(seqtab2))))
+table(nchar(getSequences(seqtab)))
+dim(seqtab)
+plot(table(nchar(getSequences(seqtab))))
 
 #~############################~#
 ##### Remove chimeras ##########
@@ -215,11 +248,11 @@ plot(table(nchar(getSequences(seqtab2))))
 #than it is when dealing with fuzzy OTUs: all sequences which can be exactly reconstructed as 
 #a bimera (two-parent chimera) from more abundant sequences.
 
-seqtab.nochim <- removeBimeraDenovo(seqtab2, method="consensus", multithread=TRUE, verbose=TRUE)
+seqtab.nochim <- removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE, verbose=TRUE)
 dim(seqtab.nochim)
 #Identified 38 bimeras out of 156 input sequences.
 
-sum(seqtab.nochim)/sum(seqtab2)
+sum(seqtab.nochim)/sum(seqtab)
 #0.9989
 #The fraction of chimeras varies based on factors including experimental procedures and sample complexity, 
 #but can be substantial. 
@@ -253,6 +286,7 @@ write.csv(taxa, file="~/Desktop/its2/mrits2_taxa.csv")
 
 #### Reading in prior data files ####
 #If you need to read in previously saved datafiles
+setwd("~/moorea_holobiont/mr_ITS2")
 seqtab.nochim <- readRDS("mrits2_seqtab.nochim.rds")
 taxa <- readRDS("mrits2_taxa.rds")
 
@@ -277,7 +311,7 @@ ps <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE),
 
 ps
 
-#phyloseq object without sample 87, has no data, messes up deseq
+#phyloseq object without sample 87, has no data
 seq <- read.csv("mrits2_seqtab.nochim_no87.csv")
 sam <- read.csv("mrits_sampledata_no87.csv")
 row.names(sam) <- sam$Sample
@@ -285,9 +319,140 @@ row.names(seq) <- seq$X
 seq2 <- seq[,2:119] #now removing sample name column
 
 ps_no87 <- phyloseq(otu_table(seq2, taxa_are_rows=FALSE), 
-               sample_data(sam), 
-               tax_table(taxa))
+                    sample_data(sam), 
+                    tax_table(taxa))
 ps_no87
+
+#### Alpha diversity #####
+
+#Visualize alpha-diversity - ***Should be done on raw, untrimmed dataset***
+#total species diversity in a landscape (gamma diversity) is determined by two different things, the mean species diversity in sites or habitats at a more local scale (alpha diversity) and the differentiation among those habitats (beta diversity)
+#Shannon:Shannon entropy quantifies the uncertainty (entropy or degree of surprise) associated with correctly predicting which letter will be the next in a diverse string. Based on the weighted geometric mean of the proportional abundances of the types, and equals the logarithm of true diversity. When all types in the dataset of interest are equally common, the Shannon index hence takes the value ln(actual # of types). The more unequal the abundances of the types, the smaller the corresponding Shannon entropy. If practically all abundance is concentrated to one type, and the other types are very rare (even if there are many of them), Shannon entropy approaches zero. When there is only one type in the dataset, Shannon entropy exactly equals zero (there is no uncertainty in predicting the type of the next randomly chosen entity).
+#Simpson:equals the probability that two entities taken at random from the dataset of interest represent the same type. equal to the weighted arithmetic mean of the proportional abundances pi of the types of interest, with the proportional abundances themselves being used as the weights. Since mean proportional abundance of the types increases with decreasing number of types and increasing abundance of the most abundant type, λ obtains small values in datasets of high diversity and large values in datasets of low diversity. This is counterintuitive behavior for a diversity index, so often such transformations of λ that increase with increasing diversity have been used instead. The most popular of such indices have been the inverse Simpson index (1/λ) and the Gini–Simpson index (1 − λ).
+
+plot_richness(ps_no87, x="site", measures=c("Shannon", "Simpson"), color="zone") + theme_bw()
+
+##if I had more missing data:
+#ps_pruned <- prune_taxa(taxa_sums(ps) > 0, ps)
+
+df <- data.frame(estimate_richness(ps_no87, split=TRUE, measures =c("Shannon","InvSimpson")))
+df
+
+df$site <- sam$site
+df$zone <- sam$zone
+df$site_zone <- sam$site_zone
+
+write.csv(df,file="~/Desktop/mrits/mrits_diversity.csv") #saving
+df <- read.csv("~/Desktop/mrits/mrits_diversity.csv") #reading back in 
+
+##checking out how diversity works with variables
+df.size <- read.csv("mr_size.csv",header=TRUE)
+df$coral_id <- row.names(df)
+
+mergeddf <- merge(df, df.size, by="coral_id", sort=FALSE)
+plot(Shannon~size,data=mergeddf)
+shapiro.test(mergeddf$Shannon)
+shapiro.test(mergeddf$size)
+kruskal.test(Shannon~size,data=mergeddf)
+#no significant relationship between coral size & diversity! interesting
+
+df$counts <- sample_sums(ps_no87)
+plot(counts~site_zone,data=df)
+lm1 <- lm(Shannon~counts,data=df)
+summary(lm1)
+#significant 
+
+library(ggplot2)
+#install.packages("extrafontdb")
+library(extrafontdb)
+library(extrafont)
+library(Rmisc)
+library(cowplot)
+library(ggpubr)
+#font_import(paths = "/Library/Fonts/")
+loadfonts()
+
+diver.sh <- summarySE(data=df,measurevar=c("Shannon"),groupvars=c("zone","site"))
+diver.si <- summarySE(data=df,measurevar=c("InvSimpson"),groupvars=c("zone","site"))
+
+quartz()
+gg.sh <- ggplot(diver.sh, aes(x=site, y=Shannon,color=zone,fill=zone,shape=zone))+
+  geom_errorbar(aes(ymin=Shannon-se,ymax=Shannon+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
+  geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
+  xlab("Site")+
+  ylab("Shannon Diversity")+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15))+
+  theme(text=element_text(family="Gill Sans MT"))+
+  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"))+
+  guides(fill=guide_legend(title="Reef zone"),color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
+
+gg.si <- ggplot(diver.si, aes(x=site, y=InvSimpson,color=zone,fill=zone,shape=zone))+
+  geom_errorbar(aes(ymin=InvSimpson-se,ymax=InvSimpson+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
+  geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
+  xlab("Site")+
+  ylab("Shannon Diversity")+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15))+
+  theme(text=element_text(family="Gill Sans MT"))+
+  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"))+
+  guides(fill=guide_legend(title="Reef zone"),color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
+
+quartz()
+dev.off()
+ggarrange(gg.sh,gg.si,common.legend=TRUE,legend="right")
+
+mnw <- subset(df,site=="MNW")
+mse <- subset(df,site=="MSE")
+tah <- subset(df,site=="TNW")
+
+wilcox.test(Shannon~zone,data=mnw)
+#not different
+wilcox.test(InvSimpson~zone,data=mnw)
+#p = 0.01
+
+wilcox.test(Shannon~zone,data=mse)
+#p = 0.001
+wilcox.test(InvSimpson~zone,data=mse)
+#p = 0.01
+
+wilcox.test(Shannon~zone,data=tah)
+#p = 0.04
+wilcox.test(InvSimpson~zone,data=tah)
+#p = 0.019
+
+#### move below ####
+
+#renaming samples so i can see which pop they're from in bar plot
+sam$newname <- paste(sam$site_zone,sam$Sample,sep="_")
+row.names(sam) <- sam$newname
+row.names(seq2) <- sam$newname
+#row.names(taxa) <- ids
+
+ps.newname <- phyloseq(otu_table(seq2, taxa_are_rows=FALSE), 
+                    sample_data(sam), 
+                    tax_table(taxa))
+ps.newname
+
+top10 <- names(sort(taxa_sums(ps.newname), decreasing=TRUE))[2:2]
+ps.top3 <- transform_sample_counts(ps.newname, function(OTU) OTU/sum(OTU))
+ps.top3 <- prune_taxa(top3, ps.newname)
+plot_bar(ps.top3, x="Sample",fill="Class") #+ facet_wrap(~ColonyID+Timepoint, scales="free_x")
+
+ex1 <- prune_taxa(top10, ps.newname)
+ps.c3k <- subset_taxa(ex1, Class="C3k")
+plot_bar(ex1, "site_zone", "Abundance")
+#more some c3k things on the forereef
+
+#just checking out normalized stuff 
+plot_richness(ps.norm, x="site", measures=c("Shannon", "Simpson"), color="in_off") + theme_bw()
+
+df.norm <- data.frame(estimate_richness(ps.norm, split=TRUE, measures =c("Shannon","InvSimpson")))
+df.norm$site <- sam$site
+df.norm$zone <- sam$in_off
+
+ggplot(df.norm,aes(x=site,y=Shannon,color=zone))+
+  geom_boxplot()
 
 #checking if my variables have sig different sample reads before normalizing
 sam$new <- sample_sums(ps_no87)
@@ -478,89 +643,6 @@ anova(betadisper(euc_dist, sam$in_off)) #not sig
 #significant means I can't do straight adonis
 #wasn't significnt for inshore/offshore
 adonis(euc_dist~sam$site*sam$in_off) # all sig
-
-#### Alpha diversity #####
-
-#Visualize alpha-diversity - ***Should be done on raw, untrimmed dataset***
-#total species diversity in a landscape (gamma diversity) is determined by two different things, the mean species diversity in sites or habitats at a more local scale (alpha diversity) and the differentiation among those habitats (beta diversity)
-#Shannon:Shannon entropy quantifies the uncertainty (entropy or degree of surprise) associated with correctly predicting which letter will be the next in a diverse string. Based on the weighted geometric mean of the proportional abundances of the types, and equals the logarithm of true diversity. When all types in the dataset of interest are equally common, the Shannon index hence takes the value ln(actual # of types). The more unequal the abundances of the types, the smaller the corresponding Shannon entropy. If practically all abundance is concentrated to one type, and the other types are very rare (even if there are many of them), Shannon entropy approaches zero. When there is only one type in the dataset, Shannon entropy exactly equals zero (there is no uncertainty in predicting the type of the next randomly chosen entity).
-#Simpson:equals the probability that two entities taken at random from the dataset of interest represent the same type. equal to the weighted arithmetic mean of the proportional abundances pi of the types of interest, with the proportional abundances themselves being used as the weights. Since mean proportional abundance of the types increases with decreasing number of types and increasing abundance of the most abundant type, λ obtains small values in datasets of high diversity and large values in datasets of low diversity. This is counterintuitive behavior for a diversity index, so often such transformations of λ that increase with increasing diversity have been used instead. The most popular of such indices have been the inverse Simpson index (1/λ) and the Gini–Simpson index (1 − λ).
-
-plot_richness(ps_no87, x="site", measures=c("Shannon", "Simpson"), color="in_off") + theme_bw()
-
-ps_pruned <- prune_taxa(taxa_sums(ps) > 0, ps)
-
-df <- data.frame(estimate_richness(ps_pruned, split=TRUE, measures =c("Shannon","InvSimpson","Chao1")),sample_data(ps)$site,sample_data(ps)$in_off,sample_data(ps)$Sample,sample_data(ps)$site_zone)
-df
-
-df$site <- df$sample_data.ps..site
-df$name <- df$sample_data.ps..Sample
-df$zone <- df$sample_data.ps..in_off
-df$site_zone <- df$sample_data.ps..site_zone
-
-write.csv(df,file="~/Desktop/mrits/mrits_diversity.csv")
-df <- read.csv("~/Desktop/mrits/mrits_diversity.csv")
-
-diver <- summarySE(df,measurevar="Shannon",groupvars=c("site","zone"), na.rm=T)
-diver
-
-pd=position_dodge(.5)
-quartz()
-ggplot(diver,aes(x=site,y=Shannon,color=zone))+
-  geom_point()
-
-ggplot(diver, aes(x=site, y=Shannon,group=zone,color=zone,fill=zone,shape=zone))+
-  geom_errorbar(aes(ymin=Shannon-se,ymax=Shannon+se),position=pd,lwd=0.4,width=0.3)+
-  geom_point(aes(colour=zone, shape=zone),size=4,position=pd)+    
-  xlab("Site")+
-  ylab("Shannon Diversity")+
-  theme_bw()+
-  theme(text=element_text(family="Gill Sans MT"))
-
-shzone <- summarySE(df,measurevar="Shannon",groupvars=c("zone"), na.rm=T)
-pd=position_dodge(.5)
-quartz()
-ggplot(shzone, aes(x=zone, y=Shannon,group=zone,color=zone,fill=zone,shape=zone))+
-  geom_errorbar(aes(ymin=Shannon-se,ymax=Shannon+se),position=pd,lwd=0.4,width=0.3)+
-  geom_point(aes(colour=zone, shape=zone),size=4,position=pd)+    
-  xlab("Reef zone")+
-  ylab("Shannon diversity")+
-  theme_classic()+
-  theme(text=element_text(family="Gill Sans MT"))+
-  scale_x_discrete(labels=c("Inshore","Offshore"))
-
-df
-avod <- aov(Shannon~site*zone,data=df)
-summary(avod)
-# Df Sum Sq Mean Sq F value   Pr(>F)    
-# site         2  1.045  0.5225   3.396   0.0379 *  
-#   zone         1  2.892  2.8922  18.797 3.78e-05 ***
-#   site:zone    2  0.011  0.0053   0.034   0.9663    
-# Residuals   90 13.848  0.1539                     
-# ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-diver2 <- summarySE(df,measurevar="InvSimpson",groupvars=c("site","zone"), na.rm=T)
-diver2
-
-quartz()
-ggplot(diver2, aes(x=site, y=InvSimpson,group=zone,color=zone,fill=zone,shape=zone)) +
-  geom_errorbar(aes(ymin=InvSimpson-se,ymax=InvSimpson+se),position=pd,lwd=0.4,width=0.3)+
-  geom_point(aes(colour=zone, shape=zone),size=4,position=pd)+    
-  xlab("Site")+
-  ylab("Inverse Simpson Diversity")+
-  theme_bw()+
-  theme(text=element_text(family="Gill Sans MT"))
-
-#just checking out normalized stuff 
-plot_richness(ps.norm, x="site", measures=c("Shannon", "Simpson"), color="in_off") + theme_bw()
-
-df.norm <- data.frame(estimate_richness(ps.norm, split=TRUE, measures =c("Shannon","InvSimpson")))
-df.norm$site <- sam$site
-df.norm$zone <- sam$in_off
-
-ggplot(df.norm,aes(x=site,y=Shannon,color=zone))+
-  geom_boxplot()
 
 #### Rarefy ####
 library(vegan)
