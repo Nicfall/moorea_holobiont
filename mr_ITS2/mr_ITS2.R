@@ -330,6 +330,9 @@ ps_no87
 #Shannon:Shannon entropy quantifies the uncertainty (entropy or degree of surprise) associated with correctly predicting which letter will be the next in a diverse string. Based on the weighted geometric mean of the proportional abundances of the types, and equals the logarithm of true diversity. When all types in the dataset of interest are equally common, the Shannon index hence takes the value ln(actual # of types). The more unequal the abundances of the types, the smaller the corresponding Shannon entropy. If practically all abundance is concentrated to one type, and the other types are very rare (even if there are many of them), Shannon entropy approaches zero. When there is only one type in the dataset, Shannon entropy exactly equals zero (there is no uncertainty in predicting the type of the next randomly chosen entity).
 #Simpson:equals the probability that two entities taken at random from the dataset of interest represent the same type. equal to the weighted arithmetic mean of the proportional abundances pi of the types of interest, with the proportional abundances themselves being used as the weights. Since mean proportional abundance of the types increases with decreasing number of types and increasing abundance of the most abundant type, λ obtains small values in datasets of high diversity and large values in datasets of low diversity. This is counterintuitive behavior for a diversity index, so often such transformations of λ that increase with increasing diversity have been used instead. The most popular of such indices have been the inverse Simpson index (1/λ) and the Gini–Simpson index (1 − λ).
 
+#getting rid of NAs
+ps_no87 <- subset_taxa(ps_no87, Class!="NA")
+
 plot_richness(ps_no87, x="site", measures=c("Shannon", "Simpson"), color="zone") + theme_bw()
 
 ##if I had more missing data:
@@ -380,7 +383,7 @@ gg.sh <- ggplot(diver.sh, aes(x=site, y=Shannon,color=zone,fill=zone,shape=zone)
   geom_errorbar(aes(ymin=Shannon-se,ymax=Shannon+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
   geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
   xlab("Site")+
-  ylab("Shannon Diversity")+
+  ylab("Shannon diversity")+
   theme_cowplot()+
   scale_shape_manual(values=c(16,15))+
   theme(text=element_text(family="Gill Sans MT"))+
@@ -391,15 +394,17 @@ gg.si <- ggplot(diver.si, aes(x=site, y=InvSimpson,color=zone,fill=zone,shape=zo
   geom_errorbar(aes(ymin=InvSimpson-se,ymax=InvSimpson+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
   geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
   xlab("Site")+
-  ylab("Shannon Diversity")+
+  ylab("Inverse Simpson diversity")+
   theme_cowplot()+
   scale_shape_manual(values=c(16,15))+
   theme(text=element_text(family="Gill Sans MT"))+
   scale_colour_manual(values=c("#ED7953FF","#8405A7FF"))+
   guides(fill=guide_legend(title="Reef zone"),color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
 
+gg.sh
+gg.si
+
 quartz()
-dev.off()
 ggarrange(gg.sh,gg.si,common.legend=TRUE,legend="right")
 
 mnw <- subset(df,site=="MNW")
@@ -475,17 +480,26 @@ library(DEFormats)
 
 #count data
 seq <- read.csv("mrits2_seqtab.nochim_no87.csv")
-row.names(seq) <- seq$X #setting my sample names as row names so I can remove the sample name column
-seq2 <- seq[,2:119] #now removing sample name column
+#getting rid of crap ones
+#mcmc.otu requires a blank column with sample names first, did manually in excel
+
+seq <- purgeOutliers(seq,count.columns=4:120,sampleZcut=-2.5,otu.cut=0.001)
+#bad samples: 513, 530, 76, 505
+#49 OTUs pass frequency cutoff
+
+row.names(seq) <- seq$sample #setting my sample names as row names so I can remove the sample name column
+seq2 <- seq[,3:52] #now removing sample name columns
 seqt <- t(seq2) #deseq requires count data in columns
 
 #sample data
 sam <- read.csv("mrits_sampledata_no87.csv")
+row.names.remove <- c("513","530","76","505")
+sam <- sam[!(row.names(sam) %in% row.names.remove), ]
 row.names(sam) <- sam$Sample
 
 #method from here:
 #https://astrobiomike.github.io/amplicon/dada2_workflow_ex#dereplication
-deseq_counts <- DESeqDataSetFromMatrix(seqt, colData = sam, design = ~site*in_off) 
+deseq_counts <- DESeqDataSetFromMatrix(seqt, colData = sam, design = ~site*zone) 
 # we have to include the "colData" and "design" arguments because they are 
 # required, as they are needed for further downstream processing by DESeq2, 
 # but for our purposes of simply transforming the data right now, they don't 
@@ -503,7 +517,7 @@ deseq_counts_vst <- varianceStabilizingTransformation(deseq_counts)
 
 # and here is pulling out our transformed table
 vst_trans_count_tab <- assay(deseq_counts_vst)
-vst_trans_count_tab[vst_trans_count_tab < 0.0] <- 0.0 #getting rid of 0s
+#vst_trans_count_tab[vst_trans_count_tab < 0.0] <- 0.0 #getting rid of 0s
 
 # back into phyloseq
 vstt <- t(vst_trans_count_tab)
@@ -523,6 +537,7 @@ a1 <- aov(new.norm~in_off,data=sam)
 summary(a1) # p = significant
 
 #### Pcoa #####
+write.csv(vstt,"~/moorea_holobiont/mr_ITS2/vstt.csv")
 
 #before normalizing
 ps.ord <- ordinate(ps_no87, method="MDS", distance="euclidean")
@@ -532,14 +547,37 @@ plot_ordination(ps_no87, ps.ord, color="in_off") +
 
 #after normalizing
 vst_pcoa <- ordinate(ps.norm, method="MDS", distance="euclidean")
+#vst_pcoa <- ordinate(ps.rare, method="MDS", distance="euclidean")
+#^this looks horrible
 eigen_vals <- vst_pcoa$values$Eigenvalues # allows us to scale the axes according to their magnitude of separating apart the samples
-plot_ordination(ps.norm, vst_pcoa, color="in_off") + 
-  geom_point(size=1) #+ 
-  #labs(col="type") + 
+quartz()
+plot_ordination(ps.norm, vst_pcoa, color="zone",shape="zone") + 
+  geom_point(size=1) +
+  facet_wrap(~site)+
+  stat_ellipse(level=0.95)+
+  theme_cowplot()+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"))+
+  scale_shape_manual(values=c(16,15))+
+  labs(color="Reef zone",shape="Reef zone")
   #geom_text(aes(label=rownames(sample_info_tab), hjust=0.3, vjust=-0.4)) + 
   #coord_fixed(sqrt(eigen_vals[2]/eigen_vals[1])) + ggtitle("PCoA")
   #scale_color_manual(values=unique(sample_info_tab$color[order(sample_info_tab$char)])) + 
   #theme(legend.position="none")
+
+#stats
+library(dendextend)
+# and calculating our Euclidean distance matrix
+euc_dist <- dist(vstt)
+euc_clust <- hclust(euc_dist, method="ward.D2")
+
+anova(betadisper(euc_dist, sam$site_zone)) #not sig
+#significant means I can't do straight adonis
+#wasn't significnt for inshore/offshore
+adonis(euc_dist~sam$site*sam$zone) # all sig
+
+#by site
+adonis( ~ zone, data = , method="manhattan")
+
 
 #install.packages('dendextend')
 #### hierarchical clustering of samples ####
@@ -582,32 +620,39 @@ plot(euc_dend, ylab="VST Euc. dist.")
 #resource for analysis here:
 #https://bioconductor.org/packages/devel/bioc/vignettes/phyloseq/inst/doc/phyloseq-mixture-models.html
 #https://joey711.github.io/phyloseq-extensions/DESeq2.html
-ps.mnw = subset_samples(ps.norm, site=="MNW")
-ds.mnw = phyloseq_to_deseq2(ps.mnw, ~ in_off)
+
+#ps.mnw = subset_samples(ps_no87, site=="MNW")
+#ps.mnw = subset_samples(ps.norm, site=="MNW")
+ps.mnw = subset_samples(ps.rare, site=="MNW")
+ds.mnw = phyloseq_to_deseq2(ps.mnw, ~ zone)
 dds.mnw <- estimateSizeFactors(ds.mnw,type="poscounts")
 stat.mnw = DESeq(dds.mnw, test="Wald", fitType="parametric")
 
 res = results(stat.mnw, cooksCutoff = FALSE)
-alpha = 0.1
+alpha = 0.05
 sigtab = res[which(res$padj < alpha), ]
 sigtab = cbind(as(sigtab, "data.frame"), as(tax_table(ps.mnw)[rownames(sigtab), ], "matrix"))
 head(sigtab)
+dim(sigtab)
 #nothing for MNW, even at 0.1 prior to normalized & after
 
-ps.mse = subset_samples(ps.norm, site=="MSE")
-ds.mse = phyloseq_to_deseq2(ps.mse, ~ in_off)
+#ps.mse = subset_samples(ps.norm, site=="MSE")
+ps.mse = subset_samples(ps.rare, site=="MSE")
+ds.mse = phyloseq_to_deseq2(ps.mse, ~ zone)
 dds.mse <- estimateSizeFactors(ds.mse,type="poscounts")
 stat.mse = DESeq(dds.mse, test="Wald", fitType="parametric")
 
 res = results(stat.mse, cooksCutoff = FALSE)
-alpha = 0.1
+alpha = 0.05
 sigtab = res[which(res$padj < alpha), ]
 sigtab = cbind(as(sigtab, "data.frame"), as(tax_table(ps.mse)[rownames(sigtab), ], "matrix"))
 dim(sigtab)
 #5 for MSE - not normalized
 #2 for MSE normalized at 0.1, none for 0.05
+#1 for MSE after 
 
-ps.t = subset_samples(ps.norm, site=="T")
+ps.t = subset_samples(ps.rare, site=="TNW")
+#ps.t = subset_samples(ps.norm, site=="TNW")
 ds.t = phyloseq_to_deseq2(ps.t, ~ in_off)
 dds.t <- estimateSizeFactors(ds.t,type="poscounts")
 stat.t = DESeq(dds.t, test="Wald", fitType="parametric")
@@ -651,9 +696,9 @@ rare <- seq2 #creating a copy so I can mess with it
 rarecurve(rare, step = 100, label=TRUE)
 #going to remove samples < 2500 reads
 
-rowSums(rare)
-row.names.remove <- c(513, 505, 76, 58, 402, 530)
-seq.less <- rare[!(row.names(rare) %in% row.names.remove), ]
+rare$total <- rowSums(rare)
+seq.less <- subset(rare,total >= 2500)
+#lose a lot of samples here :(
 
 rarecurve(seq.less, step = 100, label=FALSE)
 rowSums(seq.less)
@@ -661,22 +706,25 @@ rowSums(seq.less)
 seq.rare <- rrarefy(seq.less,sample=2500)
 rarecurve(seq.rare,step=100,label=FALSE)
 
+write.csv(seq.rare,"~/moorea_holobiont/mr_ITS2/seq.rare_1.csv")
+
 ps.rare <- phyloseq(otu_table(seq.rare, taxa_are_rows=FALSE), 
                sample_data(sam), 
                tax_table(taxa))
 
 ps.rare
 
-row.names.remove <- c(513, 505, 76, 58, 402, 530)
-sam.rare <- sam[!(row.names(sam) %in% row.names.remove), ]
-
-plot_richness(ps.rare, x="site", measures=c("Shannon", "Simpson"), color="in_off") + theme_bw()
+plot_richness(ps.rare, x="site", measures=c("Shannon", "Simpson"), color="zone") + theme_bw()
 
 df.rare <- data.frame(estimate_richness(ps.rare, split=TRUE, measures =c("Shannon","InvSimpson")))
-df.rare$site <- sam.rare$site
-df.rare$zone <- sam.rare$in_off
 
-ggplot(df.rare,aes(x=site,y=Shannon,color=zone))+
+sam$total <- rare$total
+sam.rare <- subset(sam,total >= 2500)
+
+df.rare$site <- sam.rare$site
+df.rare$zone <- sam.rare$zone
+
+ggplot(df.rare,aes(x=site,y=InvSimpson,color=zone))+
   geom_boxplot()
 
 #stats:
@@ -685,14 +733,43 @@ wilcox.test(Shannon~zone,data=df.rare)
 
 mnw <- subset(df.rare,site=="MNW")
 mse <- subset(df.rare,site=="MSE")
-tah <- subset(df.rare,site=="T")
+tah <- subset(df.rare,site=="TNW")
 
 wilcox.test(Shannon~zone,data=mnw)
 #not different
+wilcox.test(InvSimpson~zone,data=mnw)
+#p = 0.06
 wilcox.test(Shannon~zone,data=mse)
 #very different p-value = 0.005113
+wilcox.test(InvSimpson~zone,data=mse)
+#p = 0.04
 wilcox.test(Shannon~zone,data=tah)
-#not different, p = 0.1077
+#p = 0.03
+wilcox.test(InvSimpson~zone,data=tah)
+#p = 0.03
+
+####Bar plot for rarefied results#####
+#renaming samples so i can see which pop they are on the x axis
+sam.rare$newname <- paste(sam.rare$site_zone,sam.rare$Sample,sep="_")
+row.names(sam.rare) <- sam.rare$newname
+row.names(seq.rare) <- sam.rare$newname
+#row.names(taxa) <- ids
+
+ps.rare2 <- phyloseq(otu_table(seq.rare, taxa_are_rows=FALSE), 
+                    sample_data(sam.rare), 
+                    tax_table(taxa))
+
+top3 <- names(sort(taxa_sums(ps.rare2), decreasing=TRUE))[1:118]
+ps.top3 <- transform_sample_counts(ps.rare2, function(OTU) OTU/sum(OTU))
+ps.top3 <- prune_taxa(top3, ps.top3)
+quartz()
+plot_bar(ps.top3, x="newname",fill="Class") #+ facet_wrap(~ColonyID+Timepoint, scales="free_x")
+
+bot30 <- names(sort(taxa_sums(ps.rare2), decreasing=FALSE))[1:100]
+ps.bot30 <- transform_sample_counts(ps.rare2, function(OTU) OTU/sum(OTU))
+ps.bot30 <- prune_taxa(bot30, ps.bot30)
+plot_bar(ps.bot30, x="newname", fill="Class") #+ facet_wrap(~ColonyID+Timepoint, scales="free_x")
+
 
 #~############################~#
 ##### output 'OTU' table #######
@@ -902,8 +979,6 @@ c3k <- subset(ps.luluseq.melt,Class==" C3k")
 ggplot(c3k,aes(x=site_zone,y=Abundance,color=Class))+
   geom_boxplot()
 
-
-
 #Ordinate Samples
 ps.prop <- transform_sample_counts(ps, function(otu) otu/sum(otu))
 ord.nmds.bray <- ordinate(ps.prop, method="NMDS", distance="bray")
@@ -925,10 +1000,7 @@ plot_bar(ps.btm30, x="site_zone", fill="Class") #+ facet_wrap(~ColonyID+Timepoin
 
 #Mess around with other stuff in phyloseq here...
 
-
-#############################################
-
-# Principal coordinate analysis 
+#### Principal coordinate analysis ####
 
 library(vegan)
 #install.packages("MCMC.OTU")
