@@ -1,0 +1,9 @@
+,baseMean,log2FoldChange,lfcSE,stat,pvalue,padj,domain,phylum,class,order,family,genus,species
+sq2,1886.498656,-4.506164631,1.080813911,-4.169232634,3.06E-05,0.000185415,Bacteria,Proteobacteria,Gammaproteobacteria,Oceanospirillales,Endozoicomonadaceae,Endozoicomonas,NA
+sq3,2522.611971,2.464873523,0.572611962,4.304614092,1.67E-05,0.000167277,NA,NA,NA,NA,NA,NA,NA
+sq14,9.687625023,-4.156414317,1.550555882,-2.680596272,0.007349112,0.02778233,Bacteria,Bacteroidetes,Bacteroidia,Chitinophagales,Chitinophagaceae,Lacibacter,NA
+sq18,15.00150802,-5.902925174,1.605309779,-3.677125283,0.000235877,0.001179386,Bacteria,Proteobacteria,Gammaproteobacteria,Alteromonadales,Pseudoalteromonadaceae,Pseudoalteromonas,NA
+sq23,7.411795947,6.376679819,2.381227569,2.677896016,0.007408621,0.02778233,Bacteria,NA,NA,NA,NA,NA,NA
+sq32,14.94073842,-23.26566101,2.9512252,-7.883390604,3.19E-15,4.78E-14,Bacteria,Bacteroidetes,Bacteroidia,Cytophagales,Cyclobacteriaceae,Ekhidna,NA
+sq36,9.743594242,-6.718685106,1.612467127,-4.166711368,3.09E-05,0.000185415,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Rhizobiales Incertae Sedis,Phreatobacter,NA
+sq43,13.70503604,22.54926879,2.825017176,7.981993519,1.44E-15,4.32E-14,Bacteria,Proteobacteria,Gammaproteobacteria,Betaproteobacteriales,Burkholderiaceae,Ralstonia,NA

@@ -1,0 +1,10 @@
+,baseMean,log2FoldChange,lfcSE,stat,pvalue,padj,domain,phylum,class,order,family,genus,species
+sq1,2127.221219,-1.046030627,0.274389987,-3.812204079,0.000137733,0.000964132,Bacteria,Proteobacteria,Gammaproteobacteria,Betaproteobacteriales,Burkholderiaceae,Burkholderia-Caballeronia-Paraburkholderia,NA
+sq4,2266.435372,-5.01632903,1.415016169,-3.545068347,0.000392511,0.002355068,Bacteria,Chlamydiae,Chlamydiae,Chlamydiales,Simkaniaceae,Candidatus Fritschea,NA
+sq5,190.6252318,4.959700205,1.672693625,2.96509781,0.003025867,0.015885802,Bacteria,Cyanobacteria,Oxyphotobacteria,Chloroplast,NA,NA,NA
+sq6,109.0034926,5.37406156,1.168071436,4.600798715,4.21E-06,4.42E-05,Bacteria,Proteobacteria,Gammaproteobacteria,Oceanospirillales,Endozoicomonadaceae,Endozoicomonas,NA
+sq7,122.6398977,-1.181236207,0.440282724,-2.682903831,0.007298597,0.034060122,Bacteria,Proteobacteria,Gammaproteobacteria,Betaproteobacteriales,Burkholderiaceae,NA,NA
+sq16,55.59917901,23.82105763,2.936700284,8.11150452,5.00E-16,7.00E-15,Bacteria,Proteobacteria,Gammaproteobacteria,Oceanospirillales,Endozoicomonadaceae,Endozoicomonas,NA
+sq24,48.97204369,-25.21425894,2.58994798,-9.735430647,2.13E-22,4.47E-21,Bacteria,NA,NA,NA,NA,NA,NA
+sq29,32.65421535,-24.98208159,1.985480365,-12.58238662,2.64E-36,1.11E-34,Bacteria,Cyanobacteria,Oxyphotobacteria,Chloroplast,NA,NA,NA
+sq36,4.032157016,5.362536791,1.179523282,4.546359428,5.46E-06,4.58E-05,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Rhizobiales Incertae Sedis,Phreatobacter,NA
