@@ -1,0 +1,314 @@
+#from https://github.com/z0on/2bRAD_denovo/blob/master/2bRAD_README.txt
+#^^find instructions for downloading scripts & packages at this link^^
+#edits by Nicola Kriefall thenicolakriefall(at)gmail.com
+
+#===================== A  N  G  S  D =====================
+
+# "FUZZY genotyping" with ANGSD - without calling actual genotypes but working with genotype likelihoods at each SNP. Optimal for low-coverage data (<10x).
+
+# listing all bam filenames 
+ls *bam > bams
+
+#--------------- finding clones
+
+# Note: PCA and Admixture are not supposed to be run on data that contain clones or genotyping replicates. For PCA, these can be removed without rerunning ANGSD from the IBS distance matrix; but for ngsAdmix ANGSD must be rerun.
+# for my first run through, keeping all samples, will remove clones & genotyping replicates for second run-through
+
+# Generating genotype likelihoods from highly confident (non-sequencing-error) SNPs
+# set minInd to 75-80% of your total number of bams [I did ~80%, 109 samples out of 136 total]
+# if you expect very highly differentiated populations with nearly fixed alternative alleles, remove '-hwe_pval 1e-5' from FILTERS
+# -doGeno 8 : genotype likelihood format setting for ngsLD; if you want to run PCA, use -doGeno 32 (but I recommend using ibsMat for all ordination work)
+
+# Starting angsd with -P the number of parallel processes. Funny but in many cases angsd runs faster on -P 1
+nano angsd.sh
+# add the following text to .sh:
+#!/bin/bash -l
+#$ -V # inherit the submission environment
+#$ -cwd #start job in submission directory
+#$ -N angsd.sh # job name, anything you want
+#$ -l h_rt=24:00:00
+#$ -M thenicolakriefall@gmail.com
+#$ -m be
+FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 25 -dosnpstat 1 -doHWE 1 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 91 -snp_pval 1e-5 -minMaf 0.1 -minIndDepth 8 -hwe_pval 1e-5"
+TODO="-doMajorMinor 1 -doMaf 1 -doCounts 1 -makeMatrix 1 -doIBS 1 -doCov 1 -doGeno 8 -doVcf 1 -doPost 1 -doGlf 2 -dumpCounts 2"
+angsd -b bams -GL 1 $FILTERS $TODO -P 1 -out myresult
+#exit & save
+
+qsub angsd.sh
+
+# use IBS results to look for clones & technical replicates for removal
+# sftp (or some other transfer method) to file transfer 'myresult.ibsMat' & 'bams' to your local computer
+# use part3_ibs_findclones.R to see results
+# my input files are part3_myresult.ibsMat & part3_bams, my output file displaying clones dendrogram is part3_clones_dendro.pdf
+# getting rid of all samples with 'd' after the same as these were intentional replicates, also saw 2 other samples that were incidental clones ('MNW-F_125 & MNW-B_58), removing from bams file
+
+#--------------- assessing site depth
+
+#re-did angsd without clones:
+#remember to change 'minInd' to new 80% (mine is now minInd 99 for 80% from 124 samples)
+
+nano angsd_cl.sh
+#added this to top:
+#!/bin/bash -l
+#$ -V # inherit the submission environment
+#$ -cwd #start job in submission directory
+#$ -N angsd_cl.sh # job name, anything you want
+#$ -l h_rt=24:00:00
+#$ -M thenicolakriefall@gmail.com
+#$ -m be
+FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 25 -dosnpstat 1 -doHWE 1 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 99 -snp_pval 1e-5 -minMaf 0.1 -minIndDepth 8 -hwe_pval 1e-5"
+TODO="-doMajorMinor 1 -doMaf 1 -doCounts 1 -makeMatrix 1 -doIBS 1 -doCov 1 -doGeno 8 -doVcf 1 -doPost 1 -doGlf 2 -dumpCounts 2"
+angsd -b bamscl -GL 1 $FILTERS $TODO -P 1 -out clresult
+#exit & save
+
+# Assessing average site depth coverage per sample using vcftools:
+gunzip clresult.vcf.gz
+# You have to do this strange thing where you remove "(angsd version)" from the header of your vcf file, or else vcftools won't work
+nano clresult.vcf
+#first line reads:
+##fileformat=VCFv4.2(angsd version)
+# manually delete "(angsd version)" from this line so it just reads "VCFv4.2"
+#exit & save
+
+module load vcftools
+vcftools --vcf clresult.vcf --depth --out clresult
+#results (mean depth of sites per individual) are in a file ending in '.idepth'
+#I transferred it to my desktop & arranged the column smallest -> largest in excel to check it out
+
+#--------------- now for overall pop structure 
+
+#after looking at my site depths, I decided to get rid of samples with less than an average of 7 reads for my final analysis, increases the number of reliable SNPs you get from the total dataset
+#also removed technical replicates/clones from 'bams' file & saved it as 'bams_no7'
+#had 136 samples before, now left with 114 (removed 2 incidental clones, 10 tech replicates, 10 samples with less than 7 average reads/site)
+#that reduces my 80% minInd filter down to 91 now
+
+#re-running ANGSD without clones & without poorly covered samples:
+nano angsd_donish.sh
+# added the following text to .sh:
+#!/bin/bash -l
+#$ -V # inherit the submission environment
+#$ -cwd #start job in submission directory
+#$ -N angsd_donish.sh # job name, anything you want
+#$ -l h_rt=24:00:00
+#$ -M thenicolakriefall@gmail.com
+#$ -m be
+FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 25 -dosnpstat 1 -doHWE 1 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 91 -snp_pval 1e-5 -minMaf 0.05 -minIndDepth 8 -hwe_pval 1e-5"
+TODO="-doMajorMinor 1 -doMaf 1 -doCounts 1 -makeMatrix 1 -doIBS 1 -doCov 1 -doGeno 8 -doVcf 1 -doPost 1 -doGlf 2 -dumpCounts 2"
+angsd -b bams_no7 -GL 1 $FILTERS $TODO -P 1 -out ./donresult/donresult.05
+#exit & save
+#saves output to a directory I made called 'donresult'
+
+qsub angsd_donish.sh
+
+gunzip donresult.05.vcf.gz
+#transferred donresult.05.vcf, donresult.05.ibsMat, and bams_no7 file to local working directory to use in 'part3_plotting_popstruct.R'
+#generated inds2pops file by hand: text file with 2 columns, first is your sample bam, second is your variable of interest
+
+#how many SNPs?
+NSITES=`zcat donresult.05.mafs.gz | wc -l`
+echo $NSITES
+#I have 5647 sites
+
+#--------------- K plots
+
+# NgsAdmix for K from 2 to 5 : do not run if the dataset contains clones or genotyping replicates!
+for K in `seq 2 5` ; 
+do 
+NGSadmix -likes donresult.beagle.gz -K $K -P 10 -o don_k${K};
+done
+
+# transfer .qopt files to computer, plot with part3_plotting_popstruct.R & inds2pops file
+
+# alternatively, to use real ADMIXTURE on called SNPs (requires plink and ADMIXTURE):
+# gunzip vcf file if you didn't already & remove '(angsd version)' from top of vcf file
+
+module load plink/1.90b6.4
+module load admixture
+
+plink --vcf donresult.vcf --make-bed --allow-extra-chr 0 --out done
+for K in `seq 1 5`; \
+do admixture --cv done.bed $K | tee done_${K}.out; done
+
+# which K is least CV error?
+grep -h CV done_*.out
+
+#CV error (K=1): 0.60678
+#CV error (K=2): 0.62188
+#CV error (K=3): 0.64356
+#CV error (K=4): 0.66027
+#CV error (K=5): 0.67737
+#lowest error for me was K=1
+
+# sftp the *.Q files to laptop, plot it in R:
+# use part3_plotting_popstruct.R to plot (will require minor editing - population names)
+# will also needs inds2pops file
+
+#--------------- LD
+
+# LD: (use rEM for WGCNA, to look for signatures of polygenic selection):
+module load ngsld
+NS=`zcat donresult.geno.gz | wc -l`
+NB=`cat bams_no8 | wc -l`
+zcat donresult.mafs.gz | tail -n +2 | cut -f 1,2 > don.sites
+ngsLD --geno donresult.geno.gz --probs 1 --n_ind $NB --n_sites $NS --max_kb_dist 0 --pos don.sites --out don.LD --n_threads 1 --extend_out 1
+#probs = is the input likelihoods or posterior probabilities, default looks to be false, add something to get true
+#max_kb_dist set to 0 means it will do all pairwise comparisons
+#more info here: https://github.com/fgvieira/ngsLD/blob/master/README.md
+#generates output TSV file with LD results for all pairs of sites for which LD was calculated, where the first two 
+#columns are positions of the SNPs, the third column is the distance (in bp) between the SNPs, and the following 4 
+#columns are the various measures of LD calculated (r^2 from pearson correlation between expected genotypes, D 
+#from EM algorithm, D' from EM algorithm, and r^2 from EM algorithm). If the option --extend_out is used, 
+#then an extra 8 columns are printed with number of samples, minor allele frequency (MAF) of both loci, 
+#haplotype frequencies for all four haplotypes, and a chi2 (1 d.f.) for the strength of association (Collins et al., 1999).
+
+#another note from the author:
+#For some analyses, linked sites are typically pruned since their presence can bias results. 
+#You can use the script scripts/prune_graph.pl to prune your dataset and get a list of unlinked sites.
+
+#to remove linked sites:
+module load perl
+
+nano prune.sh
+#!/bin/bash -l
+#$ -V # inherit the submission environment
+#$ -cwd #start job in submission directory
+#$ -N prune.sh # job name, anything you want
+#$ -l h_rt=24:00:00
+#$ -M thenicolakriefall@gmail.com
+#$ -m be
+#prune_graph.pl --in_file don.LD --max_kb_dist 100 --min_weight 0.5 --out don_unlinked_100kb.id
+
+#may play around with max_kb_dist? currently, defaults
+#exit nano
+qsub prune.sh
+#generated long list of sites that aren't linked, ~200 were linked that the program took out - took them out of vcf file:
+
+module load vcftools
+#output from 'unlinked' output had ':' in between chromosome & position, vcftools requires a tab to separate chromosome from position
+sed 's/:/\t/' don_unlinked_100kb.id > unlinked_reformat
+vcftools --vcf donresult.vcf --out don_unlinked --positions unlinked_reformat
+#should leave you with a new vcf without linked sites
+#I re-did analyses without them but nothing changed
+
+#--------------- other things from Misha
+
+# ANDSD => SFS for demographic analysis
+
+# make separate files listing bams for each population (without clones and replicates)
+# assume we have two populations, pop0 and pop1, 20 individuals each, with corresponding bams listed in pop0.bams and pop1.bams
+
+# generating list of filtered SNP sites for SFS production (note: no filters that distort allele frequency!):
+# sb - strand bias filter; only use for 2bRAD, GBS or WGS (not for ddRAD or RADseq)
+# hetbias - detects weird heterozygotes because they have unequal representation of alleles 
+# set minInd to 80-90% of all your individuals (depending on the results from quality control step)
+
+nano sfs.sh
+#!/bin/bash -l
+#$ -V # inherit the submission environment
+#$ -cwd #start job in submission directory
+#$ -N sfs.sh # job name, anything you want
+#$ -l h_rt=24:00:00
+#$ -M thenicolakriefall@gmail.com
+#$ -m be
+GENOME_REF="Amil.fasta"
+FILTERS="-uniqueOnly 1 -remove_bads 1 -skipTriallelic 1 -minMapQ 20 -minQ 25 -doHWE 1 -sb_pval 1e-5 -hetbias_pval 1e-5 -minInd 91 -hwe_pval 1e-5"
+TODO="-doMajorMinor 1 -doSaf 1 -doMaf 1 -dosnpstat 1 -doPost 2 -doGeno 11"
+angsd -b bams_no7 -GL 1 -anc $GENOME_REF $FILTERS $TODO -P 1 -out all.freq
+
+# extracting and indexing list of sites to make SFS from 
+# filtering out sites where heterozygote counts comprise more than 50% of all counts (likely lumped paralogs)
+zcat all.freq.snpStat.gz | awk '($3+$4+$5+$6)>0' | awk '($12+$13+$14+$15)/($3+$4+$5+$6)<0.5' | cut -f 1,2  > sites2do
+angsd sites index sites2do
+
+# estimating site frequency likelihoods for each population, also saving allele frequencies (for genome scan) 
+nano sfs_pops.sh
+#!/bin/bash -l
+#$ -V # inherit the submission environment
+#$ -cwd #start job in submission directory
+#$ -N sfs_pops.sh # job name, anything you want
+#$ -l h_rt=24:00:00
+#$ -M thenicolakriefall@gmail.com
+#$ -m be
+GENOME_REF="./Amil.fasta"
+TODO="-doSaf 1 -doMajorMinor 1 -doMaf 1 -doPost 1 -anc $GENOME_REF -ref $GENOME_REF
+angsd -sites sites2do -b bams_mnwi -GL 1 -P 1 $TODO -out pop0
+angsd -sites sites2do -b bams_mnwo -GL 1 -P 1 $TODO -out pop1
+angsd -sites sites2do -b bams_msei -GL 1 -P 1 $TODO -out pop2
+angsd -sites sites2do -b bams_mseo -GL 1 -P 1 $TODO -out pop3
+angsd -sites sites2do -b bams_to -GL 1 -P 1 $TODO -out pop4
+angsd -sites sites2do -b bams_ti -GL 1 -P 1 $TODO -out pop5
+
+#exit
+qsub sfs_pops.sh
+
+# generating per-population SFS
+#realSFS pop0.saf.idx >pop0.sfs
+#realSFS pop1.saf.idx >pop1.sfs
+
+#=========== Fst: global, per site, and per gene
+
+# writing down 2d-SFS priors
+realSFS pop0.saf.idx pop1.saf.idx -P 24 > p01.sfs ; realSFS fst index pop0.saf.idx pop1.saf.idx -sfs p01.sfs -fstout p01 
+
+# global Fst between populations
+realSFS fst stats p01.fst.idx
+
+# per-site Fst
+realSFS fst print p01.fst.idx > p01.fst
+
+# extracting gene regions out of genome annotations file (gff3)
+cat mygenome.gff3 | awk ' $3=="gene"' | cut -f 1,4,5,10 >gene_regions.tab
+
+# extending to plus-minus 2 kb around the gene
+awk '{print $1"\t"$2-2000"\t"$3+2000"\t"$4}' gene_regions.tab '> genes.txt
+
+# use fstPerGene.R to compute per-gene Fst
+
+#####	prepare the fst for easy window analysis etc 	#########
+
+realSFS pop0.saf.idx pop1.saf.idx > p01.ml
+realSFS fst index pop0.saf.idx pop1.saf.idx -sfs p01.ml -fstout p01comp
+
+
+#### calculating theta #### 
+
+echo "realSFS STJ_freq_fold.saf.idx > stj.sfs" > sfs
+ls5_launcher_creator.py -j sfs -n sfs -l sfs_job -t 1:00:00 -w 1 -A tagmap 
+
+echo "realSFS STA_freq_fold.saf.idx > sta.sfs" > sfs
+ls5_launcher_creator.py -j sfs -n sfs -l sfs_job -t 1:00:00 -w 1 -A tagmap 
+
+
+## if your reference genome is not the same as your study species, then use -anc for the genome ref 
+
+TODO="-doSaf 1 -doThetas 1 -fold 1" 
+echo "angsd -b ST_J -out STJ_theta -pest stj.sfs -anc $GENOME_REF $TODO -GL 1"> theta
+ls5_launcher_creator.py -j theta -n theta -l thetajob -t 1:00:00 -w 1 -A tagmap 
+
+TODO="-doSaf 1 -doThetas 1 -fold 1" 
+echo "angsd -b ST_A -out STA_theta -pest sta.sfs -anc $GENOME_REF $TODO -GL 1"> theta
+ls5_launcher_creator.py -j theta -n theta -l thetajob -t 1:00:00 -w 1 -A tagmap 
+
+ 
+#global theta estimate for every Chromosome/scaffold
+#thetaStat is an angsd subprogram, so it should be installed already with angsd 
+
+thetaStat do_stat STA_theta.thetas.idx
+
+## sliding window analysis of theta with 50000 kb window with 10000 kb step size if interested in regions of high/low diversity
+
+thetaStat do_stat STJ_theta.thetas.idx -win 50000 -step 10000  -outnames STJ.theta
+thetaStat do_stat STA_theta.thetas.idx -win 50000 -step 10000  -outnames STA.theta
+
+
+#also this:
+#-----------------------
+# Computing Fst between pops
+
+# create lists of Orpheus (starting with O) and Keppels (K) samples, names O.pop and K.pop
+# based on names of .trim files that are now in your rad directory, using ls and perl -pe commands
+ls K*.trim | perl -pe 's/\..+//' | perl -pe 's/2b_//g' >K.pop
+ls O*.trim | perl -pe 's/\..+//' >O.pop
+
+vcftools --vcf maxaf.vcf --weir-fst-pop K.pop --weir-fst-pop O.pop
+# Weir and Cockerham weighted Fst estimate: 0.01
