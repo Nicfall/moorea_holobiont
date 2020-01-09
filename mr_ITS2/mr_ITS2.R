@@ -285,7 +285,6 @@ write.csv(seqtab.nochim, file="mrits2_seqtab.nochim.csv")
 write.csv(taxa, file="~/Desktop/its2/mrits2_taxa.csv")
 
 #### Reading in prior data files ####
-#If you need to read in previously saved datafiles
 setwd("~/moorea_holobiont/mr_ITS2")
 seqtab.nochim <- readRDS("mrits2_seqtab.nochim.rds")
 taxa <- readRDS("mrits2_taxa.rds")
@@ -330,34 +329,49 @@ ps_no87
 #Shannon:Shannon entropy quantifies the uncertainty (entropy or degree of surprise) associated with correctly predicting which letter will be the next in a diverse string. Based on the weighted geometric mean of the proportional abundances of the types, and equals the logarithm of true diversity. When all types in the dataset of interest are equally common, the Shannon index hence takes the value ln(actual # of types). The more unequal the abundances of the types, the smaller the corresponding Shannon entropy. If practically all abundance is concentrated to one type, and the other types are very rare (even if there are many of them), Shannon entropy approaches zero. When there is only one type in the dataset, Shannon entropy exactly equals zero (there is no uncertainty in predicting the type of the next randomly chosen entity).
 #Simpson:equals the probability that two entities taken at random from the dataset of interest represent the same type. equal to the weighted arithmetic mean of the proportional abundances pi of the types of interest, with the proportional abundances themselves being used as the weights. Since mean proportional abundance of the types increases with decreasing number of types and increasing abundance of the most abundant type, λ obtains small values in datasets of high diversity and large values in datasets of low diversity. This is counterintuitive behavior for a diversity index, so often such transformations of λ that increase with increasing diversity have been used instead. The most popular of such indices have been the inverse Simpson index (1/λ) and the Gini–Simpson index (1 − λ).
 
-#getting rid of NAs
-ps_no87 <- subset_taxa(ps_no87, Class!="NA")
-
 plot_richness(ps_no87, x="site", measures=c("Shannon", "Simpson"), color="zone") + theme_bw()
 
-##if I had more missing data:
-#ps_pruned <- prune_taxa(taxa_sums(ps) > 0, ps)
+df.div <- data.frame(estimate_richness(ps_no87, split=TRUE, measures =c("Shannon","InvSimpson")))
+df.div
 
-df <- data.frame(estimate_richness(ps_no87, split=TRUE, measures =c("Shannon","InvSimpson")))
-df
+df.div$site <- sam$site
+df.div$zone <- sam$zone
+df.div$site_zone <- sam$site_zone
 
-df$site <- sam$site
-df$zone <- sam$zone
-df$site_zone <- sam$site_zone
-
-write.csv(df,file="~/Desktop/mrits/mrits_diversity.csv") #saving
-df <- read.csv("~/Desktop/mrits/mrits_diversity.csv") #reading back in 
+write.csv(df.div,file="~/moorea_holobiont/mr_ITS2/mrits_diversity.csv") #saving
+df.div <- read.csv("~/Desktop/mrits/mrits_diversity.csv") #reading back in 
 
 ##checking out how diversity works with variables
-df.size <- read.csv("mr_size.csv",header=TRUE)
-df$coral_id <- row.names(df)
-
-mergeddf <- merge(df, df.size, by="coral_id", sort=FALSE)
-plot(Shannon~size,data=mergeddf)
-shapiro.test(mergeddf$Shannon)
-shapiro.test(mergeddf$size)
-kruskal.test(Shannon~size,data=mergeddf)
+#df.size <- read.csv("mr_size.csv",header=TRUE)
+#df.div$coral_id <- row.names(df.div)
+# 
+# mergeddf <- merge(df.div, df.size, by="coral_id", sort=FALSE)
+# plot(Shannon~size,data=mergeddf)
+# shapiro.test(mergeddf$Shannon)
+# shapiro.test(mergeddf$size)
+# kruskal.test(Shannon~size,data=mergeddf)
 #no significant relationship between coral size & diversity! interesting
+
+## now by sample host heterozygosity
+df.het <- read.table("~/moorea_holobiont/mr_2brad/part5_het_out.txt") #read in data
+df.het$het <- df.het$V3/(df.het$V2+df.het$V3) #heterozygosity calculations
+df.het$V1 <- sub("TO","TNWO",df.het$V1) #just renaming some sites
+df.het$V1 <- sub("TI","TNWI",df.het$V1) #just renaming some sites
+df.het$site <- substr(df.het$V1, 0, 4)
+df.het$site <- as.factor(df.het$site)
+str(df.het)
+
+#just getting sample names on the same page
+df.het$V1 <- sub(".trim.bt2.bam.out.saf.idx.ml","",df.het$V1)
+df.het$coral_id <- substr(df.het$V1, 6, 8)
+df.div$coral_id <- row.names(df.div)
+
+mergeddf2 <- merge(df.div, df.het, by="coral_id", sort=TRUE)
+# plot(Shannon~size,data=mergeddf)
+# shapiro.test(mergeddf$Shannon)
+# shapiro.test(mergeddf$size)
+# kruskal.test(Shannon~size,data=mergeddf)
+
 
 df$counts <- sample_sums(ps_no87)
 plot(counts~site_zone,data=df)
