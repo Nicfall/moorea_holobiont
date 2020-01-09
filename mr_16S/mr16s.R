@@ -495,6 +495,7 @@ seq2 <- purgeOutliers(seq.rare,count.columns=3:2278,sampleZcut=-2.5,otu.cut=0.00
 
 row.names(seq2) <- seq2$sample #setting my sample names as row names so I can remove the sample name column
 seq2 <- seq2[,3:52] #now removing sample name columns
+row.names(samdf) <- samdf$id
 
 ps.rare <- phyloseq(otu_table(seq2, taxa_are_rows=FALSE), 
                     sample_data(samdf), 
@@ -664,7 +665,7 @@ res = results(stat.t, cooksCutoff = FALSE)
 alpha = 0.05
 sigtab.t = res[which(res$padj < alpha), ]
 sigtab.t = cbind(as(sigtab.t, "data.frame"), as(tax_table(ps.t)[rownames(sigtab.t), ], "matrix"))
-dim(sigtab)
+dim(sigtab.t)
 write.csv(sigtab.t,"sigtab.tah.csv")
 #8 for tahiti finally
 row.names.remove <- c("sq3") #doesn't even blast to bacteria
@@ -685,10 +686,18 @@ x = tapply(sigtab.mnw$log2FoldChange, sigtab.mnw$class, function(x) max(x))
 x = sort(x, TRUE)
 sigtab.mnw$class = factor(as.character(sigtab.mnw$class), levels=names(x))
 quartz()
-gg.mnw <- ggplot(sigtab.mnw, aes(x=class, y=log2FoldChange,color=class)) + 
+
+sigtab.mnw$family <- sub("Xanthobacteraceae","Xanthobacteraceae         ",sigtab.mnw$family)
+#gg.mnw <- ggplot(sigtab.mnw, aes(x=class, y=log2FoldChange,color=class)) + 
   geom_point(size=6) +
   theme(axis.text.x = element_text(angle=-45,hjust = 0, vjust=0.5),legend.position="none")+
   xlab("Class")+
+  ylab("Log2 fold change")+
+  ggtitle("Moorea NW")#+
+gg.mnw <- ggplot(sigtab.mnw, aes(x=family, y=log2FoldChange,color=family)) + 
+  geom_point(size=6) +
+  theme(axis.text.x = element_text(angle=-90,hjust = 0, vjust=0.5), text=element_text(family="Gill Sans MT"),legend.position="none")+
+  xlab("Family")+
   ylab("Log2 fold change")+
   ggtitle("Moorea NW")#+
 #  scale_color_manual(name="Reef zone",aesthetics = "color",values=c("#ED7953FF","#8405A7FF"),labels=c("Backreef","Forereef"))
@@ -704,11 +713,19 @@ gg.mse <- ggplot(sigtab.mse, aes(x=class, y=log2FoldChange,color=class)) +
   xlab("Class")+
   ggtitle("Moorea SE")+
   ylab("Log2 fold change")
+gg.mse <- ggplot(sigtab.mse, aes(x=family, y=log2FoldChange,color=family)) + 
+  geom_point(size=6) +
+  theme(axis.text.x = element_text(angle=-90,hjust = 0, vjust=0.5),text=element_text(family="Gill Sans MT"),legend.position="none")+
+  xlab("Family")+
+  ggtitle("Moorea SE")+
+  ylab("Log2 fold change")
 gg.mse
 
 x = tapply(sigtab.t$log2FoldChange, sigtab.t$class, function(x) max(x))
 x = sort(x, TRUE)
 sigtab.t$class = factor(as.character(sigtab.t$class), levels=names(x))
+
+sub()
 
 gg.t <- ggplot(sigtab.t, aes(x=class, y=log2FoldChange,color=class)) + 
   geom_point(size=6) +
@@ -716,9 +733,16 @@ gg.t <- ggplot(sigtab.t, aes(x=class, y=log2FoldChange,color=class)) +
   xlab("Class")+
   ggtitle("Tahiti NW")+
   ylab("Log2 fold change")
+gg.t <- ggplot(sigtab.t, aes(x=family, y=log2FoldChange,color=family)) + 
+  geom_point(size=6) +
+  theme(axis.text.x = element_text(angle=-90,hjust = 0, vjust=0.5),text=element_text(family="Gill Sans MT"),legend.position="none")+
+  xlab("Family")+
+  ggtitle("Tahiti NW")+
+  ylab("Log2 fold change")
 gg.t
 
 quartz()
+library(ggpubr)
 ggarrange(gg.mnw,gg.mse,gg.t,nrow=1)
 
 goodtaxa = c("sq4","sq16","sq26")
@@ -771,6 +795,35 @@ ps.top3 <- transform_sample_counts(ps.rare2, function(OTU) OTU/sum(OTU))
 ps.top3 <- prune_taxa(top3, ps.top3)
 quartz()
 plot_bar(ps.top3, x="newname",fill="class") #+ facet_wrap(~ColonyID+Timepoint, scales="free_x")
+
+#summed bar plot
+  ps <- tax_glom(ps.rare, "family")
+  ps0 <- transform_sample_counts(ps, function(x) x / sum(x))
+  ps1 <- merge_samples(ps0, "site_zone")
+  ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+
+ps.melt <- psmelt(ps2)
+  
+  ps.melt$site_zone <- gsub(1,"MNW-B",ps.melt$site_zone)
+  ps.melt$site_zone <- gsub(2,"MNW-F",ps.melt$site_zone)
+  ps.melt$site_zone <- gsub(3,"MSE-B",ps.melt$site_zone)
+  ps.melt$site_zone <- gsub(4,"MSE-F",ps.melt$site_zone)
+  ps.melt$site_zone <- gsub(5,"TNW-B",ps.melt$site_zone)
+  ps.melt$site_zone <- gsub(6,"TNW-F",ps.melt$site_zone)
+  
+ggplot(ps.melt,aes(x=site_zone,y=Abundance,fill=family))+
+    geom_bar(stat="identity", colour="black")+
+    theme_cowplot()+
+    theme(axis.text.x = element_text(angle=0),text=element_text(family="Gill Sans MT"))+
+  xlab('Site')+
+  labs(fill="Family")
+  
+quartz()
+tb2 <- tb%>%
+  group_by(site_zone,family)%>%
+  summarize_at("Abundance",sum)
+plot_bar(ps.all, x="site_zone",fill="family") #+ facet_wrap(~ColonyID+Timepoint, scales="free_x")
+  
 
 #~############################~#
 ##### output 'OTU' table #######

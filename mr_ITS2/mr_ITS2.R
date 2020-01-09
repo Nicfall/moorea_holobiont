@@ -315,8 +315,8 @@ ps
 seq <- read.csv("mrits2_seqtab.nochim_no87.csv")
 sam <- read.csv("mrits_sampledata_no87.csv")
 row.names(sam) <- sam$Sample
-row.names(seq) <- seq$X
-seq2 <- seq[,2:119] #now removing sample name column
+row.names(seq) <- seq$sample
+seq2 <- seq[,3:119] #now removing sample name column
 
 ps_no87 <- phyloseq(otu_table(seq2, taxa_are_rows=FALSE), 
                     sample_data(sam), 
@@ -448,6 +448,17 @@ ex1 <- prune_taxa(top10, ps.newname)
 ps.c3k <- subset_taxa(ex1, Class="C3k")
 plot_bar(ex1, "site_zone", "Abundance")
 #more some c3k things on the forereef
+
+ps <- tax_glom(ps_no87, "Class")
+ps0 <- transform_sample_counts(ps, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "site_zone")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+plot_bar(ps2, fill="Class")
+
+p=plot_bar(ps_no87,x="site_zone",y="Abundance",fill="Class")
+#getting rid of OTU lines
+p = plot_bar(ent10, "Genus", fill="Genus", facet_grid=SeqTech~Enterotype)
+p + geom_bar(aes(color=Genus, fill=Genus), stat="identity", position="stack")
 
 #just checking out normalized stuff 
 plot_richness(ps.norm, x="site", measures=c("Shannon", "Simpson"), color="in_off") + theme_bw()
@@ -846,7 +857,66 @@ summary(curated_result)
 alldat<-cbind(alldat[,1:6],data.frame(t(curated_result$curated_table)))
 
 #Continue on to your favorite analysis
-write.csv(alldat,"alldat2.csv")
+write.csv(alldat,"~/moorea_holobiont/mr_ITS2/lulu_output.csv")
+
+#trimming low abundance ones using mcmc.otu
+library("MCMC.OTU")
+
+#had to add a first column, blank title with just 1-96 listed
+lulu.mc <- read.csv("~/moorea_holobiont/mr_ITS2/lulu.mcmc.csv")
+
+goods2=purgeOutliers(lulu.mc,count.columns=8:15,otu.cut=0.001,zero.cut=0.03)
+goods2
+#after lulu & mcmc.otu, only keeps 1, 3, 6, 7, 12
+less.taxa <- taxa[c(1,3,6,7,12),]
+row.names(less.taxa) <- c("sq1","sq3","sq6","sq7","sq12")
+
+counts.less <- goods2[,c(1,8:12)]
+data.less <- goods2[,1:7]
+row.names(counts.less) <- goods2$sample
+row.names(data.less) <- goods2$sample
+
+ps.wayless <- phyloseq(otu_table(counts.less, taxa_are_rows=FALSE), 
+                             sample_data(data.less), 
+                             tax_table(less.taxa))
+
+plot_bar(ps.all,x="site_zone",y="Abundance",fill="Class")
+
+library(dplyr)
+ps.all <- transform_sample_counts(ps.wayless, function(OTU) OTU/sum(OTU))
+tb <- psmelt(ps.all)%>%
+  filter(!is.na(Abundance))%>%
+  group_by(site_zone,OTU)%>%
+  summarize_at("Abundance",mean)
+
+tb$sym <- gsub("sq12","Clade C",tb$OTU)
+tb$sym <- gsub("sq1","C3k.1",tb$sym)
+tb$sym <- gsub("sq3","C3k.2",tb$sym)
+tb$sym <- gsub("sq6","C3k.3",tb$sym)
+tb$sym <- gsub("sq7","A1",tb$sym)
+
+tb$site_zone <- gsub("MNWI","MNW-B",tb$site_zone)
+tb$site_zone <- gsub("MNWO","MNW-F",tb$site_zone)
+tb$site_zone <- gsub("MSEI","MSE-B",tb$site_zone)
+tb$site_zone <- gsub("MSEO","MSE-F",tb$site_zone)
+tb$site_zone <- gsub("TI","TNW-B",tb$site_zone)
+tb$site_zone <- gsub("TO","TNW-F",tb$site_zone)
+
+#library(cowplot)
+tb$sym <- factor(tb$sym, levels=c("C3k.1","C3k.2","C3k.3","Clade C","A1"))
+quartz()
+ggplot(tb,aes(x=site_zone,y=Abundance,fill=sym))+
+  geom_bar(stat="identity", colour="black")+
+  theme_cowplot()+
+  theme(text=element_text(family="Gill Sans MT"))+
+  xlab('Site')+
+  scale_fill_manual(name="Sym.",values=c("seagreen2","seagreen3","seagreen4","green","blue"))
+# Kingdom        Phylum     Class 
+# sq7  "Symbiodinium" " Clade A" " A1" 
+# sq1  "Symbiodinium" " Clade C" " C3k"
+# sq12 "Symbiodinium" " Clade C" NA    
+# sq3  "Symbiodinium" " Clade C" " C3k"
+# sq6  "Symbiodinium" " Clade C" " C3k"
 
 #now redoing deseq results with lulu output
 row.names(taxa) <- ids
