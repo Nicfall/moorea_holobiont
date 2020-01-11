@@ -338,8 +338,8 @@ df.div$site <- sam$site
 df.div$zone <- sam$zone
 df.div$site_zone <- sam$site_zone
 
-write.csv(df.div,file="~/moorea_holobiont/mr_ITS2/mrits_diversity.csv") #saving
-df.div <- read.csv("~/Desktop/mrits/mrits_diversity.csv") #reading back in 
+#write.csv(df.div,file="~/moorea_holobiont/mr_ITS2/mrits_diversity.csv") #saving
+#df.div <- read.csv("~/Desktop/mrits/mrits_diversity.csv") #reading back in 
 
 ##checking out how diversity works with variables
 #df.size <- read.csv("mr_size.csv",header=TRUE)
@@ -352,7 +352,7 @@ df.div <- read.csv("~/Desktop/mrits/mrits_diversity.csv") #reading back in
 # kruskal.test(Shannon~size,data=mergeddf)
 #no significant relationship between coral size & diversity! interesting
 
-## now by sample host heterozygosity
+## now by sample host heterozygosity 
 df.het <- read.table("~/moorea_holobiont/mr_2brad/part5_het_out.txt") #read in data
 df.het$het <- df.het$V3/(df.het$V2+df.het$V3) #heterozygosity calculations
 df.het$V1 <- sub("TO","TNWO",df.het$V1) #just renaming some sites
@@ -366,17 +366,18 @@ df.het$V1 <- sub(".trim.bt2.bam.out.saf.idx.ml","",df.het$V1)
 df.het$coral_id <- substr(df.het$V1, 6, 8)
 df.div$coral_id <- row.names(df.div)
 
+#### *finish plot here ####
 mergeddf2 <- merge(df.div, df.het, by="coral_id", sort=TRUE)
 # plot(Shannon~size,data=mergeddf)
 # shapiro.test(mergeddf$Shannon)
 # shapiro.test(mergeddf$size)
 # kruskal.test(Shannon~size,data=mergeddf)
 
-
-df$counts <- sample_sums(ps_no87)
-plot(counts~site_zone,data=df)
-lm1 <- lm(Shannon~counts,data=df)
-summary(lm1)
+#diversity by counts
+# df$counts <- sample_sums(ps_no87)
+# plot(counts~site_zone,data=df)
+# lm1 <- lm(Shannon~counts,data=df)
+# summary(lm1)
 #significant 
 
 library(ggplot2)
@@ -389,8 +390,8 @@ library(ggpubr)
 #font_import(paths = "/Library/Fonts/")
 loadfonts()
 
-diver.sh <- summarySE(data=df,measurevar=c("Shannon"),groupvars=c("zone","site"))
-diver.si <- summarySE(data=df,measurevar=c("InvSimpson"),groupvars=c("zone","site"))
+diver.sh <- summarySE(data=df.div,measurevar=c("Shannon"),groupvars=c("zone","site"))
+diver.si <- summarySE(data=df.div,measurevar=c("InvSimpson"),groupvars=c("zone","site"))
 
 quartz()
 gg.sh <- ggplot(diver.sh, aes(x=site, y=Shannon,color=zone,fill=zone,shape=zone))+
@@ -403,6 +404,7 @@ gg.sh <- ggplot(diver.sh, aes(x=site, y=Shannon,color=zone,fill=zone,shape=zone)
   theme(text=element_text(family="Gill Sans MT"))+
   scale_colour_manual(values=c("#ED7953FF","#8405A7FF"))+
   guides(fill=guide_legend(title="Reef zone"),color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
+gg.sh
 
 gg.si <- ggplot(diver.si, aes(x=site, y=InvSimpson,color=zone,fill=zone,shape=zone))+
   geom_errorbar(aes(ymin=InvSimpson-se,ymax=InvSimpson+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
@@ -414,8 +416,6 @@ gg.si <- ggplot(diver.si, aes(x=site, y=InvSimpson,color=zone,fill=zone,shape=zo
   theme(text=element_text(family="Gill Sans MT"))+
   scale_colour_manual(values=c("#ED7953FF","#8405A7FF"))+
   guides(fill=guide_legend(title="Reef zone"),color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
-
-gg.sh
 gg.si
 
 quartz()
@@ -440,40 +440,38 @@ wilcox.test(Shannon~zone,data=tah)
 wilcox.test(InvSimpson~zone,data=tah)
 #p = 0.019
 
-#### move below ####
+#### *move below ####
 
-#renaming samples so i can see which pop they're from in bar plot
-sam$newname <- paste(sam$site_zone,sam$Sample,sep="_")
-row.names(sam) <- sam$newname
-row.names(seq2) <- sam$newname
-#row.names(taxa) <- ids
+# #renaming samples so i can see which pop they're from in bar plot
+# sam$newname <- paste(sam$site_zone,sam$Sample,sep="_")
+# row.names(sam) <- sam$newname
+# row.names(seq2) <- sam$newname
+# #row.names(taxa) <- ids
+# 
+# ps.newname <- phyloseq(otu_table(seq2, taxa_are_rows=FALSE), 
+#                     sample_data(sam), 
+#                     tax_table(taxa))
+# ps.newname
 
-ps.newname <- phyloseq(otu_table(seq2, taxa_are_rows=FALSE), 
-                    sample_data(sam), 
-                    tax_table(taxa))
-ps.newname
+#### Bar plot - raw table ####
+top <- names(sort(taxa_sums(ps_no87), decreasing=TRUE))[1:30]
+ps.top <- transform_sample_counts(ps_no87, function(OTU) OTU/sum(OTU))
+ps.top <- prune_taxa(top, ps.top)
+plot_bar(ps.top, x="Sample",fill="Class") + facet_wrap(~zone, scales="free_x")
 
-top10 <- names(sort(taxa_sums(ps.newname), decreasing=TRUE))[2:2]
-ps.top3 <- transform_sample_counts(ps.newname, function(OTU) OTU/sum(OTU))
-ps.top3 <- prune_taxa(top3, ps.newname)
-plot_bar(ps.top3, x="Sample",fill="Class") #+ facet_wrap(~ColonyID+Timepoint, scales="free_x")
+bot <- names(sort(taxa_sums(ps_no87), decreasing=TRUE))[5:30]
+ps.bot <- transform_sample_counts(ps_no87, function(OTU) OTU/sum(OTU))
+ps.bot <- prune_taxa(bot, ps.bot)
+plot_bar(ps.bot, x="Sample",fill="Class") #+ facet_wrap(~ColonyID+Timepoint, scales="free_x")
 
-ex1 <- prune_taxa(top10, ps.newname)
-ps.c3k <- subset_taxa(ex1, Class="C3k")
-plot_bar(ex1, "site_zone", "Abundance")
-#more some c3k things on the forereef
-
-ps <- tax_glom(ps_no87, "Class")
-ps0 <- transform_sample_counts(ps, function(x) x / sum(x))
-ps1 <- merge_samples(ps0, "site_zone")
+#bar plot but without the lines between OTUs
+ps_glom <- tax_glom(ps_no87, "Class")
+ps0 <- transform_sample_counts(ps_glom, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Sample")
 ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
 plot_bar(ps2, fill="Class")
 
-p=plot_bar(ps_no87,x="site_zone",y="Abundance",fill="Class")
-#getting rid of OTU lines
-p = plot_bar(ent10, "Genus", fill="Genus", facet_grid=SeqTech~Enterotype)
-p + geom_bar(aes(color=Genus, fill=Genus), stat="identity", position="stack")
-
+#### *move to norm section ####
 #just checking out normalized stuff 
 plot_richness(ps.norm, x="site", measures=c("Shannon", "Simpson"), color="in_off") + theme_bw()
 
@@ -487,6 +485,7 @@ ggplot(df.norm,aes(x=site,y=Shannon,color=zone))+
 #checking if my variables have sig different sample reads before normalizing
 sam$new <- sample_sums(ps_no87)
 plot(new~site_zone,data=sam) #MSEO has way more than everyone else
+shapiro.test(sam$new)
 a1 <- aov(new~site_zone,data=sam)
 summary(a1)
 plot(new~island,data=sam) #even
