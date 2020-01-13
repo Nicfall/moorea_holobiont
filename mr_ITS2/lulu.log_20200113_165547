@@ -1,0 +1,5204 @@
+
+####processing: sq1 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq115 
+---hits: sq96 
+---hits: sq92 
+---hits: sq88 
+---hits: sq76 
+---hits: sq72 
+---hits: sq70 
+---hits: sq65 
+---hits: sq62 
+---hits: sq59 
+---hits: sq50 
+---hits: sq49 
+---hits: sq45 
+---hits: sq44 
+---hits: sq30 
+---hits: sq29 
+---hits: sq23 
+---hits: sq20 
+---hits: sq17 
+---hits: sq14 
+---hits: sq11 
+---hits: sq8 
+---hits: sq42 
+---hits: sq34 
+---hits: sq82
+---potential parent: 
+No parent found!
+
+####processing: sq2 #####
+---hits: sq101 
+---hits: sq100 
+---hits: sq94 
+---hits: sq112 
+---hits: sq104 
+---hits: sq57 
+---hits: sq56 
+---hits: sq51 
+---hits: sq47 
+---hits: sq39 
+---hits: sq37 
+---hits: sq35 
+---hits: sq111 
+---hits: sq99 
+---hits: sq84 
+---hits: sq48 
+---hits: sq26 
+---hits: sq25 
+---hits: sq64
+---potential parent: 
+No parent found!
+
+####processing: sq3 #####
+---hits: sq117 
+---hits: sq102 
+---hits: sq95 
+---hits: sq116 
+---hits: sq40 
+---hits: sq36 
+---hits: sq15 
+---hits: sq114 
+---hits: sq108 
+---hits: sq85 
+---hits: sq58 
+---hits: sq4 
+---hits: sq21 
+---hits: sq118 
+---hits: sq82
+---potential parent: 
+No parent found!
+
+####processing: sq4 #####
+---hits: sq114 
+---hits: sq108 
+---hits: sq115 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq50 
+---hits: sq44 
+---hits: sq23 
+---hits: sq20 
+---hits: sq14 
+---hits: sq11 
+---hits: sq8 
+---hits: sq1 
+---hits: sq61 
+---hits: sq117 
+---hits: sq107 
+---hits: sq102 
+---hits: sq98 
+---hits: sq95 
+---hits: sq91 
+---hits: sq78 
+---hits: sq74 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq43 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq3 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82 
+---hits: sq118 
+---hits: sq21
+---potential parent: sq1 
+---potential parent: sq3
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 2.6272040302267 which is OK!
+SETTING sq4 to be an ERROR of sq1
+
+------checking: sq3
+####processing: sq21 #####
+---hits: sq118 
+---hits: sq117 
+---hits: sq102 
+---hits: sq95 
+---hits: sq3 
+---hits: sq82 
+---hits: sq116 
+---hits: sq85 
+---hits: sq40 
+---hits: sq36 
+---hits: sq15 
+---hits: sq114 
+---hits: sq108 
+---hits: sq58 
+---hits: sq50 
+---hits: sq20 
+---hits: sq4
+---potential parent: sq3 
+---potential parent: sq4
+------checking: sq3
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 12.94 which is OK!
+SETTING sq21 to be an ERROR of sq3
+
+------checking: sq4
+####processing: sq12 #####
+---hits: sq110 
+---hits: sq77 
+---hits: sq113
+---potential parent: 
+No parent found!
+
+####processing: sq8 #####
+---hits: sq114 
+---hits: sq108 
+---hits: sq4 
+---hits: sq115 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq50 
+---hits: sq44 
+---hits: sq23 
+---hits: sq20 
+---hits: sq14 
+---hits: sq11 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 7.82621951219512 which is OK!
+SETTING sq8 to be an ERROR of sq1
+
+------checking: sq4
+####processing: sq5 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq49 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq4 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 5.96595744680851 which is OK!
+SETTING sq5 to be an ERROR of sq1
+
+------checking: sq4
+####processing: sq11 #####
+---hits: sq114 
+---hits: sq108 
+---hits: sq74 
+---hits: sq10 
+---hits: sq4 
+---hits: sq115 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq65 
+---hits: sq61 
+---hits: sq50 
+---hits: sq44 
+---hits: sq23 
+---hits: sq22 
+---hits: sq20 
+---hits: sq14 
+---hits: sq8 
+---hits: sq1 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq8
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 13.8756756756757 which is OK!
+SETTING sq11 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq8
+####processing: sq26 #####
+---hits: sq111 
+---hits: sq101 
+---hits: sq100 
+---hits: sq94 
+---hits: sq2
+---potential parent: sq2
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 12.8823529411765 which is OK!
+SETTING sq26 to be an ERROR of sq2
+
+####processing: sq25 #####
+---hits: sq18 
+---hits: sq101 
+---hits: sq100 
+---hits: sq94 
+---hits: sq56 
+---hits: sq32 
+---hits: sq2
+---potential parent: sq2
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 7.95238095238095 which is OK!
+SETTING sq25 to be an ERROR of sq2
+
+####processing: sq14 #####
+---hits: sq115 
+---hits: sq114 
+---hits: sq108 
+---hits: sq43 
+---hits: sq4 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq50 
+---hits: sq44 
+---hits: sq23 
+---hits: sq20 
+---hits: sq11 
+---hits: sq8 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq8 
+---potential parent: sq11
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 18.7372262773723 which is OK!
+SETTING sq14 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq8
+------checking: sq11
+####processing: sq15 #####
+---hits: sq116 
+---hits: sq117 
+---hits: sq102 
+---hits: sq95 
+---hits: sq3 
+---hits: sq40 
+---hits: sq36 
+---hits: sq21 
+---hits: sq118
+---potential parent: sq3 
+---potential parent: sq21
+------checking: sq3
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 5.64444444444444 which is OK!
+SETTING sq15 to be an ERROR of sq3
+
+------checking: sq21
+####processing: sq34 #####
+---hits: sq98 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq61 
+---hits: sq67 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq91 
+---hits: sq71 
+---hits: sq69 
+---hits: sq68 
+---hits: sq59 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq30 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq20 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq92 
+---hits: sq115 
+---hits: sq96 
+---hits: sq90 
+---hits: sq88 
+---hits: sq76 
+---hits: sq74 
+---hits: sq72 
+---hits: sq70 
+---hits: sq65 
+---hits: sq62 
+---hits: sq50 
+---hits: sq49 
+---hits: sq45 
+---hits: sq44 
+---hits: sq29 
+---hits: sq23 
+---hits: sq17 
+---hits: sq14 
+---hits: sq11 
+---hits: sq8 
+---hits: sq42 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq8 
+---potential parent: sq5 
+---potential parent: sq11 
+---potential parent: sq14
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 28.2857142857143 which is OK!
+SETTING sq34 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq8
+------checking: sq5
+------checking: sq11
+------checking: sq14
+####processing: sq20 #####
+---hits: sq114 
+---hits: sq108 
+---hits: sq4 
+---hits: sq115 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq74 
+---hits: sq59 
+---hits: sq50 
+---hits: sq44 
+---hits: sq23 
+---hits: sq14 
+---hits: sq11 
+---hits: sq8 
+---hits: sq1 
+---hits: sq61 
+---hits: sq30 
+---hits: sq34 
+---hits: sq82 
+---hits: sq118 
+---hits: sq21
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq21 
+---potential parent: sq8 
+---potential parent: sq11 
+---potential parent: sq14 
+---potential parent: sq34
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 19.3007518796992 which is OK!
+SETTING sq20 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq21
+------checking: sq8
+------checking: sq11
+------checking: sq14
+------checking: sq34
+####processing: sq16 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq34
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 9.98832684824903 which is OK!
+SETTING sq16 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq34
+####processing: sq10 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq65 
+---hits: sq61 
+---hits: sq22 
+---hits: sq11 
+---hits: sq1 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq74 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq19 
+---hits: sq16 
+---hits: sq13 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq42 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq11 
+---potential parent: sq34 
+---potential parent: sq16
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 12.672972972973 which is OK!
+SETTING sq10 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq11
+------checking: sq34
+------checking: sq16
+####processing: sq18 #####
+---hits: sq32 
+---hits: sq25
+---potential parent: sq25
+------checking: sq25
+------relative cooccurence: 0.2
+No parent found!
+
+####processing: sq29 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34
+---potential parent: sq1 
+---potential parent: sq34
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 34.4193548387097 which is OK!
+SETTING sq29 to be an ERROR of sq1
+
+------checking: sq34
+####processing: sq32 #####
+---hits: sq18 
+---hits: sq25
+---potential parent: sq25 
+---potential parent: sq18
+------checking: sq25
+------relative cooccurence: 0.576923076923077
+------checking: sq18
+------relative cooccurence: 0.423076923076923
+No parent found!
+
+####processing: sq23 #####
+---hits: sq114 
+---hits: sq108 
+---hits: sq78 
+---hits: sq4 
+---hits: sq115 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq50 
+---hits: sq44 
+---hits: sq20 
+---hits: sq14 
+---hits: sq11 
+---hits: sq8 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq8 
+---potential parent: sq11 
+---potential parent: sq14 
+---potential parent: sq34 
+---potential parent: sq20
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 22.1293103448276 which is OK!
+SETTING sq23 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq8
+------checking: sq11
+------checking: sq14
+------checking: sq34
+------checking: sq20
+####processing: sq9 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 4.27327327327327 which is OK!
+SETTING sq9 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq34
+------checking: sq16
+------checking: sq10
+####processing: sq22 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq61 
+---hits: sq10 
+---hits: sq1 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq65 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq19 
+---hits: sq16 
+---hits: sq13 
+---hits: sq11 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq42 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq11 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq9
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 20.9709302325581 which is OK!
+SETTING sq22 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq11
+------checking: sq34
+------checking: sq16
+------checking: sq10
+------checking: sq9
+####processing: sq6 #####
+---hits: sq107 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq72 
+---hits: sq70 
+---hits: sq62 
+---hits: sq17 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq98 
+---hits: sq91 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq53 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq9 
+---potential parent: sq22
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 0.546458141674333
+------checking: sq4
+------relative cooccurence: 0.833333333333333
+------checking: sq5
+------relative cooccurence: 0.111111111111111
+------checking: sq34
+------relative cooccurence: 0.611111111111111
+------checking: sq16
+------relative cooccurence: 0.444444444444444
+------checking: sq10
+------relative cooccurence: 0
+------checking: sq9
+------relative cooccurence: 0.0555555555555556
+------checking: sq22
+------relative cooccurence: 0
+No parent found!
+
+####processing: sq7 #####
+---hits: sq38 
+---hits: sq63
+---potential parent: 
+No parent found!
+
+####processing: sq66 #####
+---hits: sq105
+---potential parent: 
+No parent found!
+
+####processing: sq30 #####
+---hits: sq71 
+---hits: sq13 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq61 
+---hits: sq59 
+---hits: sq20 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq34 
+---potential parent: sq20
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 10.2771084337349 which is OK!
+SETTING sq30 to be an ERROR of sq1
+
+------checking: sq34
+------checking: sq20
+####processing: sq24 #####
+---hits: sq75 
+---hits: sq13
+---potential parent: 
+No parent found!
+
+####processing: sq28 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 15.9788519637462 which is OK!
+SETTING sq28 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq34
+------checking: sq16
+------checking: sq10
+------checking: sq9
+------checking: sq22
+------checking: sq6
+####processing: sq35 #####
+---hits: sq101 
+---hits: sq100 
+---hits: sq94 
+---hits: sq2 
+---hits: sq112 
+---hits: sq104 
+---hits: sq57 
+---hits: sq56 
+---hits: sq51 
+---hits: sq47 
+---hits: sq39 
+---hits: sq37
+---potential parent: sq2
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 13.575 which is OK!
+SETTING sq35 to be an ERROR of sq2
+
+####processing: sq13 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq30 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq71 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq24 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq30 
+---potential parent: sq24 
+---potential parent: sq28
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 4.19426751592357 which is OK!
+SETTING sq13 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq34
+------checking: sq16
+------checking: sq10
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq30
+------checking: sq24
+------checking: sq28
+####processing: sq27 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq76 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq28 
+---potential parent: sq13
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 9.20285714285714 which is OK!
+SETTING sq27 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq34
+------checking: sq16
+------checking: sq10
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq28
+------checking: sq13
+####processing: sq39 #####
+---hits: sq101 
+---hits: sq100 
+---hits: sq94 
+---hits: sq2 
+---hits: sq112 
+---hits: sq104 
+---hits: sq57 
+---hits: sq56 
+---hits: sq51 
+---hits: sq47 
+---hits: sq37 
+---hits: sq35 
+---hits: sq64
+---potential parent: sq2 
+---potential parent: sq35
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 17.5277777777778 which is OK!
+SETTING sq39 to be an ERROR of sq2
+
+------checking: sq35
+####processing: sq17 #####
+---hits: sq107 
+---hits: sq53 
+---hits: sq6 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq72 
+---hits: sq70 
+---hits: sq62 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34
+---potential parent: sq1 
+---potential parent: sq34 
+---potential parent: sq6
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 1.1858774662513 which is OK!
+SETTING sq17 to be an ERROR of sq1
+
+------checking: sq34
+------checking: sq6
+####processing: sq19 #####
+---hits: sq31 
+---hits: sq61 
+---hits: sq42 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq22 
+---hits: sq10 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq28 
+---hits: sq27 
+---hits: sq16 
+---hits: sq13 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq65 
+---hits: sq11 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq11 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 1.36276849642005 which is OK!
+SETTING sq19 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq11
+------checking: sq34
+------checking: sq16
+------checking: sq10
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq28
+------checking: sq13
+------checking: sq27
+####processing: sq37 #####
+---hits: sq101 
+---hits: sq100 
+---hits: sq94 
+---hits: sq2 
+---hits: sq112 
+---hits: sq104 
+---hits: sq57 
+---hits: sq56 
+---hits: sq51 
+---hits: sq47 
+---hits: sq39 
+---hits: sq35
+---potential parent: sq2 
+---potential parent: sq35 
+---potential parent: sq39
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 11.9029126213592 which is OK!
+SETTING sq37 to be an ERROR of sq2
+
+------checking: sq35
+------checking: sq39
+####processing: sq45 #####
+---hits: sq103 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq65 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34
+---potential parent: sq1 
+---potential parent: sq34
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 17.5692307692308 which is OK!
+SETTING sq45 to be an ERROR of sq1
+
+------checking: sq34
+####processing: sq40 #####
+---hits: sq117 
+---hits: sq102 
+---hits: sq95 
+---hits: sq3 
+---hits: sq116 
+---hits: sq36 
+---hits: sq15 
+---hits: sq21 
+---hits: sq118
+---potential parent: sq3 
+---potential parent: sq21 
+---potential parent: sq15
+------checking: sq3
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 12.5882352941176 which is OK!
+SETTING sq40 to be an ERROR of sq3
+
+------checking: sq21
+------checking: sq15
+####processing: sq44 #####
+---hits: sq114 
+---hits: sq108 
+---hits: sq4 
+---hits: sq115 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq50 
+---hits: sq23 
+---hits: sq20 
+---hits: sq14 
+---hits: sq11 
+---hits: sq8 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq8 
+---potential parent: sq11 
+---potential parent: sq14 
+---potential parent: sq34 
+---potential parent: sq20 
+---potential parent: sq23
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 76.6949152542373 which is OK!
+SETTING sq44 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq8
+------checking: sq11
+------checking: sq14
+------checking: sq34
+------checking: sq20
+------checking: sq23
+####processing: sq47 #####
+---hits: sq101 
+---hits: sq100 
+---hits: sq94 
+---hits: sq2 
+---hits: sq112 
+---hits: sq104 
+---hits: sq57 
+---hits: sq56 
+---hits: sq51 
+---hits: sq39 
+---hits: sq37 
+---hits: sq35
+---potential parent: sq2 
+---potential parent: sq35 
+---potential parent: sq39 
+---potential parent: sq37
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 18.4318181818182 which is OK!
+SETTING sq47 to be an ERROR of sq2
+
+------checking: sq35
+------checking: sq39
+------checking: sq37
+####processing: sq31 #####
+---hits: sq19 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq61 
+---hits: sq42 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq19
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 2.82673267326733 which is OK!
+SETTING sq31 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq34
+------checking: sq16
+------checking: sq10
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq19
+####processing: sq36 #####
+---hits: sq117 
+---hits: sq102 
+---hits: sq95 
+---hits: sq85 
+---hits: sq58 
+---hits: sq3 
+---hits: sq116 
+---hits: sq40 
+---hits: sq15 
+---hits: sq21 
+---hits: sq118
+---potential parent: sq3 
+---potential parent: sq21 
+---potential parent: sq15 
+---potential parent: sq40
+------checking: sq3
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 12.6307692307692 which is OK!
+SETTING sq36 to be an ERROR of sq3
+
+------checking: sq21
+------checking: sq15
+------checking: sq40
+####processing: sq48 #####
+---hits: sq101 
+---hits: sq100 
+---hits: sq94 
+---hits: sq2
+---potential parent: sq2
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 12.5072463768116 which is OK!
+SETTING sq48 to be an ERROR of sq2
+
+####processing: sq38 #####
+---hits: sq7
+---potential parent: sq7
+------checking: sq7
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 13.0434782608696 which is OK!
+SETTING sq38 to be an ERROR of sq7
+
+####processing: sq43 #####
+---hits: sq115 
+---hits: sq14 
+---hits: sq114 
+---hits: sq108 
+---hits: sq4 
+---hits: sq82
+---potential parent: sq4 
+---potential parent: sq14
+------checking: sq4
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 9.05555555555556 which is OK!
+SETTING sq43 to be an ERROR of sq1
+
+------checking: sq14
+####processing: sq50 #####
+---hits: sq114 
+---hits: sq108 
+---hits: sq4 
+---hits: sq115 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq44 
+---hits: sq23 
+---hits: sq20 
+---hits: sq14 
+---hits: sq11 
+---hits: sq8 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34 
+---hits: sq82 
+---hits: sq118 
+---hits: sq21
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq21 
+---potential parent: sq8 
+---potential parent: sq11 
+---potential parent: sq14 
+---potential parent: sq34 
+---potential parent: sq20 
+---potential parent: sq23 
+---potential parent: sq44
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 36.28 which is OK!
+SETTING sq50 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq21
+------checking: sq8
+------checking: sq11
+------checking: sq14
+------checking: sq34
+------checking: sq20
+------checking: sq23
+------checking: sq44
+####processing: sq51 #####
+---hits: sq101 
+---hits: sq100 
+---hits: sq94 
+---hits: sq2 
+---hits: sq112 
+---hits: sq104 
+---hits: sq57 
+---hits: sq56 
+---hits: sq47 
+---hits: sq39 
+---hits: sq37 
+---hits: sq35
+---potential parent: sq2 
+---potential parent: sq35 
+---potential parent: sq39 
+---potential parent: sq37 
+---potential parent: sq47
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 15.0566037735849 which is OK!
+SETTING sq51 to be an ERROR of sq2
+
+------checking: sq35
+------checking: sq39
+------checking: sq37
+------checking: sq47
+####processing: sq59 #####
+---hits: sq68 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq88 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq20 
+---hits: sq1 
+---hits: sq61 
+---hits: sq30 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq34 
+---potential parent: sq20 
+---potential parent: sq30 
+---potential parent: sq80 
+---potential parent: sq82
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 49.2 which is OK!
+SETTING sq59 to be an ERROR of sq1
+
+------checking: sq34
+------checking: sq20
+------checking: sq30
+------checking: sq80
+------checking: sq82
+####processing: sq80 #####
+---hits: sq89 
+---hits: sq107 
+---hits: sq97 
+---hits: sq93 
+---hits: sq86 
+---hits: sq98 
+---hits: sq91 
+---hits: sq117 
+---hits: sq115 
+---hits: sq103 
+---hits: sq92 
+---hits: sq90 
+---hits: sq102 
+---hits: sq87 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq88 
+---hits: sq76 
+---hits: sq72 
+---hits: sq70 
+---hits: sq65 
+---hits: sq62 
+---hits: sq59 
+---hits: sq50 
+---hits: sq49 
+---hits: sq45 
+---hits: sq44 
+---hits: sq30 
+---hits: sq29 
+---hits: sq23 
+---hits: sq20 
+---hits: sq17 
+---hits: sq14 
+---hits: sq11 
+---hits: sq8 
+---hits: sq42 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq8 
+---potential parent: sq5 
+---potential parent: sq11 
+---potential parent: sq14 
+---potential parent: sq34 
+---potential parent: sq20 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq29 
+---potential parent: sq23 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq30 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq17 
+---potential parent: sq19 
+---potential parent: sq45 
+---potential parent: sq44 
+---potential parent: sq31 
+---potential parent: sq50 
+---potential parent: sq59 
+---potential parent: sq82
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 304.285714285714 which is OK!
+SETTING sq80 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq8
+------checking: sq5
+------checking: sq11
+------checking: sq14
+------checking: sq34
+------checking: sq20
+------checking: sq16
+------checking: sq10
+------checking: sq29
+------checking: sq23
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq30
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq17
+------checking: sq19
+------checking: sq45
+------checking: sq44
+------checking: sq31
+------checking: sq50
+------checking: sq59
+------checking: sq82
+####processing: sq82 #####
+---hits: sq114 
+---hits: sq108 
+---hits: sq50 
+---hits: sq20 
+---hits: sq4 
+---hits: sq118 
+---hits: sq21 
+---hits: sq115 
+---hits: sq98 
+---hits: sq97 
+---hits: sq93 
+---hits: sq91 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq74 
+---hits: sq67 
+---hits: sq44 
+---hits: sq34 
+---hits: sq23 
+---hits: sq14 
+---hits: sq11 
+---hits: sq8 
+---hits: sq1 
+---hits: sq61 
+---hits: sq117 
+---hits: sq107 
+---hits: sq102 
+---hits: sq95 
+---hits: sq92 
+---hits: sq90 
+---hits: sq78 
+---hits: sq71 
+---hits: sq70 
+---hits: sq69 
+---hits: sq68 
+---hits: sq59 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq43 
+---hits: sq31 
+---hits: sq30 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq3 
+---hits: sq19
+---potential parent: sq1 
+---potential parent: sq3 
+---potential parent: sq4 
+---potential parent: sq21 
+---potential parent: sq8 
+---potential parent: sq5 
+---potential parent: sq11 
+---potential parent: sq14 
+---potential parent: sq34 
+---potential parent: sq20 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq23 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq30 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq19 
+---potential parent: sq44 
+---potential parent: sq31 
+---potential parent: sq43 
+---potential parent: sq50 
+---potential parent: sq59 
+---potential parent: sq80
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 201.6 which is OK!
+SETTING sq82 to be an ERROR of sq1
+
+------checking: sq3
+------checking: sq4
+------checking: sq21
+------checking: sq8
+------checking: sq5
+------checking: sq11
+------checking: sq14
+------checking: sq34
+------checking: sq20
+------checking: sq16
+------checking: sq10
+------checking: sq23
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq30
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq19
+------checking: sq44
+------checking: sq31
+------checking: sq43
+------checking: sq50
+------checking: sq59
+------checking: sq80
+####processing: sq42 #####
+---hits: sq19 
+---hits: sq31 
+---hits: sq61 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq22 
+---hits: sq10 
+---hits: sq34
+---potential parent: sq1 
+---potential parent: sq34 
+---potential parent: sq10 
+---potential parent: sq22 
+---potential parent: sq19 
+---potential parent: sq31 
+---potential parent: sq80 
+---potential parent: sq87
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 4.96521739130435 which is OK!
+SETTING sq42 to be an ERROR of sq1
+
+------checking: sq34
+------checking: sq10
+------checking: sq22
+------checking: sq19
+------checking: sq31
+------checking: sq80
+------checking: sq87
+####processing: sq46 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq19 
+---potential parent: sq31 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq87
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 12.5087719298246 which is OK!
+SETTING sq46 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq34
+------checking: sq16
+------checking: sq10
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq19
+------checking: sq31
+------checking: sq80
+------checking: sq82
+------checking: sq87
+####processing: sq49 #####
+---hits: sq5 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34
+---potential parent: sq1 
+---potential parent: sq5 
+---potential parent: sq34 
+---potential parent: sq80 
+---potential parent: sq87
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 49.0540540540541 which is OK!
+SETTING sq49 to be an ERROR of sq1
+
+------checking: sq5
+------checking: sq34
+------checking: sq80
+------checking: sq87
+####processing: sq52 #####
+---hits: sq109
+---potential parent: 
+No parent found!
+
+####processing: sq56 #####
+---hits: sq101 
+---hits: sq100 
+---hits: sq94 
+---hits: sq2 
+---hits: sq112 
+---hits: sq104 
+---hits: sq57 
+---hits: sq51 
+---hits: sq47 
+---hits: sq39 
+---hits: sq37 
+---hits: sq35 
+---hits: sq25
+---potential parent: sq2 
+---potential parent: sq25 
+---potential parent: sq35 
+---potential parent: sq39 
+---potential parent: sq37 
+---potential parent: sq47 
+---potential parent: sq51 
+---potential parent: sq57
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 20.25 which is OK!
+SETTING sq56 to be an ERROR of sq2
+
+------checking: sq25
+------checking: sq35
+------checking: sq39
+------checking: sq37
+------checking: sq47
+------checking: sq51
+------checking: sq57
+####processing: sq57 #####
+---hits: sq101 
+---hits: sq100 
+---hits: sq94 
+---hits: sq2 
+---hits: sq112 
+---hits: sq104 
+---hits: sq56 
+---hits: sq51 
+---hits: sq47 
+---hits: sq39 
+---hits: sq37 
+---hits: sq35
+---potential parent: sq2 
+---potential parent: sq35 
+---potential parent: sq39 
+---potential parent: sq37 
+---potential parent: sq47 
+---potential parent: sq51 
+---potential parent: sq56
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 16.8809523809524 which is OK!
+SETTING sq57 to be an ERROR of sq2
+
+------checking: sq35
+------checking: sq39
+------checking: sq37
+------checking: sq47
+------checking: sq51
+------checking: sq56
+####processing: sq58 #####
+---hits: sq36 
+---hits: sq117 
+---hits: sq102 
+---hits: sq95 
+---hits: sq85 
+---hits: sq3 
+---hits: sq21
+---potential parent: sq3 
+---potential parent: sq21 
+---potential parent: sq36
+------checking: sq3
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 30.6595744680851 which is OK!
+SETTING sq58 to be an ERROR of sq3
+
+------checking: sq21
+------checking: sq36
+####processing: sq63 #####
+---hits: sq7
+---potential parent: sq7
+------checking: sq7
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 39.3333333333333 which is OK!
+SETTING sq63 to be an ERROR of sq7
+
+####processing: sq87 #####
+---hits: sq108 
+---hits: sq114 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq61 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq115 
+---hits: sq96 
+---hits: sq92 
+---hits: sq88 
+---hits: sq76 
+---hits: sq72 
+---hits: sq70 
+---hits: sq65 
+---hits: sq62 
+---hits: sq59 
+---hits: sq50 
+---hits: sq49 
+---hits: sq45 
+---hits: sq44 
+---hits: sq30 
+---hits: sq29 
+---hits: sq23 
+---hits: sq20 
+---hits: sq17 
+---hits: sq14 
+---hits: sq11 
+---hits: sq8 
+---hits: sq42 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq8 
+---potential parent: sq5 
+---potential parent: sq11 
+---potential parent: sq14 
+---potential parent: sq34 
+---potential parent: sq20 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq29 
+---potential parent: sq23 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq30 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq17 
+---potential parent: sq19 
+---potential parent: sq45 
+---potential parent: sq44 
+---potential parent: sq31 
+---potential parent: sq50 
+---potential parent: sq59 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq42 
+---potential parent: sq46 
+---potential parent: sq49
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 410.6 which is OK!
+SETTING sq87 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq8
+------checking: sq5
+------checking: sq11
+------checking: sq14
+------checking: sq34
+------checking: sq20
+------checking: sq16
+------checking: sq10
+------checking: sq29
+------checking: sq23
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq30
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq17
+------checking: sq19
+------checking: sq45
+------checking: sq44
+------checking: sq31
+------checking: sq50
+------checking: sq59
+------checking: sq80
+------checking: sq82
+------checking: sq42
+------checking: sq46
+------checking: sq49
+####processing: sq41 #####
+---hits: sq106
+---potential parent: 
+No parent found!
+
+####processing: sq55 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq19 
+---potential parent: sq31 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq46 
+---potential parent: sq87 
+---potential parent: sq86 
+---potential parent: sq89
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 29.5057471264368 which is OK!
+SETTING sq55 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq34
+------checking: sq16
+------checking: sq10
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq19
+------checking: sq31
+------checking: sq80
+------checking: sq82
+------checking: sq46
+------checking: sq87
+------checking: sq86
+------checking: sq89
+####processing: sq71 #####
+---hits: sq30 
+---hits: sq13 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq34 
+---potential parent: sq30 
+---potential parent: sq13 
+---potential parent: sq82
+------checking: sq34
+------relative cooccurence: 0.5
+------checking: sq30
+------relative cooccurence: 0
+------checking: sq13
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 8.95 which is OK!
+SETTING sq71 to be an ERROR of sq1
+
+------checking: sq82
+####processing: sq73 #####
+---hits: 
+---potential parent: 
+No parent found!
+
+####processing: sq81 #####
+---hits: 
+---potential parent: 
+No parent found!
+
+####processing: sq86 #####
+---hits: sq91 
+---hits: sq115 
+---hits: sq89 
+---hits: sq97 
+---hits: sq107 
+---hits: sq98 
+---hits: sq93 
+---hits: sq92 
+---hits: sq80 
+---hits: sq96 
+---hits: sq87 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq88 
+---hits: sq76 
+---hits: sq72 
+---hits: sq70 
+---hits: sq65 
+---hits: sq62 
+---hits: sq59 
+---hits: sq50 
+---hits: sq49 
+---hits: sq45 
+---hits: sq44 
+---hits: sq30 
+---hits: sq29 
+---hits: sq23 
+---hits: sq20 
+---hits: sq17 
+---hits: sq14 
+---hits: sq11 
+---hits: sq8 
+---hits: sq42 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq8 
+---potential parent: sq5 
+---potential parent: sq11 
+---potential parent: sq14 
+---potential parent: sq34 
+---potential parent: sq20 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq29 
+---potential parent: sq23 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq30 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq17 
+---potential parent: sq19 
+---potential parent: sq45 
+---potential parent: sq44 
+---potential parent: sq31 
+---potential parent: sq50 
+---potential parent: sq59 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq42 
+---potential parent: sq46 
+---potential parent: sq49 
+---potential parent: sq87 
+---potential parent: sq55 
+---potential parent: sq89
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 436 which is OK!
+SETTING sq86 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq8
+------checking: sq5
+------checking: sq11
+------checking: sq14
+------checking: sq34
+------checking: sq20
+------checking: sq16
+------checking: sq10
+------checking: sq29
+------checking: sq23
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq30
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq17
+------checking: sq19
+------checking: sq45
+------checking: sq44
+------checking: sq31
+------checking: sq50
+------checking: sq59
+------checking: sq80
+------checking: sq82
+------checking: sq42
+------checking: sq46
+------checking: sq49
+------checking: sq87
+------checking: sq55
+------checking: sq89
+####processing: sq89 #####
+---hits: sq98 
+---hits: sq86 
+---hits: sq97 
+---hits: sq80 
+---hits: sq107 
+---hits: sq102 
+---hits: sq93 
+---hits: sq92 
+---hits: sq91 
+---hits: sq96 
+---hits: sq87 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq88 
+---hits: sq76 
+---hits: sq72 
+---hits: sq70 
+---hits: sq65 
+---hits: sq62 
+---hits: sq59 
+---hits: sq50 
+---hits: sq49 
+---hits: sq45 
+---hits: sq44 
+---hits: sq30 
+---hits: sq29 
+---hits: sq23 
+---hits: sq20 
+---hits: sq17 
+---hits: sq14 
+---hits: sq11 
+---hits: sq8 
+---hits: sq42 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq8 
+---potential parent: sq5 
+---potential parent: sq11 
+---potential parent: sq14 
+---potential parent: sq34 
+---potential parent: sq20 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq29 
+---potential parent: sq23 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq30 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq17 
+---potential parent: sq19 
+---potential parent: sq45 
+---potential parent: sq44 
+---potential parent: sq31 
+---potential parent: sq50 
+---potential parent: sq59 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq42 
+---potential parent: sq46 
+---potential parent: sq49 
+---potential parent: sq87 
+---potential parent: sq55 
+---potential parent: sq86
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 441.666666666667 which is OK!
+SETTING sq89 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq8
+------checking: sq5
+------checking: sq11
+------checking: sq14
+------checking: sq34
+------checking: sq20
+------checking: sq16
+------checking: sq10
+------checking: sq29
+------checking: sq23
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq30
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq17
+------checking: sq19
+------checking: sq45
+------checking: sq44
+------checking: sq31
+------checking: sq50
+------checking: sq59
+------checking: sq80
+------checking: sq82
+------checking: sq42
+------checking: sq46
+------checking: sq49
+------checking: sq87
+------checking: sq55
+------checking: sq86
+####processing: sq33 #####
+---hits: sq60
+---potential parent: sq60
+------checking: sq60
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 0.161337209302326
+No parent found!
+
+####processing: sq53 #####
+---hits: sq17 
+---hits: sq107 
+---hits: sq6
+---potential parent: sq6 
+---potential parent: sq17 
+---potential parent: sq107
+------checking: sq6
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 1.89714285714286 which is OK!
+SETTING sq53 to be an ERROR of sq6
+
+------checking: sq17
+------checking: sq107
+####processing: sq54 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq34 
+---hits: sq118 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq19 
+---potential parent: sq31 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq46 
+---potential parent: sq87 
+---potential parent: sq55 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq61 
+---potential parent: sq67 
+---potential parent: sq68 
+---potential parent: sq69 
+---potential parent: sq91 
+---potential parent: sq93 
+---potential parent: sq97 
+---potential parent: sq98 
+---potential parent: sq107 
+---potential parent: sq108 
+---potential parent: sq114 
+---potential parent: sq118
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 16.246835443038 which is OK!
+SETTING sq54 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq34
+------checking: sq16
+------checking: sq10
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq19
+------checking: sq31
+------checking: sq80
+------checking: sq82
+------checking: sq46
+------checking: sq87
+------checking: sq55
+------checking: sq86
+------checking: sq89
+------checking: sq61
+------checking: sq67
+------checking: sq68
+------checking: sq69
+------checking: sq91
+------checking: sq93
+------checking: sq97
+------checking: sq98
+------checking: sq107
+------checking: sq108
+------checking: sq114
+------checking: sq118
+####processing: sq60 #####
+---hits: sq33
+---potential parent: sq33
+------checking: sq33
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 6.1981981981982 which is OK!
+SETTING sq60 to be an ERROR of sq33
+
+####processing: sq61 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq22 
+---hits: sq19 
+---hits: sq10 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq16 
+---hits: sq13 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq65 
+---hits: sq42 
+---hits: sq11 
+---hits: sq115 
+---hits: sq96 
+---hits: sq92 
+---hits: sq88 
+---hits: sq76 
+---hits: sq72 
+---hits: sq70 
+---hits: sq62 
+---hits: sq59 
+---hits: sq50 
+---hits: sq49 
+---hits: sq45 
+---hits: sq44 
+---hits: sq30 
+---hits: sq29 
+---hits: sq23 
+---hits: sq20 
+---hits: sq17 
+---hits: sq14 
+---hits: sq8 
+---hits: sq74 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq8 
+---potential parent: sq5 
+---potential parent: sq11 
+---potential parent: sq14 
+---potential parent: sq34 
+---potential parent: sq20 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq29 
+---potential parent: sq23 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq30 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq17 
+---potential parent: sq19 
+---potential parent: sq45 
+---potential parent: sq44 
+---potential parent: sq31 
+---potential parent: sq50 
+---potential parent: sq59 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq42 
+---potential parent: sq46 
+---potential parent: sq49 
+---potential parent: sq87 
+---potential parent: sq55 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq54 
+---potential parent: sq62 
+---potential parent: sq65 
+---potential parent: sq67 
+---potential parent: sq68 
+---potential parent: sq69 
+---potential parent: sq70 
+---potential parent: sq72 
+---potential parent: sq74 
+---potential parent: sq76 
+---potential parent: sq88 
+---potential parent: sq91 
+---potential parent: sq92 
+---potential parent: sq93 
+---potential parent: sq96 
+---potential parent: sq97 
+---potential parent: sq98 
+---potential parent: sq107 
+---potential parent: sq108 
+---potential parent: sq114 
+---potential parent: sq115
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 17.1132075471698 which is OK!
+SETTING sq61 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq8
+------checking: sq5
+------checking: sq11
+------checking: sq14
+------checking: sq34
+------checking: sq20
+------checking: sq16
+------checking: sq10
+------checking: sq29
+------checking: sq23
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq30
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq17
+------checking: sq19
+------checking: sq45
+------checking: sq44
+------checking: sq31
+------checking: sq50
+------checking: sq59
+------checking: sq80
+------checking: sq82
+------checking: sq42
+------checking: sq46
+------checking: sq49
+------checking: sq87
+------checking: sq55
+------checking: sq86
+------checking: sq89
+------checking: sq54
+------checking: sq62
+------checking: sq65
+------checking: sq67
+------checking: sq68
+------checking: sq69
+------checking: sq70
+------checking: sq72
+------checking: sq74
+------checking: sq76
+------checking: sq88
+------checking: sq91
+------checking: sq92
+------checking: sq93
+------checking: sq96
+------checking: sq97
+------checking: sq98
+------checking: sq107
+------checking: sq108
+------checking: sq114
+------checking: sq115
+####processing: sq62 #####
+---hits: sq107 
+---hits: sq6 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq72 
+---hits: sq70 
+---hits: sq17 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34
+---potential parent: sq1 
+---potential parent: sq34 
+---potential parent: sq6 
+---potential parent: sq17 
+---potential parent: sq80 
+---potential parent: sq87 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq61 
+---potential parent: sq70 
+---potential parent: sq72 
+---potential parent: sq93 
+---potential parent: sq97 
+---potential parent: sq107
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 12.4130434782609 which is OK!
+SETTING sq62 to be an ERROR of sq1
+
+------checking: sq34
+------checking: sq6
+------checking: sq17
+------checking: sq80
+------checking: sq87
+------checking: sq86
+------checking: sq89
+------checking: sq61
+------checking: sq70
+------checking: sq72
+------checking: sq93
+------checking: sq97
+------checking: sq107
+####processing: sq64 #####
+---hits: sq101 
+---hits: sq100 
+---hits: sq94 
+---hits: sq39 
+---hits: sq2
+---potential parent: sq2 
+---potential parent: sq39 
+---potential parent: sq94 
+---potential parent: sq100 
+---potential parent: sq101
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 10.3636363636364 which is OK!
+SETTING sq64 to be an ERROR of sq2
+
+------checking: sq39
+------checking: sq94
+------checking: sq100
+------checking: sq101
+####processing: sq65 #####
+---hits: sq10 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq61 
+---hits: sq45 
+---hits: sq22 
+---hits: sq11 
+---hits: sq1 
+---hits: sq19 
+---hits: sq34
+---potential parent: sq1 
+---potential parent: sq11 
+---potential parent: sq34 
+---potential parent: sq10 
+---potential parent: sq22 
+---potential parent: sq19 
+---potential parent: sq45 
+---potential parent: sq80 
+---potential parent: sq87 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq61 
+---potential parent: sq93 
+---potential parent: sq97
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 33.7763157894737 which is OK!
+SETTING sq65 to be an ERROR of sq1
+
+------checking: sq11
+------checking: sq34
+------checking: sq10
+------checking: sq22
+------checking: sq19
+------checking: sq45
+------checking: sq80
+------checking: sq87
+------checking: sq86
+------checking: sq89
+------checking: sq61
+------checking: sq93
+------checking: sq97
+####processing: sq67 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq92 
+---hits: sq91 
+---hits: sq69 
+---hits: sq68 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq19 
+---potential parent: sq31 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq46 
+---potential parent: sq87 
+---potential parent: sq55 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq54 
+---potential parent: sq61 
+---potential parent: sq68 
+---potential parent: sq69 
+---potential parent: sq91 
+---potential parent: sq92 
+---potential parent: sq93 
+---potential parent: sq97 
+---potential parent: sq98 
+---potential parent: sq107 
+---potential parent: sq108 
+---potential parent: sq114
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 53.9857142857143 which is OK!
+SETTING sq67 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq34
+------checking: sq16
+------checking: sq10
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq19
+------checking: sq31
+------checking: sq80
+------checking: sq82
+------checking: sq46
+------checking: sq87
+------checking: sq55
+------checking: sq86
+------checking: sq89
+------checking: sq54
+------checking: sq61
+------checking: sq68
+------checking: sq69
+------checking: sq91
+------checking: sq92
+------checking: sq93
+------checking: sq97
+------checking: sq98
+------checking: sq107
+------checking: sq108
+------checking: sq114
+####processing: sq68 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq88 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq59 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq69 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq19 
+---potential parent: sq31 
+---potential parent: sq59 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq46 
+---potential parent: sq87 
+---potential parent: sq55 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq54 
+---potential parent: sq61 
+---potential parent: sq67 
+---potential parent: sq69 
+---potential parent: sq88 
+---potential parent: sq91 
+---potential parent: sq93 
+---potential parent: sq97 
+---potential parent: sq98 
+---potential parent: sq107 
+---potential parent: sq108 
+---potential parent: sq114
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 31.9253731343284 which is OK!
+SETTING sq68 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq34
+------checking: sq16
+------checking: sq10
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq19
+------checking: sq31
+------checking: sq59
+------checking: sq80
+------checking: sq82
+------checking: sq46
+------checking: sq87
+------checking: sq55
+------checking: sq86
+------checking: sq89
+------checking: sq54
+------checking: sq61
+------checking: sq67
+------checking: sq69
+------checking: sq88
+------checking: sq91
+------checking: sq93
+------checking: sq97
+------checking: sq98
+------checking: sq107
+------checking: sq108
+------checking: sq114
+####processing: sq69 #####
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq19 
+---potential parent: sq31 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq46 
+---potential parent: sq87 
+---potential parent: sq55 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq54 
+---potential parent: sq61 
+---potential parent: sq67 
+---potential parent: sq68 
+---potential parent: sq91 
+---potential parent: sq93 
+---potential parent: sq97 
+---potential parent: sq98 
+---potential parent: sq107 
+---potential parent: sq108 
+---potential parent: sq114
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 38.3134328358209 which is OK!
+SETTING sq69 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq34
+------checking: sq16
+------checking: sq10
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq19
+------checking: sq31
+------checking: sq80
+------checking: sq82
+------checking: sq46
+------checking: sq87
+------checking: sq55
+------checking: sq86
+------checking: sq89
+------checking: sq54
+------checking: sq61
+------checking: sq67
+------checking: sq68
+------checking: sq91
+------checking: sq93
+------checking: sq97
+------checking: sq98
+------checking: sq107
+------checking: sq108
+------checking: sq114
+####processing: sq70 #####
+---hits: sq107 
+---hits: sq6 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq72 
+---hits: sq62 
+---hits: sq17 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq34 
+---potential parent: sq6 
+---potential parent: sq17 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq87 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq61 
+---potential parent: sq62 
+---potential parent: sq72 
+---potential parent: sq93 
+---potential parent: sq97 
+---potential parent: sq107
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 37.2727272727273 which is OK!
+SETTING sq70 to be an ERROR of sq1
+
+------checking: sq34
+------checking: sq6
+------checking: sq17
+------checking: sq80
+------checking: sq82
+------checking: sq87
+------checking: sq86
+------checking: sq89
+------checking: sq61
+------checking: sq62
+------checking: sq72
+------checking: sq93
+------checking: sq97
+------checking: sq107
+####processing: sq72 #####
+---hits: sq107 
+---hits: sq6 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq70 
+---hits: sq62 
+---hits: sq17 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34
+---potential parent: sq1 
+---potential parent: sq34 
+---potential parent: sq6 
+---potential parent: sq17 
+---potential parent: sq80 
+---potential parent: sq87 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq61 
+---potential parent: sq62 
+---potential parent: sq70 
+---potential parent: sq93 
+---potential parent: sq97 
+---potential parent: sq107
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 10.4210526315789 which is OK!
+SETTING sq72 to be an ERROR of sq1
+
+------checking: sq34
+------checking: sq6
+------checking: sq17
+------checking: sq80
+------checking: sq87
+------checking: sq86
+------checking: sq89
+------checking: sq61
+------checking: sq62
+------checking: sq70
+------checking: sq93
+------checking: sq97
+------checking: sq107
+####processing: sq74 #####
+---hits: sq11 
+---hits: sq114 
+---hits: sq108 
+---hits: sq20 
+---hits: sq10 
+---hits: sq4 
+---hits: sq61 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq4 
+---potential parent: sq11 
+---potential parent: sq34 
+---potential parent: sq20 
+---potential parent: sq10 
+---potential parent: sq82 
+---potential parent: sq61 
+---potential parent: sq108 
+---potential parent: sq114
+------checking: sq4
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 17.35 which is OK!
+SETTING sq74 to be an ERROR of sq1
+
+------checking: sq11
+------checking: sq34
+------checking: sq20
+------checking: sq10
+------checking: sq82
+------checking: sq61
+------checking: sq108
+------checking: sq114
+####processing: sq75 #####
+---hits: sq24
+---potential parent: sq24
+------checking: sq24
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 4.5 which is OK!
+SETTING sq75 to be an ERROR of sq24
+
+####processing: sq76 #####
+---hits: sq27 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34
+---potential parent: sq1 
+---potential parent: sq34 
+---potential parent: sq27 
+---potential parent: sq80 
+---potential parent: sq87 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq61 
+---potential parent: sq93 
+---potential parent: sq97
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 67.8125 which is OK!
+SETTING sq76 to be an ERROR of sq1
+
+------checking: sq34
+------checking: sq27
+------checking: sq80
+------checking: sq87
+------checking: sq86
+------checking: sq89
+------checking: sq61
+------checking: sq93
+------checking: sq97
+####processing: sq77 #####
+---hits: sq110 
+---hits: sq12
+---potential parent: sq12 
+---potential parent: sq110
+------checking: sq12
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 1.09677419354839 which is OK!
+SETTING sq77 to be an ERROR of sq12
+
+------checking: sq110
+####processing: sq78 #####
+---hits: sq23 
+---hits: sq114 
+---hits: sq108 
+---hits: sq4 
+---hits: sq82
+---potential parent: sq4 
+---potential parent: sq23 
+---potential parent: sq82 
+---potential parent: sq108 
+---potential parent: sq114
+------checking: sq4
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 16.0645161290323 which is OK!
+SETTING sq78 to be an ERROR of sq1
+
+------checking: sq23
+------checking: sq82
+------checking: sq108
+------checking: sq114
+####processing: sq79 #####
+---hits: 
+---potential parent: 
+No parent found!
+
+####processing: sq83 #####
+---hits: 
+---potential parent: 
+No parent found!
+
+####processing: sq84 #####
+---hits: sq101 
+---hits: sq100 
+---hits: sq94 
+---hits: sq2
+---potential parent: sq2 
+---potential parent: sq94 
+---potential parent: sq100 
+---potential parent: sq101
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 44.3333333333333 which is OK!
+SETTING sq84 to be an ERROR of sq2
+
+------checking: sq94
+------checking: sq100
+------checking: sq101
+####processing: sq85 #####
+---hits: sq36 
+---hits: sq117 
+---hits: sq102 
+---hits: sq95 
+---hits: sq58 
+---hits: sq3 
+---hits: sq21 
+---hits: sq118
+---potential parent: sq3 
+---potential parent: sq21 
+---potential parent: sq36 
+---potential parent: sq58 
+---potential parent: sq95 
+---potential parent: sq102 
+---potential parent: sq117 
+---potential parent: sq118
+------checking: sq3
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 65.25 which is OK!
+SETTING sq85 to be an ERROR of sq3
+
+------checking: sq21
+------checking: sq36
+------checking: sq58
+------checking: sq95
+------checking: sq102
+------checking: sq117
+------checking: sq118
+####processing: sq88 #####
+---hits: sq68 
+---hits: sq97 
+---hits: sq96 
+---hits: sq93 
+---hits: sq89 
+---hits: sq87 
+---hits: sq86 
+---hits: sq80 
+---hits: sq59 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34
+---potential parent: sq1 
+---potential parent: sq34 
+---potential parent: sq59 
+---potential parent: sq80 
+---potential parent: sq87 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq61 
+---potential parent: sq68 
+---potential parent: sq93 
+---potential parent: sq96 
+---potential parent: sq97
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 146.909090909091 which is OK!
+SETTING sq88 to be an ERROR of sq1
+
+------checking: sq34
+------checking: sq59
+------checking: sq80
+------checking: sq87
+------checking: sq86
+------checking: sq89
+------checking: sq61
+------checking: sq68
+------checking: sq93
+------checking: sq96
+------checking: sq97
+####processing: sq90 #####
+---hits: sq80 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq34 
+---potential parent: sq80 
+---potential parent: sq82
+------checking: sq34
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 3.42857142857143 which is OK!
+SETTING sq90 to be an ERROR of sq1
+
+------checking: sq80
+------checking: sq82
+####processing: sq91 #####
+---hits: sq86 
+---hits: sq115 
+---hits: sq89 
+---hits: sq97 
+---hits: sq80 
+---hits: sq87 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq19 
+---potential parent: sq31 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq46 
+---potential parent: sq87 
+---potential parent: sq55 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq54 
+---potential parent: sq61 
+---potential parent: sq67 
+---potential parent: sq68 
+---potential parent: sq69 
+---potential parent: sq97 
+---potential parent: sq108 
+---potential parent: sq114 
+---potential parent: sq115
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 1046.83333333333 which is OK!
+SETTING sq91 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq34
+------checking: sq16
+------checking: sq10
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq19
+------checking: sq31
+------checking: sq80
+------checking: sq82
+------checking: sq46
+------checking: sq87
+------checking: sq55
+------checking: sq86
+------checking: sq89
+------checking: sq54
+------checking: sq61
+------checking: sq67
+------checking: sq68
+------checking: sq69
+------checking: sq97
+------checking: sq108
+------checking: sq114
+------checking: sq115
+####processing: sq92 #####
+---hits: sq89 
+---hits: sq86 
+---hits: sq80 
+---hits: sq87 
+---hits: sq67 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq34 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq87 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq61 
+---potential parent: sq67
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 284.6 which is OK!
+SETTING sq92 to be an ERROR of sq1
+
+------checking: sq34
+------checking: sq80
+------checking: sq82
+------checking: sq87
+------checking: sq86
+------checking: sq89
+------checking: sq61
+------checking: sq67
+####processing: sq93 #####
+---hits: sq89 
+---hits: sq86 
+---hits: sq80 
+---hits: sq97 
+---hits: sq107 
+---hits: sq87 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq88 
+---hits: sq76 
+---hits: sq72 
+---hits: sq70 
+---hits: sq65 
+---hits: sq62 
+---hits: sq59 
+---hits: sq50 
+---hits: sq49 
+---hits: sq45 
+---hits: sq44 
+---hits: sq30 
+---hits: sq29 
+---hits: sq23 
+---hits: sq20 
+---hits: sq17 
+---hits: sq14 
+---hits: sq11 
+---hits: sq8 
+---hits: sq42 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq8 
+---potential parent: sq5 
+---potential parent: sq11 
+---potential parent: sq14 
+---potential parent: sq34 
+---potential parent: sq20 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq29 
+---potential parent: sq23 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq30 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq17 
+---potential parent: sq19 
+---potential parent: sq45 
+---potential parent: sq44 
+---potential parent: sq31 
+---potential parent: sq50 
+---potential parent: sq59 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq42 
+---potential parent: sq46 
+---potential parent: sq49 
+---potential parent: sq87 
+---potential parent: sq55 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq54 
+---potential parent: sq61 
+---potential parent: sq62 
+---potential parent: sq65 
+---potential parent: sq67 
+---potential parent: sq68 
+---potential parent: sq69 
+---potential parent: sq70 
+---potential parent: sq72 
+---potential parent: sq76 
+---potential parent: sq88 
+---potential parent: sq97 
+---potential parent: sq107 
+---potential parent: sq108 
+---potential parent: sq114
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 600.75 which is OK!
+SETTING sq93 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq8
+------checking: sq5
+------checking: sq11
+------checking: sq14
+------checking: sq34
+------checking: sq20
+------checking: sq16
+------checking: sq10
+------checking: sq29
+------checking: sq23
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq30
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq17
+------checking: sq19
+------checking: sq45
+------checking: sq44
+------checking: sq31
+------checking: sq50
+------checking: sq59
+------checking: sq80
+------checking: sq82
+------checking: sq42
+------checking: sq46
+------checking: sq49
+------checking: sq87
+------checking: sq55
+------checking: sq86
+------checking: sq89
+------checking: sq54
+------checking: sq61
+------checking: sq62
+------checking: sq65
+------checking: sq67
+------checking: sq68
+------checking: sq69
+------checking: sq70
+------checking: sq72
+------checking: sq76
+------checking: sq88
+------checking: sq97
+------checking: sq107
+------checking: sq108
+------checking: sq114
+####processing: sq94 #####
+---hits: sq101 
+---hits: sq100 
+---hits: sq112 
+---hits: sq104 
+---hits: sq99 
+---hits: sq111 
+---hits: sq2 
+---hits: sq57 
+---hits: sq56 
+---hits: sq51 
+---hits: sq47 
+---hits: sq39 
+---hits: sq37 
+---hits: sq35 
+---hits: sq84 
+---hits: sq48 
+---hits: sq26 
+---hits: sq25 
+---hits: sq64
+---potential parent: sq2 
+---potential parent: sq26 
+---potential parent: sq25 
+---potential parent: sq35 
+---potential parent: sq39 
+---potential parent: sq37 
+---potential parent: sq47 
+---potential parent: sq48 
+---potential parent: sq51 
+---potential parent: sq56 
+---potential parent: sq57 
+---potential parent: sq64 
+---potential parent: sq84 
+---potential parent: sq99 
+---potential parent: sq100 
+---potential parent: sq101 
+---potential parent: sq104 
+---potential parent: sq111 
+---potential parent: sq112
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 215.75 which is OK!
+SETTING sq94 to be an ERROR of sq2
+
+------checking: sq26
+------checking: sq25
+------checking: sq35
+------checking: sq39
+------checking: sq37
+------checking: sq47
+------checking: sq48
+------checking: sq51
+------checking: sq56
+------checking: sq57
+------checking: sq64
+------checking: sq84
+------checking: sq99
+------checking: sq100
+------checking: sq101
+------checking: sq104
+------checking: sq111
+------checking: sq112
+####processing: sq95 #####
+---hits: sq102 
+---hits: sq117 
+---hits: sq116 
+---hits: sq3 
+---hits: sq40 
+---hits: sq36 
+---hits: sq15 
+---hits: sq114 
+---hits: sq108 
+---hits: sq85 
+---hits: sq58 
+---hits: sq4 
+---hits: sq21 
+---hits: sq118 
+---hits: sq82
+---potential parent: sq3 
+---potential parent: sq4 
+---potential parent: sq21 
+---potential parent: sq15 
+---potential parent: sq40 
+---potential parent: sq36 
+---potential parent: sq82 
+---potential parent: sq58 
+---potential parent: sq85 
+---potential parent: sq102 
+---potential parent: sq108 
+---potential parent: sq114 
+---potential parent: sq116 
+---potential parent: sq117 
+---potential parent: sq118
+------checking: sq3
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 144 which is OK!
+SETTING sq95 to be an ERROR of sq3
+
+------checking: sq4
+------checking: sq21
+------checking: sq15
+------checking: sq40
+------checking: sq36
+------checking: sq82
+------checking: sq58
+------checking: sq85
+------checking: sq102
+------checking: sq108
+------checking: sq114
+------checking: sq116
+------checking: sq117
+------checking: sq118
+####processing: sq96 #####
+---hits: sq89 
+---hits: sq97 
+---hits: sq98 
+---hits: sq107 
+---hits: sq86 
+---hits: sq88 
+---hits: sq87 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34
+---potential parent: sq1 
+---potential parent: sq34 
+---potential parent: sq87 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq61 
+---potential parent: sq88 
+---potential parent: sq97 
+---potential parent: sq98 
+---potential parent: sq107
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 355.5 which is OK!
+SETTING sq96 to be an ERROR of sq1
+
+------checking: sq34
+------checking: sq87
+------checking: sq86
+------checking: sq89
+------checking: sq61
+------checking: sq88
+------checking: sq97
+------checking: sq98
+------checking: sq107
+####processing: sq97 #####
+---hits: sq89 
+---hits: sq86 
+---hits: sq80 
+---hits: sq107 
+---hits: sq98 
+---hits: sq91 
+---hits: sq93 
+---hits: sq96 
+---hits: sq87 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq88 
+---hits: sq76 
+---hits: sq72 
+---hits: sq70 
+---hits: sq65 
+---hits: sq62 
+---hits: sq59 
+---hits: sq50 
+---hits: sq49 
+---hits: sq45 
+---hits: sq44 
+---hits: sq30 
+---hits: sq29 
+---hits: sq23 
+---hits: sq20 
+---hits: sq17 
+---hits: sq14 
+---hits: sq11 
+---hits: sq8 
+---hits: sq42 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq8 
+---potential parent: sq5 
+---potential parent: sq11 
+---potential parent: sq14 
+---potential parent: sq34 
+---potential parent: sq20 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq29 
+---potential parent: sq23 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq30 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq17 
+---potential parent: sq19 
+---potential parent: sq45 
+---potential parent: sq44 
+---potential parent: sq31 
+---potential parent: sq50 
+---potential parent: sq59 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq42 
+---potential parent: sq46 
+---potential parent: sq49 
+---potential parent: sq87 
+---potential parent: sq55 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq54 
+---potential parent: sq61 
+---potential parent: sq62 
+---potential parent: sq65 
+---potential parent: sq67 
+---potential parent: sq68 
+---potential parent: sq69 
+---potential parent: sq70 
+---potential parent: sq72 
+---potential parent: sq76 
+---potential parent: sq88 
+---potential parent: sq91 
+---potential parent: sq93 
+---potential parent: sq96 
+---potential parent: sq98 
+---potential parent: sq107 
+---potential parent: sq108 
+---potential parent: sq114
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 666.25 which is OK!
+SETTING sq97 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq8
+------checking: sq5
+------checking: sq11
+------checking: sq14
+------checking: sq34
+------checking: sq20
+------checking: sq16
+------checking: sq10
+------checking: sq29
+------checking: sq23
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq30
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq17
+------checking: sq19
+------checking: sq45
+------checking: sq44
+------checking: sq31
+------checking: sq50
+------checking: sq59
+------checking: sq80
+------checking: sq82
+------checking: sq42
+------checking: sq46
+------checking: sq49
+------checking: sq87
+------checking: sq55
+------checking: sq86
+------checking: sq89
+------checking: sq54
+------checking: sq61
+------checking: sq62
+------checking: sq65
+------checking: sq67
+------checking: sq68
+------checking: sq69
+------checking: sq70
+------checking: sq72
+------checking: sq76
+------checking: sq88
+------checking: sq91
+------checking: sq93
+------checking: sq96
+------checking: sq98
+------checking: sq107
+------checking: sq108
+------checking: sq114
+####processing: sq98 #####
+---hits: sq89 
+---hits: sq86 
+---hits: sq97 
+---hits: sq80 
+---hits: sq96 
+---hits: sq87 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq19 
+---potential parent: sq31 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq46 
+---potential parent: sq87 
+---potential parent: sq55 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq54 
+---potential parent: sq61 
+---potential parent: sq67 
+---potential parent: sq68 
+---potential parent: sq69 
+---potential parent: sq96 
+---potential parent: sq97 
+---potential parent: sq108 
+---potential parent: sq114
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 239 which is OK!
+SETTING sq98 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq34
+------checking: sq16
+------checking: sq10
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq19
+------checking: sq31
+------checking: sq80
+------checking: sq82
+------checking: sq46
+------checking: sq87
+------checking: sq55
+------checking: sq86
+------checking: sq89
+------checking: sq54
+------checking: sq61
+------checking: sq67
+------checking: sq68
+------checking: sq69
+------checking: sq96
+------checking: sq97
+------checking: sq108
+------checking: sq114
+####processing: sq99 #####
+---hits: sq101 
+---hits: sq100 
+---hits: sq94 
+---hits: sq104 
+---hits: sq2
+---potential parent: sq2 
+---potential parent: sq94 
+---potential parent: sq100 
+---potential parent: sq101 
+---potential parent: sq104
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 238.666666666667 which is OK!
+SETTING sq99 to be an ERROR of sq2
+
+------checking: sq94
+------checking: sq100
+------checking: sq101
+------checking: sq104
+####processing: sq100 #####
+---hits: sq94 
+---hits: sq112 
+---hits: sq101 
+---hits: sq99 
+---hits: sq111 
+---hits: sq2 
+---hits: sq57 
+---hits: sq56 
+---hits: sq51 
+---hits: sq47 
+---hits: sq39 
+---hits: sq37 
+---hits: sq35 
+---hits: sq84 
+---hits: sq48 
+---hits: sq26 
+---hits: sq25 
+---hits: sq64
+---potential parent: sq2 
+---potential parent: sq26 
+---potential parent: sq25 
+---potential parent: sq35 
+---potential parent: sq39 
+---potential parent: sq37 
+---potential parent: sq47 
+---potential parent: sq48 
+---potential parent: sq51 
+---potential parent: sq56 
+---potential parent: sq57 
+---potential parent: sq64 
+---potential parent: sq84 
+---potential parent: sq94 
+---potential parent: sq99 
+---potential parent: sq101 
+---potential parent: sq111 
+---potential parent: sq112
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 225.666666666667 which is OK!
+SETTING sq100 to be an ERROR of sq2
+
+------checking: sq26
+------checking: sq25
+------checking: sq35
+------checking: sq39
+------checking: sq37
+------checking: sq47
+------checking: sq48
+------checking: sq51
+------checking: sq56
+------checking: sq57
+------checking: sq64
+------checking: sq84
+------checking: sq94
+------checking: sq99
+------checking: sq101
+------checking: sq111
+------checking: sq112
+####processing: sq101 #####
+---hits: sq94 
+---hits: sq100 
+---hits: sq112 
+---hits: sq104 
+---hits: sq99 
+---hits: sq111 
+---hits: sq2 
+---hits: sq57 
+---hits: sq56 
+---hits: sq51 
+---hits: sq47 
+---hits: sq39 
+---hits: sq37 
+---hits: sq35 
+---hits: sq84 
+---hits: sq48 
+---hits: sq26 
+---hits: sq25 
+---hits: sq64
+---potential parent: sq2 
+---potential parent: sq26 
+---potential parent: sq25 
+---potential parent: sq35 
+---potential parent: sq39 
+---potential parent: sq37 
+---potential parent: sq47 
+---potential parent: sq48 
+---potential parent: sq51 
+---potential parent: sq56 
+---potential parent: sq57 
+---potential parent: sq64 
+---potential parent: sq84 
+---potential parent: sq94 
+---potential parent: sq99 
+---potential parent: sq100 
+---potential parent: sq104 
+---potential parent: sq111 
+---potential parent: sq112
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 283.333333333333 which is OK!
+SETTING sq101 to be an ERROR of sq2
+
+------checking: sq26
+------checking: sq25
+------checking: sq35
+------checking: sq39
+------checking: sq37
+------checking: sq47
+------checking: sq48
+------checking: sq51
+------checking: sq56
+------checking: sq57
+------checking: sq64
+------checking: sq84
+------checking: sq94
+------checking: sq99
+------checking: sq100
+------checking: sq104
+------checking: sq111
+------checking: sq112
+####processing: sq102 #####
+---hits: sq117 
+---hits: sq95 
+---hits: sq116 
+---hits: sq89 
+---hits: sq80 
+---hits: sq3 
+---hits: sq40 
+---hits: sq36 
+---hits: sq15 
+---hits: sq114 
+---hits: sq108 
+---hits: sq85 
+---hits: sq58 
+---hits: sq4 
+---hits: sq21 
+---hits: sq118 
+---hits: sq82
+---potential parent: sq3 
+---potential parent: sq4 
+---potential parent: sq21 
+---potential parent: sq15 
+---potential parent: sq40 
+---potential parent: sq36 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq58 
+---potential parent: sq89 
+---potential parent: sq85 
+---potential parent: sq95 
+---potential parent: sq108 
+---potential parent: sq114 
+---potential parent: sq116 
+---potential parent: sq117 
+---potential parent: sq118
+------checking: sq3
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 145.5 which is OK!
+SETTING sq102 to be an ERROR of sq3
+
+------checking: sq4
+------checking: sq21
+------checking: sq15
+------checking: sq40
+------checking: sq36
+------checking: sq80
+------checking: sq82
+------checking: sq58
+------checking: sq89
+------checking: sq85
+------checking: sq95
+------checking: sq108
+------checking: sq114
+------checking: sq116
+------checking: sq117
+------checking: sq118
+####processing: sq103 #####
+---hits: sq80 
+---hits: sq45
+---potential parent: sq45 
+---potential parent: sq80
+------checking: sq45
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 13 which is OK!
+SETTING sq103 to be an ERROR of sq1
+
+------checking: sq80
+####processing: sq104 #####
+---hits: sq101 
+---hits: sq94 
+---hits: sq111 
+---hits: sq99 
+---hits: sq2 
+---hits: sq57 
+---hits: sq56 
+---hits: sq51 
+---hits: sq47 
+---hits: sq39 
+---hits: sq37 
+---hits: sq35
+---potential parent: sq2 
+---potential parent: sq35 
+---potential parent: sq39 
+---potential parent: sq37 
+---potential parent: sq47 
+---potential parent: sq51 
+---potential parent: sq56 
+---potential parent: sq57 
+---potential parent: sq94 
+---potential parent: sq99 
+---potential parent: sq101 
+---potential parent: sq111
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 493.5 which is OK!
+SETTING sq104 to be an ERROR of sq2
+
+------checking: sq35
+------checking: sq39
+------checking: sq37
+------checking: sq47
+------checking: sq51
+------checking: sq56
+------checking: sq57
+------checking: sq94
+------checking: sq99
+------checking: sq101
+------checking: sq111
+####processing: sq105 #####
+---hits: sq66
+---potential parent: sq66
+------checking: sq66
+------relative cooccurence: 0
+No parent found!
+
+####processing: sq106 #####
+---hits: sq41
+---potential parent: sq41
+------checking: sq41
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 118.5 which is OK!
+SETTING sq106 to be an ERROR of sq41
+
+####processing: sq107 #####
+---hits: sq89 
+---hits: sq86 
+---hits: sq80 
+---hits: sq97 
+---hits: sq93 
+---hits: sq96 
+---hits: sq6 
+---hits: sq87 
+---hits: sq72 
+---hits: sq70 
+---hits: sq62 
+---hits: sq17 
+---hits: sq1 
+---hits: sq61 
+---hits: sq114 
+---hits: sq108 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq53 
+---hits: sq46 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq5 
+---hits: sq4 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq5 
+---potential parent: sq34 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq17 
+---potential parent: sq19 
+---potential parent: sq31 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq46 
+---potential parent: sq87 
+---potential parent: sq55 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq53 
+---potential parent: sq54 
+---potential parent: sq61 
+---potential parent: sq62 
+---potential parent: sq67 
+---potential parent: sq68 
+---potential parent: sq69 
+---potential parent: sq70 
+---potential parent: sq72 
+---potential parent: sq93 
+---potential parent: sq96 
+---potential parent: sq97 
+---potential parent: sq108 
+---potential parent: sq114
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 561 which is OK!
+SETTING sq107 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq5
+------checking: sq34
+------checking: sq16
+------checking: sq10
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq17
+------checking: sq19
+------checking: sq31
+------checking: sq80
+------checking: sq82
+------checking: sq46
+------checking: sq87
+------checking: sq55
+------checking: sq86
+------checking: sq89
+------checking: sq53
+------checking: sq54
+------checking: sq61
+------checking: sq62
+------checking: sq67
+------checking: sq68
+------checking: sq69
+------checking: sq70
+------checking: sq72
+------checking: sq93
+------checking: sq96
+------checking: sq97
+------checking: sq108
+------checking: sq114
+####processing: sq108 #####
+---hits: sq87 
+---hits: sq114 
+---hits: sq4 
+---hits: sq115 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq86 
+---hits: sq80 
+---hits: sq50 
+---hits: sq44 
+---hits: sq23 
+---hits: sq20 
+---hits: sq14 
+---hits: sq11 
+---hits: sq8 
+---hits: sq1 
+---hits: sq61 
+---hits: sq117 
+---hits: sq107 
+---hits: sq102 
+---hits: sq98 
+---hits: sq95 
+---hits: sq91 
+---hits: sq78 
+---hits: sq74 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq43 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq3 
+---hits: sq19 
+---hits: sq34 
+---hits: sq82 
+---hits: sq21
+---potential parent: sq1 
+---potential parent: sq3 
+---potential parent: sq4 
+---potential parent: sq21 
+---potential parent: sq8 
+---potential parent: sq5 
+---potential parent: sq11 
+---potential parent: sq14 
+---potential parent: sq34 
+---potential parent: sq20 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq23 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq19 
+---potential parent: sq44 
+---potential parent: sq31 
+---potential parent: sq43 
+---potential parent: sq50 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq46 
+---potential parent: sq87 
+---potential parent: sq55 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq54 
+---potential parent: sq61 
+---potential parent: sq67 
+---potential parent: sq68 
+---potential parent: sq69 
+---potential parent: sq74 
+---potential parent: sq78 
+---potential parent: sq91 
+---potential parent: sq93 
+---potential parent: sq95 
+---potential parent: sq97 
+---potential parent: sq98 
+---potential parent: sq102 
+---potential parent: sq107 
+---potential parent: sq114 
+---potential parent: sq115 
+---potential parent: sq117
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 2474.5 which is OK!
+SETTING sq108 to be an ERROR of sq1
+
+------checking: sq3
+------checking: sq4
+------checking: sq21
+------checking: sq8
+------checking: sq5
+------checking: sq11
+------checking: sq14
+------checking: sq34
+------checking: sq20
+------checking: sq16
+------checking: sq10
+------checking: sq23
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq19
+------checking: sq44
+------checking: sq31
+------checking: sq43
+------checking: sq50
+------checking: sq80
+------checking: sq82
+------checking: sq46
+------checking: sq87
+------checking: sq55
+------checking: sq86
+------checking: sq89
+------checking: sq54
+------checking: sq61
+------checking: sq67
+------checking: sq68
+------checking: sq69
+------checking: sq74
+------checking: sq78
+------checking: sq91
+------checking: sq93
+------checking: sq95
+------checking: sq97
+------checking: sq98
+------checking: sq102
+------checking: sq107
+------checking: sq114
+------checking: sq115
+------checking: sq117
+####processing: sq109 #####
+---hits: sq52
+---potential parent: sq52
+------checking: sq52
+------relative cooccurence: 0
+No parent found!
+
+####processing: sq110 #####
+---hits: sq113 
+---hits: sq12 
+---hits: sq77
+---potential parent: sq12 
+---potential parent: sq77 
+---potential parent: sq113
+------checking: sq12
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 20 which is OK!
+SETTING sq110 to be an ERROR of sq12
+
+------checking: sq77
+------checking: sq113
+####processing: sq111 #####
+---hits: sq101 
+---hits: sq94 
+---hits: sq104 
+---hits: sq100 
+---hits: sq26 
+---hits: sq2
+---potential parent: sq2 
+---potential parent: sq26 
+---potential parent: sq94 
+---potential parent: sq100 
+---potential parent: sq101 
+---potential parent: sq104
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 354.5 which is OK!
+SETTING sq111 to be an ERROR of sq2
+
+------checking: sq26
+------checking: sq94
+------checking: sq100
+------checking: sq101
+------checking: sq104
+####processing: sq112 #####
+---hits: sq100 
+---hits: sq94 
+---hits: sq101 
+---hits: sq2 
+---hits: sq57 
+---hits: sq56 
+---hits: sq51 
+---hits: sq47 
+---hits: sq39 
+---hits: sq37 
+---hits: sq35
+---potential parent: sq2 
+---potential parent: sq35 
+---potential parent: sq39 
+---potential parent: sq37 
+---potential parent: sq47 
+---potential parent: sq51 
+---potential parent: sq56 
+---potential parent: sq57 
+---potential parent: sq94 
+---potential parent: sq100 
+---potential parent: sq101
+------checking: sq2
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 559 which is OK!
+SETTING sq112 to be an ERROR of sq2
+
+------checking: sq35
+------checking: sq39
+------checking: sq37
+------checking: sq47
+------checking: sq51
+------checking: sq56
+------checking: sq57
+------checking: sq94
+------checking: sq100
+------checking: sq101
+####processing: sq113 #####
+---hits: sq110 
+---hits: sq12
+---potential parent: sq12 
+---potential parent: sq110
+------checking: sq12
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 36.5 which is OK!
+SETTING sq113 to be an ERROR of sq12
+
+------checking: sq110
+####processing: sq114 #####
+---hits: sq108 
+---hits: sq87 
+---hits: sq4 
+---hits: sq115 
+---hits: sq97 
+---hits: sq93 
+---hits: sq89 
+---hits: sq86 
+---hits: sq80 
+---hits: sq50 
+---hits: sq44 
+---hits: sq23 
+---hits: sq20 
+---hits: sq14 
+---hits: sq11 
+---hits: sq8 
+---hits: sq1 
+---hits: sq61 
+---hits: sq117 
+---hits: sq107 
+---hits: sq102 
+---hits: sq98 
+---hits: sq95 
+---hits: sq91 
+---hits: sq78 
+---hits: sq74 
+---hits: sq69 
+---hits: sq68 
+---hits: sq67 
+---hits: sq55 
+---hits: sq54 
+---hits: sq46 
+---hits: sq43 
+---hits: sq31 
+---hits: sq28 
+---hits: sq27 
+---hits: sq22 
+---hits: sq16 
+---hits: sq13 
+---hits: sq10 
+---hits: sq9 
+---hits: sq6 
+---hits: sq5 
+---hits: sq3 
+---hits: sq19 
+---hits: sq34 
+---hits: sq118 
+---hits: sq82 
+---hits: sq21
+---potential parent: sq1 
+---potential parent: sq3 
+---potential parent: sq4 
+---potential parent: sq21 
+---potential parent: sq8 
+---potential parent: sq5 
+---potential parent: sq11 
+---potential parent: sq14 
+---potential parent: sq34 
+---potential parent: sq20 
+---potential parent: sq16 
+---potential parent: sq10 
+---potential parent: sq23 
+---potential parent: sq9 
+---potential parent: sq22 
+---potential parent: sq6 
+---potential parent: sq28 
+---potential parent: sq13 
+---potential parent: sq27 
+---potential parent: sq19 
+---potential parent: sq44 
+---potential parent: sq31 
+---potential parent: sq43 
+---potential parent: sq50 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq46 
+---potential parent: sq87 
+---potential parent: sq55 
+---potential parent: sq86 
+---potential parent: sq89 
+---potential parent: sq54 
+---potential parent: sq61 
+---potential parent: sq67 
+---potential parent: sq68 
+---potential parent: sq69 
+---potential parent: sq74 
+---potential parent: sq78 
+---potential parent: sq91 
+---potential parent: sq93 
+---potential parent: sq95 
+---potential parent: sq97 
+---potential parent: sq98 
+---potential parent: sq102 
+---potential parent: sq107 
+---potential parent: sq108 
+---potential parent: sq115 
+---potential parent: sq117 
+---potential parent: sq118
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 2798.5 which is OK!
+SETTING sq114 to be an ERROR of sq1
+
+------checking: sq3
+------checking: sq4
+------checking: sq21
+------checking: sq8
+------checking: sq5
+------checking: sq11
+------checking: sq14
+------checking: sq34
+------checking: sq20
+------checking: sq16
+------checking: sq10
+------checking: sq23
+------checking: sq9
+------checking: sq22
+------checking: sq6
+------checking: sq28
+------checking: sq13
+------checking: sq27
+------checking: sq19
+------checking: sq44
+------checking: sq31
+------checking: sq43
+------checking: sq50
+------checking: sq80
+------checking: sq82
+------checking: sq46
+------checking: sq87
+------checking: sq55
+------checking: sq86
+------checking: sq89
+------checking: sq54
+------checking: sq61
+------checking: sq67
+------checking: sq68
+------checking: sq69
+------checking: sq74
+------checking: sq78
+------checking: sq91
+------checking: sq93
+------checking: sq95
+------checking: sq97
+------checking: sq98
+------checking: sq102
+------checking: sq107
+------checking: sq108
+------checking: sq115
+------checking: sq117
+------checking: sq118
+####processing: sq115 #####
+---hits: sq86 
+---hits: sq91 
+---hits: sq80 
+---hits: sq14 
+---hits: sq114 
+---hits: sq108 
+---hits: sq43 
+---hits: sq4 
+---hits: sq87 
+---hits: sq50 
+---hits: sq44 
+---hits: sq23 
+---hits: sq20 
+---hits: sq11 
+---hits: sq8 
+---hits: sq1 
+---hits: sq61 
+---hits: sq34 
+---hits: sq82
+---potential parent: sq1 
+---potential parent: sq4 
+---potential parent: sq8 
+---potential parent: sq11 
+---potential parent: sq14 
+---potential parent: sq34 
+---potential parent: sq20 
+---potential parent: sq23 
+---potential parent: sq44 
+---potential parent: sq43 
+---potential parent: sq50 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq87 
+---potential parent: sq86 
+---potential parent: sq61 
+---potential parent: sq91 
+---potential parent: sq108 
+---potential parent: sq114
+------checking: sq1
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 504 which is OK!
+SETTING sq115 to be an ERROR of sq1
+
+------checking: sq4
+------checking: sq8
+------checking: sq11
+------checking: sq14
+------checking: sq34
+------checking: sq20
+------checking: sq23
+------checking: sq44
+------checking: sq43
+------checking: sq50
+------checking: sq80
+------checking: sq82
+------checking: sq87
+------checking: sq86
+------checking: sq61
+------checking: sq91
+------checking: sq108
+------checking: sq114
+####processing: sq116 #####
+---hits: sq117 
+---hits: sq102 
+---hits: sq95 
+---hits: sq15 
+---hits: sq3 
+---hits: sq40 
+---hits: sq36 
+---hits: sq21 
+---hits: sq118
+---potential parent: sq3 
+---potential parent: sq21 
+---potential parent: sq15 
+---potential parent: sq40 
+---potential parent: sq36 
+---potential parent: sq95 
+---potential parent: sq102 
+---potential parent: sq117 
+---potential parent: sq118
+------checking: sq3
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 634 which is OK!
+SETTING sq116 to be an ERROR of sq3
+
+------checking: sq21
+------checking: sq15
+------checking: sq40
+------checking: sq36
+------checking: sq95
+------checking: sq102
+------checking: sq117
+------checking: sq118
+####processing: sq117 #####
+---hits: sq116 
+---hits: sq102 
+---hits: sq95 
+---hits: sq80 
+---hits: sq3 
+---hits: sq40 
+---hits: sq36 
+---hits: sq15 
+---hits: sq114 
+---hits: sq108 
+---hits: sq85 
+---hits: sq58 
+---hits: sq4 
+---hits: sq21 
+---hits: sq118 
+---hits: sq82
+---potential parent: sq3 
+---potential parent: sq4 
+---potential parent: sq21 
+---potential parent: sq15 
+---potential parent: sq40 
+---potential parent: sq36 
+---potential parent: sq80 
+---potential parent: sq82 
+---potential parent: sq58 
+---potential parent: sq85 
+---potential parent: sq95 
+---potential parent: sq102 
+---potential parent: sq108 
+---potential parent: sq114 
+---potential parent: sq116 
+---potential parent: sq118
+------checking: sq3
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 634 which is OK!
+SETTING sq117 to be an ERROR of sq3
+
+------checking: sq4
+------checking: sq21
+------checking: sq15
+------checking: sq40
+------checking: sq36
+------checking: sq80
+------checking: sq82
+------checking: sq58
+------checking: sq85
+------checking: sq95
+------checking: sq102
+------checking: sq108
+------checking: sq114
+------checking: sq116
+------checking: sq118
+####processing: sq118 #####
+---hits: sq114 
+---hits: sq21 
+---hits: sq82 
+---hits: sq117 
+---hits: sq102 
+---hits: sq95 
+---hits: sq3 
+---hits: sq116 
+---hits: sq85 
+---hits: sq54 
+---hits: sq50 
+---hits: sq40 
+---hits: sq36 
+---hits: sq20 
+---hits: sq15 
+---hits: sq4
+---potential parent: sq3 
+---potential parent: sq4 
+---potential parent: sq21 
+---potential parent: sq15 
+---potential parent: sq20 
+---potential parent: sq40 
+---potential parent: sq36 
+---potential parent: sq50 
+---potential parent: sq82 
+---potential parent: sq54 
+---potential parent: sq85 
+---potential parent: sq95 
+---potential parent: sq102 
+---potential parent: sq114 
+---potential parent: sq116 
+---potential parent: sq117
+------checking: sq3
+------relative cooccurence: 1 which is sufficient!
+------min avg abundance: 428 which is OK!
+SETTING sq118 to be an ERROR of sq3
+
+------checking: sq4
+------checking: sq21
+------checking: sq15
+------checking: sq20
+------checking: sq40
+------checking: sq36
+------checking: sq50
+------checking: sq82
+------checking: sq54
+------checking: sq85
+------checking: sq95
+------checking: sq102
+------checking: sq114
+------checking: sq116
+------checking: sq117

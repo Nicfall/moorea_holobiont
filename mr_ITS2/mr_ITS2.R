@@ -304,23 +304,34 @@ head(samdf)
 rownames(samdf) <- samdf$Sample
 
 # Construct phyloseq object (straightforward from dada2 outputs)
+# ps <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE), 
+#                sample_data(samdf), 
+#                tax_table(taxa))
+# 
+# ps
+
+#phyloseq object with shorter names - doing this one instead of one above
+ids <- paste0("sq", seq(1, length(colnames(seqtab.nochim))))
+#making output fasta file for lulu step & maybe other things, before giving new ids to sequences
+path='~/moorea_holobiont/mr_ITS2/mrits2.fasta'
+uniquesToFasta(seqtab.nochim, path, ids = ids, mode = "w", width = 20000)
+colnames(seqtab.nochim)<-ids
+taxa2 <- cbind(taxa, rownames(taxa)) #retaining raw sequence info before renaming
+rownames(taxa2)<-ids
+
 ps <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE), 
                sample_data(samdf), 
-               tax_table(taxa))
+               tax_table(taxa2))
 
 ps
 
-#phyloseq object without sample 87, has no data
-seq <- read.csv("mrits2_seqtab.nochim_no87.csv")
-sam <- read.csv("mrits_sampledata_no87.csv")
-row.names(sam) <- sam$Sample
-row.names(seq) <- seq$sample
-seq2 <- seq[,3:119] #now removing sample name column
-
-ps_no87 <- phyloseq(otu_table(seq2, taxa_are_rows=FALSE), 
-                    sample_data(sam), 
-                    tax_table(taxa))
+#removing sample 87 from ps object, no data
+ps_no87 <- subset_samples(ps, Sample != "87")
 ps_no87
+
+#removing 87 from other things
+samdf.no87 <- samdf[-92,]
+seqtab.no87 <- seqtab.nochim[-92,]
 
 #### Alpha diversity #####
 
@@ -334,14 +345,14 @@ plot_richness(ps_no87, x="site", measures=c("Shannon", "Simpson"), color="zone")
 df.div <- data.frame(estimate_richness(ps_no87, split=TRUE, measures =c("Shannon","InvSimpson")))
 df.div
 
-df.div$site <- sam$site
-df.div$zone <- sam$zone
-df.div$site_zone <- sam$site_zone
+df.div$site <- samdf.no87$site
+df.div$zone <- samdf.no87$zone
+df.div$site_zone <- samdf.no87$site_zone
 
 #write.csv(df.div,file="~/moorea_holobiont/mr_ITS2/mrits_diversity.csv") #saving
 #df.div <- read.csv("~/Desktop/mrits/mrits_diversity.csv") #reading back in 
 
-##checking out how diversity works with variables
+##checking out how diversity works with variables - nothing interesting
 #df.size <- read.csv("mr_size.csv",header=TRUE)
 #df.div$coral_id <- row.names(df.div)
 # 
@@ -350,35 +361,28 @@ df.div$site_zone <- sam$site_zone
 # shapiro.test(mergeddf$Shannon)
 # shapiro.test(mergeddf$size)
 # kruskal.test(Shannon~size,data=mergeddf)
-#no significant relationship between coral size & diversity! interesting
+## no significant relationship between coral size & diversity! interesting
 
 ## now by sample host heterozygosity 
-df.het <- read.table("~/moorea_holobiont/mr_2brad/part5_het_out.txt") #read in data
-df.het$het <- df.het$V3/(df.het$V2+df.het$V3) #heterozygosity calculations
-df.het$V1 <- sub("TO","TNWO",df.het$V1) #just renaming some sites
-df.het$V1 <- sub("TI","TNWI",df.het$V1) #just renaming some sites
-df.het$site <- substr(df.het$V1, 0, 4)
-df.het$site <- as.factor(df.het$site)
-str(df.het)
+# df.het <- read.table("host_het.txt") #read in data
+# df.het$het <- df.het$V3/(df.het$V2+df.het$V3) #heterozygosity calculations
+# df.het$V1 <- sub("TO","TNWO",df.het$V1) #just renaming some sites
+# df.het$V1 <- sub("TI","TNWI",df.het$V1) #just renaming some sites
+# df.het$site <- substr(df.het$V1, 0, 4)
+# df.het$site <- as.factor(df.het$site)
+# df.het$site <- sub("I","-B", df.het$site)
+# df.het$site <- sub("O","-F", df.het$site)
+# str(df.het)
 
-#just getting sample names on the same page
-df.het$V1 <- sub(".trim.bt2.bam.out.saf.idx.ml","",df.het$V1)
-df.het$coral_id <- substr(df.het$V1, 6, 8)
-df.div$coral_id <- row.names(df.div)
-
-#### *finish plot here ####
-mergeddf2 <- merge(df.div, df.het, by="coral_id", sort=TRUE)
-# plot(Shannon~size,data=mergeddf)
-# shapiro.test(mergeddf$Shannon)
-# shapiro.test(mergeddf$size)
-# kruskal.test(Shannon~size,data=mergeddf)
-
-#diversity by counts
-# df$counts <- sample_sums(ps_no87)
-# plot(counts~site_zone,data=df)
-# lm1 <- lm(Shannon~counts,data=df)
-# summary(lm1)
-#significant 
+## just getting sample names on the same page
+# df.het$V1 <- sub(".trim.bt2.bam.out.saf.idx.ml","",df.het$V1)
+# df.het$coral_id <- substr(df.het$V1, 6, 8)
+# df.div$coral_id <- row.names(df.div)
+# 
+# mergeddf2 <- merge(df.div, df.het, by="coral_id", sort=TRUE)
+# plot(Shannon~het,data=mergeddf2)
+# kruskal.test(Shannon~het,data=mergeddf2)
+## not significant!
 
 library(ggplot2)
 #install.packages("extrafontdb")
@@ -421,9 +425,9 @@ gg.si
 quartz()
 ggarrange(gg.sh,gg.si,common.legend=TRUE,legend="right")
 
-mnw <- subset(df,site=="MNW")
-mse <- subset(df,site=="MSE")
-tah <- subset(df,site=="TNW")
+mnw <- subset(df.div,site=="MNW")
+mse <- subset(df.div,site=="MSE")
+tah <- subset(df.div,site=="TNW")
 
 wilcox.test(Shannon~zone,data=mnw)
 #not different
@@ -459,15 +463,141 @@ ps.top <- transform_sample_counts(ps_no87, function(OTU) OTU/sum(OTU))
 ps.top <- prune_taxa(top, ps.top)
 plot_bar(ps.top, x="Sample",fill="Class") + facet_wrap(~zone, scales="free_x")
 
-bot <- names(sort(taxa_sums(ps_no87), decreasing=TRUE))[5:30]
+bot <- names(sort(taxa_sums(ps_no87), decreasing=TRUE))[5:118]
 ps.bot <- transform_sample_counts(ps_no87, function(OTU) OTU/sum(OTU))
 ps.bot <- prune_taxa(bot, ps.bot)
 plot_bar(ps.bot, x="Sample",fill="Class") #+ facet_wrap(~ColonyID+Timepoint, scales="free_x")
 
-#bar plot but without the lines between OTUs
+#bar plot but without the lines between OTUs & no "NAs"
 ps_glom <- tax_glom(ps_no87, "Class")
 ps0 <- transform_sample_counts(ps_glom, function(x) x / sum(x))
 ps1 <- merge_samples(ps0, "Sample")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+plot_bar(ps2, fill="Class")
+
+#~##########################################~#
+###### Apply LULU to cluster ASVs ############
+#~##########################################~#
+
+##Necessary pre-steps after producing ASV table and associated fasta file:
+##Produce a match list using BLASTn
+
+##IN TERMINAL#
+
+##First produce a blastdatabase with the OTUs
+#module load blast+
+#makeblastdb -in mrits2.fasta -parse_seqids -dbtype nucl
+
+##Then blast the OTUs against the database to produce the match list 
+#blastn -db mrits2.fasta -outfmt '6 qseqid sseqid pident' -out match_list.txt -qcov_hsp_perc 80 -perc_identity 84 -query mrits2.fasta
+##HSP = high scoring pair 
+##perc_identity = percent of nucleotides in the highly similar pairings that match
+
+##transfer match_list.txt to R working directory
+##BACK IN R#
+
+#first, read in ASV table
+#install.packages("remotes")
+library("remotes")
+#install_github("https://github.com/tobiasgf/lulu.git")
+library("lulu")
+
+#must setting up table for lulu, saving it as a csv then reading back in 
+write.csv(seqtab.no87,"seqtab.no87.csv")
+seq.lulu <- read.csv("seqtab.no87.csv")
+rownames(seq.lulu)<-seq.lulu$X
+ASVs<-data.frame(t(seq.lulu[,2:119])) 
+head(ASVs)
+
+#just made this in terminal
+matchList<-read.table("match_list.txt")
+
+#Now, run the LULU curation
+curated_result <- lulu(ASVs, matchList,minimum_match=99)
+#default: minimum_relative_cooccurence = 0.95 default, changed to 0.70 to see what happens, nothing
+#default: minimum_match = 84 default, only 1 OTU different between 97 & 84
+summary(curated_result)
+#me: leaves 7 OTUs with 84% match - take home story is that they're all very similar
+#19 otus with match of 99$
+
+#Pull out the curated OTU list, re-transpose
+lulu.out <- data.frame(t(curated_result$curated_table))
+
+#Continue on to your favorite analysis
+write.csv(lulu.out,"~/moorea_holobiont/mr_ITS2/lulu_output.csv")
+
+#removing X from row names to match up with previous data frames
+rownames(lulu.out) <- sub("X","",rownames(lulu.out))
+
+#phyloseq object with lulu results
+ps.lulu <- phyloseq(otu_table(lulu.out, taxa_are_rows=FALSE), 
+                    sample_data(samdf.no87), 
+                    tax_table(taxa2))
+
+#### Bar plot & alpha diversity - lulu results ####
+ps.top <- transform_sample_counts(ps.lulu, function(OTU) OTU/sum(OTU))
+plot_bar(ps.top, x="Sample",fill="Class") + facet_wrap(~zone, scales="free_x")
+
+plot_richness(ps.lulu, x="site", measures=c("Shannon", "Simpson"), color="zone") + theme_bw()
+
+df.div <- data.frame(estimate_richness(ps.lulu, split=TRUE, measures =c("Shannon","InvSimpson")))
+df.div
+
+df.div$site <- samdf.no87$site
+df.div$zone <- samdf.no87$zone
+df.div$site_zone <- samdf.no87$site_zone
+
+diver.sh <- summarySE(data=df.div,measurevar=c("Shannon"),groupvars=c("zone","site"))
+
+ggplot(diver.sh, aes(x=site,y=Shannon,color=zone,shape=zone))+
+  geom_errorbar(aes(ymin=Shannon-se,ymax=Shannon+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
+  geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))
+
+kruskal.test(Shannon~zone,data=df.div)
+
+mnw <- subset(df.div,site=="MNW")
+mse <- subset(df.div,site=="MSE")
+tah <- subset(df.div,site=="TNW")
+
+wilcox.test(Shannon~zone,data=mnw)
+#not different
+wilcox.test(InvSimpson~zone,data=mnw)
+#p = 0.01
+
+wilcox.test(Shannon~zone,data=mse)
+#p = 0.001
+wilcox.test(InvSimpson~zone,data=mse)
+#p = 0.01
+
+wilcox.test(Shannon~zone,data=tah)
+#p = 0.04
+wilcox.test(InvSimpson~zone,data=tah)
+#p = 0.019
+
+#### MCMC.OTU to remove underrepresented ASVs ####
+library(MCMC.OTU)
+
+#added a column with a blank name in the beginning, with 1-95 in the column, mcmc.otu likes this
+#also removed the X from the beginning of sample names
+lulu.mcmc <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_formcmc.csv")
+
+goods <- purgeOutliers(lulu.mcmc,count.columns=3:21,otu.cut=0.001,zero.cut=0.02)
+#otu.cut = 0.1% of reads represented by ASV 
+colnames(goods)
+#sq 1, 3, 6, 7 retained with min 84% matching in lulu
+#sq 1, 2, 3, 6, 7, 12, 18, 24, 32, 33 with min 99% matching in lulu
+
+#### Bar plot - clustered & trimmed ####
+rownames(goods) <- goods$sample
+counts <- goods[,3:11]
+
+ps.lulu <- phyloseq(otu_table(counts, taxa_are_rows=FALSE), 
+                    sample_data(samdf.no87), 
+                    tax_table(taxa2))
+
+ps_glom <- tax_glom(ps.lulu, "Class")
+ps0 <- transform_sample_counts(ps_glom, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "site_zone")
 ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
 plot_bar(ps2, fill="Class")
 
@@ -821,56 +951,6 @@ write.csv(seqtab.nochim,file="mrits_seqtab_newids.csv",quote=F)
 taxa_names(ps)<-ids
 str(seqtab.nochim)
 
-#~##########################################~#
-###### Apply LULU to cluster ASVs ############
-#~##########################################~#
-
-##Necessary pre-steps after producing ASV table and associated fasta file:
-##Produce a match list using BLASTn
-
-##IN TERMINAL#
-
-##First produce a blastdatabase with the OTUs
-#module load blast+
-#makeblastdb -in mrits_renamed.fasta -parse_seqids -dbtype nucl
-
-##Then blast the OTUs against the database to produce the match list 
-#blastn -db mrits_renamed.fasta -outfmt '6 qseqid sseqid pident' -out match_list2.txt -qcov_hsp_perc 70 -perc_identity 70 -query mrits_renamed.fasta
-##HSP = high scoring pair = 90% cutoff
-##perc_identity = percent of nucleotides in the highly similar pairings that match
-
-##BACK IN R#
-
-#first, read in ASV table
-#install.packages("remotes")
-library("remotes")
-#install_github("https://github.com/tobiasgf/lulu.git")
-library("lulu")
-
-alldat<-read.csv("mrits_seqtab_newids.csv")
-head(alldat)
-
-#And match list
-matchList<-read.table("match_list.txt")
-head(matchList)
-
-#Reformat ASV table to desired LULU format
-rownames(alldat)<-alldat$X
-ASVs<-data.frame(t(alldat[,7:124])) 
-head(ASVs)
-
-#Now, run the LULU curation
-curated_result <- lulu(ASVs, matchList,minimum_match=97,minimum_relative_cooccurence = 0.70)
-#default: minimum_relative_cooccurence = 0.95 default, changed to 0.70 to see what happens, nothing
-#default: minimum_match = 84 default, only 1 OTU different between 97 & 84
-summary(curated_result)
-#me: leaves 8 OTUs with 84% match - take home story is that they're all very similar
-
-#Pull out the curated OTU list, re-transpose and re-combine with additional sample data
-alldat<-cbind(alldat[,1:6],data.frame(t(curated_result$curated_table)))
-
-#Continue on to your favorite analysis
-write.csv(alldat,"~/moorea_holobiont/mr_ITS2/lulu_output.csv")
 
 #trimming low abundance ones using mcmc.otu
 library("MCMC.OTU")
