@@ -467,6 +467,8 @@ library(vegan)
 #install.packages("ggforce")
 #library(ggforce)
 #not sure if I need this one^
+library(ggpubr)
+library(cowplot)
 
 # creating a log-transfromed normalized dataset for PCoA:
 df.seq <- as.data.frame(seqtab.no87)
@@ -482,9 +484,44 @@ scorez <- as.data.frame(scores)
 scorez$Sample <- rownames(scorez)
 pcoa.all <- merge(scorez,samdf.no87)
 
-ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=site,shape=site))+
+ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=site,shape=zone))+
   geom_point()+
   stat_ellipse()
+
+#now by site
+pcoa.mnw <- subset(pcoa.all,site=="MNW")
+gg.mnw <- ggplot(pcoa.mnw,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  xlab("Axis 1 ()")
+gg.mnw
+
+pcoa.mse <- subset(pcoa.all,site=="MSE")
+gg.mse <- ggplot(pcoa.mse,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
+gg.mse
+
+pcoa.tah <- subset(pcoa.all,site=="TNW")
+gg.tah <- ggplot(pcoa.tah,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
+gg.tah
+
+quartz()
+ggarrange(gg.mnw,gg.mse,gg.tah,nrow=1,common.legend=TRUE,legend="right")
 
 #~##########################################~#
 ###### Apply LULU to cluster ASVs ############
@@ -609,9 +646,12 @@ scorez <- as.data.frame(scores)
 scorez$Sample <- rownames(scorez)
 pcoa.all <- merge(scorez,samdf.no87)
 
-ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=site,shape=site))+
+ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=zone,shape=site))+
   geom_point()+
   stat_ellipse()
+
+#### Deseq differentially abundant ####
+library(DESeq2)
 
 #checking if any significant 
 ps.mnw = subset_samples(ps.mcmc, site=="MNW")
@@ -652,6 +692,69 @@ sigtab.t = cbind(as(sigtab.t, "data.frame"), as(tax_table(ps.t)[rownames(sigtab.
 dim(sigtab.t)
 #sq 7
 
+#### Heat map ####
+#install.packages("pheatmap")
+library(pheatmap)
+library(dplyr)
+
+#transform to relative abundance rather than absolute
+counts$Sample <- rownames(counts)
+newnames <- merge(samdf.mcmc,counts, by="Sample")
+
+sq1 <- newnames %>% 
+  group_by(site_zone) %>% 
+  summarise(sq1 = sum(sq1))
+sq2 <- newnames %>% 
+  group_by(site_zone) %>% 
+  summarise(sq2 = sum(sq2))
+sq3 <- newnames %>% 
+  group_by(site_zone) %>% 
+  summarise(sq3 = sum(sq3))
+sq6 <- newnames %>% 
+  group_by(site_zone) %>% 
+  summarise(sq6 = sum(sq6))
+sq7 <- newnames %>% 
+  group_by(site_zone) %>% 
+  summarise(sq7 = sum(sq7))
+sq12 <- newnames %>% 
+  group_by(site_zone) %>% 
+  summarise(sq12 = sum(sq12))
+sq18 <- newnames %>% 
+  group_by(site_zone) %>% 
+  summarise(sq18 = sum(sq18))
+sq24 <- newnames %>% 
+  group_by(site_zone) %>% 
+  summarise(sq24 = sum(sq24))
+sq32 <- newnames %>% 
+  group_by(site_zone) %>% 
+  summarise(sq32 = sum(sq32))
+allsq <- newnames %>% 
+  group_by(site_zone) %>% 
+  summarise(all = sum(sq1, sq2, sq3, sq6, sq7, sq12, sq18, sq24, sq32))
+
+df1 <- merge(sq1, sq2, by="site_zone")
+df2 <- merge(df1,sq3,by="site_zone")
+df3 <- merge(df2,sq6,by="site_zone")
+df4 <- merge(df3,sq7,by="site_zone")
+df5 <- merge(df4,sq12,by="site_zone")
+df6 <- merge(df5,sq18,by="site_zone")
+df7 <- merge(df6,sq24,by="site_zone")
+df.all <- merge(df7,sq32,by="site_zone")
+rownames(df.all) <- df.all$site_zone
+df.counts <- df.all[,2:10]
+
+df.counts.t <- t(df.counts)
+#relative abundance
+dat <- scale(df.counts.t, center=F, scale=colSums(df.counts.t))
+quartz()
+pheatmap(dat,colorRampPalette(c('white','chartreuse3','darkgreen'))(50),cluster_cols=F)
+
+#without all the stuff I just did
+counts.t <- t(counts)
+dat2 <- scale(counts.t, center=F, scale=colSums(counts.t))
+
+pheatmap(dat2,colorRampPalette(c('white','blue'))(50))
+
 #### rarefy #####
 library(vegan)
 
@@ -670,6 +773,9 @@ samdf.rare <- samdf.mcmc[!(row.names(samdf.mcmc) %in% row.names.remove), ]
 seq.rare <- rrarefy(counts.rare,sample=1994)
 rarecurve(seq.rare,step=100,label=FALSE)
 
+#save
+#write.csv(seq.rare,"~/moorea_holobiont/mr_ITS2/seqtab.rare_1994.csv")
+
 #phyloseq object
 ps.rare <- phyloseq(otu_table(seq.rare, taxa_are_rows=FALSE), 
                     sample_data(samdf.rare), 
@@ -684,8 +790,8 @@ plot_bar(ps2, fill="Class")
 plot_ordination(ps.rare, ordinate(ps.rare, "PCoA"), color = "site") + geom_point(size = 5)
 #ugly
 
-#### PCoA ####
-df.seq <- as.data.frame(counts.rare)
+#### PCoA - rarefied, clustered, trimmed ####
+df.seq <- as.data.frame(seq.rare)
 all.log=logLin(data=df.seq)
 
 # computing Manhattan distances (sum of all log-fold-changes) and performing PCoA:
@@ -698,6 +804,78 @@ scorez <- as.data.frame(scores)
 scorez$Sample <- rownames(scorez)
 pcoa.all <- merge(scorez,samdf.rare)
 
-ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=site,shape=site))+
+ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=site_zone,shape=site_zone))+
   geom_point()+
   stat_ellipse()
+
+#### Stats ####
+#help on adonis here:
+#https://thebiobucket.blogspot.com/2011/04/assumptions-for-permanova-with-adonis.html#more
+
+#all
+#dist.seqtab <- vegdist(seqtab.no87)
+#anova(betadisper(dist.seqtab,samdf.no87$zone))
+adonis(seqtab.no87 ~ zone, strata=samdf.no87$site, data=samdf.no87, permutations=999)
+#0.01 **
+
+#clustered & trimmed 
+adonis(counts ~ zone, strata=samdf.mcmc$site, data=samdf.mcmc, permutations=999)
+#0.04 *
+
+#relative abundance, does this by columns so much transform
+t.relabun <- scale(t(counts), center=F, scale=colSums(t(counts)))
+#un-transform
+relabun <- t(t.relabun)
+
+adonis(relabun ~ zone, strata=samdf.mcmc$site, data=samdf.mcmc, permutations=999)
+#0.02 *
+
+#rarefied, clustered, trimmed
+#dist.rare <- vegdist(seq.rare)
+#betadisper(dist.rare,samdf.rare$site)
+adonis(seq.rare ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=999)
+#0.07 . - 0.1
+
+#Moorea NW
+mnw.rare <- subset(samdf.rare,site=="MNW")
+seq.rare2 <- as.data.frame(seq.rare)
+seq.rare2$sample <- rownames(seq.rare2)
+mnw.seq <- subset(seq.rare2, sample %in% mnw.rare$Sample)
+mnw.seq2 <- mnw.seq[,1:9]
+
+adonis(mnw.seq2 ~ zone, strata=mnw.rare$site, data=mnw.rare, permutations=999)
+#0.044 *
+
+#Moorea SE
+mse.rare <- subset(samdf.rare,site=="MSE")
+mse.seq <- subset(seq.rare2, sample %in% mse.rare$Sample)
+mse.seq2 <- mse.seq[,1:9]
+
+adonis(mse.seq2 ~ zone, strata=mse.rare$site, data=mse.rare, permutations=999)
+#0.018 *
+
+#Tahiti
+tah.rare <- subset(samdf.rare,site=="TNW")
+tah.seq <- subset(seq.rare2, sample %in% tah.rare$Sample)
+tah.seq2 <- tah.seq[,1:9]
+
+dist.tah <- vegdist(tah.seq2)
+anova(betadisper(dist.tah,tah.rare$zone))
+adonis(tah.seq2 ~ zone, strata=tah.rare$site, data=tah.rare, permutations=999)
+#0.043 *
+
+#### CCA ####
+library(adegenet) # for transp()
+
+pp0=capscale(seq.rare~1)
+pp=capscale(seq.rare~zone%in%site,data=samdf.rare)
+anova(pp, alpha=0.05)
+
+axes2plot=c(1,2)  
+quartz()
+cmd=pp #change to pp for CAP, pp0 for MDS
+plot(cmd,choices=axes2plot) # choices - axes to display
+points(cmd,choices=axes2plot)
+ordihull(cmd,choices= axes2plot,groups=samdf.rare$site_zone,draw="polygon",label=F)
+#ordispider(cmd,choices= axes2plot,groups=samdf.rare$site,col="grey80")
+#ordiellipse(cmd,choices= axes2plot,groups=samdf.rare$zone,draw="polygon",label=T)
