@@ -638,6 +638,11 @@ ps.lulu <- phyloseq(otu_table(lulu.out, taxa_are_rows=FALSE),
 ps.top <- transform_sample_counts(ps.lulu, function(OTU) OTU/sum(OTU))
 plot_bar(ps.top, x="Sample",fill="Class") + facet_wrap(~zone, scales="free_x")
 
+df.div <- data.frame(estimate_richness(ps.lulu, split=TRUE, measures =c("Shannon","InvSimpson")))
+df.div
+
+
+
 #### MCMC.OTU to remove underrepresented ASVs ####
 library(MCMC.OTU)
 
