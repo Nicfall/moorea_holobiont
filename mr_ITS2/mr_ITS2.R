@@ -626,14 +626,13 @@ plot_ordination(ps.rel, iMDS, color="site")+
 library("remotes")
 #install_github("https://github.com/tobiasgf/lulu.git")
 library("lulu")
+#rarefying
+library(vegan)
 
 #must setting up table for lulu, saving it as a csv then reading back in 
 #write.csv(seqtab.no87,"seqtab.no87.csv")
 setwd("~/moorea_holobiont/mr_ITS2/")
 seq.lulu <- read.csv("seqtab.no87.csv",row.names=1)
-
-#rarefying
-library(vegan)
 
 rarecurve(seq.lulu,step=100,label=FALSE)
 total <- rowSums(seq.lulu)
@@ -650,6 +649,7 @@ counts.rare <- rrarefy(lulu.rare,sample=1994)
 rarecurve(counts.rare,step=100,label=FALSE)
 #save
 #write.csv(counts.rare,"~/moorea_holobiont/mr_ITS2/seqtabno87.rare.csv")
+counts.rare <- read.csv("~/moorea_holobiont/mr_ITS2/seqtabno87.rare.csv",row.names=1)
 
 #back to lulu sequence
 ASVs<-data.frame(t(counts.rare)) 
@@ -682,17 +682,71 @@ rownames(lulu.out) <- sub("X","",rownames(lulu.out))
 
 #phyloseq object with lulu results
 ps.lulu <- phyloseq(otu_table(lulu.out, taxa_are_rows=FALSE), 
-                    sample_data(samdf.rare), 
+                    sample_data(samdf.no87), 
+                    tax_table(taxa2))
+
+ps.lulu.rare <- phyloseq(otu_table(lulu.out, taxa_are_rows=FALSE), 
+                    sample_data(samdf.no87), 
                     tax_table(taxa2))
 
 #### Bar plot & alpha diversity - clustered results ####
+library(cowplot)
+
 ps.top <- transform_sample_counts(ps.lulu, function(OTU) OTU/sum(OTU))
 plot_bar(ps.top, x="Sample",fill="Class") + facet_wrap(~zone, scales="free_x")
 
-df.div <- data.frame(estimate_richness(ps.lulu, split=TRUE, measures =c("Shannon","InvSimpson")))
+df.div <- data.frame(estimate_richness(ps.lulu.rare, split=TRUE, measures =c("Shannon","InvSimpson")))
 df.div
 
+df.div$Sample <- rownames(df.div)
+df.div <- merge(df.div,samdf.no87,by="Sample") #add sample data
 
+diver.sh <- summarySE(data=df.div,measurevar=c("Shannon"),groupvars=c("zone","site"))
+diver.si <- summarySE(data=df.div,measurevar=c("InvSimpson"),groupvars=c("zone","site"))
+
+quartz()
+gg.sh <- ggplot(diver.sh, aes(x=site, y=Shannon,color=zone,shape=zone))+
+  geom_errorbar(aes(ymin=Shannon-se,ymax=Shannon+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
+  geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
+  xlab("Site")+
+  ylab("Shannon diversity")+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  theme(text=element_text(family="Times"))+
+  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
+gg.sh
+
+gg.si <- ggplot(diver.si, aes(x=site, y=InvSimpson,color=zone,shape=zone))+
+  geom_errorbar(aes(ymin=InvSimpson-se,ymax=InvSimpson+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
+  geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
+  xlab("Site")+
+  ylab("Inv. Simpson diversity")+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  theme(text=element_text(family="Times"))
+gg.si
+
+mnw <- subset(df.div,site=="MNW")
+mse <- subset(df.div,site=="MSE")
+tah <- subset(df.div,site=="TNW")
+
+wilcox.test(Shannon~zone,data=mnw)
+#not different
+wilcox.test(InvSimpson~zone,data=mnw)
+#p = 0.01
+
+wilcox.test(Shannon~zone,data=mse)
+#p = 0.001
+wilcox.test(InvSimpson~zone,data=mse)
+#p = 0.01
+
+wilcox.test(Shannon~zone,data=tah)
+#p = 0.04
+wilcox.test(InvSimpson~zone,data=tah)
+#p = 0.019
 
 #### MCMC.OTU to remove underrepresented ASVs ####
 library(MCMC.OTU)
