@@ -90,6 +90,7 @@ fnRs <- sort(list.files(path, pattern = "_R2.fastq.gz", full.names = TRUE))
 get.sample.name <- function(fname) strsplit(basename(fname), "_")[[1]][1]
 sample.names <- unname(sapply(fnFs, get.sample.name))
 head(sample.names)
+sample.names
 
 #### check for primers ####
 FWD <- "GTGAATTGCAGAACTCCGTG"  ## CHANGE ME to your forward primer sequence
@@ -222,6 +223,7 @@ summary((mergers[[1]]))
 
 seqtab <- makeSequenceTable(mergers)
 dim(seqtab)
+rowSums(seqtab)
 
 # Inspect distribution of sequence lengths
 table(nchar(getSequences(seqtab)))
@@ -270,6 +272,36 @@ tail(track)
 
 write.csv(track,file="its2_reads.csv",row.names=TRUE,quote=FALSE)
 
+#plotting for no reason
+
+#manually added raw counts from the raw .fastq file using the following loop in Terminal:
+# for file in *R1_001.fastq
+# do
+# echo $file >> raw_r1_names
+# grep @M0 $file | wc -l >> raw_r1_counts
+# done
+setwd("~/moorea_holobiont/mr_ITS2/")
+reads <- read.csv("its2_reads_renamed.csv")
+#counts1 = raw
+#counts2 = input
+#counts3 = filtered
+#counts4 = denoised
+#counts5 = merged
+#counts6 = nonchim
+
+reread <- reshape(reads, varying = c("counts1","counts2", "counts3", "counts4", "counts5", "counts6"), timevar = "day",idvar = "sample", direction = "long", sep = "")
+reread$sample <- as.factor(reread$sample)
+ggplot(reread,aes(x=day,y=counts,color=sample))+
+  geom_point()+
+  geom_path()
+
+library(Rmisc)
+reread.se <- summarySE(data=reread,measurevar="counts",groupvars=c("day"))
+ggplot(reread.se,aes(x=day,y=counts))+
+  geom_point()+
+  geom_path()+
+  geom_errorbar(aes(ymin=counts-se,ymax=counts+se),width=0.3)
+  
 #~############################~#
 ##### Assign Taxonomy ##########
 #~############################~#
@@ -462,6 +494,21 @@ ps1 <- merge_samples(ps0, "Sample")
 ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
 plot_bar(ps2, fill="Class")
 
+#subset by class
+c3k <- subset_taxa(ps_no87,Class==" C3k")
+
+all.otu <- ps2@otu_table
+# Taxonomy Table:     [6 taxa by 4 taxonomic ranks]:
+#   Kingdom        Phylum     Class     
+# sq1  "Symbiodinium" " Clade C" " C3k"  NA
+# sq2  "Symbiodinium" " Clade C" " Cspc" NA
+# sq7  "Symbiodinium" " Clade A" " A1"   NA
+# sq33 "Symbiodinium" " Clade A" " A3"   NA
+# sq66 "Symbiodinium" " Clade B" " B1"   NA
+# sq81 "Symbiodinium" " Clade C" " C116" NA
+all.otu2 <- as.data.frame(all.otu)
+mean(all.otu2$sq1)
+
 #### Pcoa ####
 library(vegan)
 #install.packages("ggforce")
@@ -619,12 +666,20 @@ ps.mcmc <- phyloseq(otu_table(counts, taxa_are_rows=FALSE),
                     sample_data(samdf.mcmc), 
                     tax_table(taxa2))
 
+ps.rel <- transform_sample_counts(ps.mcmc, function(x) x / sum(x))
+ps.glom <- tax_glom(ps.rel, "Class")
+c3k.mcmc <- subset_taxa(ps.glom,Class==" C3k")
+c3k.otu <- as.data.frame(c3k.mcmc@otu_table)
+mean(c3k.otu$sq1)
+
 #bar plot
 ps_glom <- tax_glom(ps.mcmc, "Class")
 ps0 <- transform_sample_counts(ps_glom, function(x) x / sum(x))
 ps1 <- merge_samples(ps0, "site_zone")
 ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
 plot_bar(ps2, fill="Class")
+
+
 
 #### Pcoa - clustered & trimmed ####
 library(vegan)
