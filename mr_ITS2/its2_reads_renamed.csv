@@ -1,4 +1,4 @@
-sample,raw,input,filtered,denoised,merged,nonchim
+sample,counts1,counts2,counts3,counts4,counts5,counts6
 101,5536,5532,5011,4992,4853,4848
 113,3925,3920,3513,3511,3453,3450
 115,4692,4689,4147,4146,4043,4036
