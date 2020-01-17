@@ -366,6 +366,15 @@ samdf.no87 <- samdf[-92,]
 seqtab.no87 <- seqtab.nochim[-92,]
 
 #### Alpha diversity #####
+library(ggplot2)
+#install.packages("extrafontdb")
+library(extrafontdb)
+library(extrafont)
+library(Rmisc)
+library(cowplot)
+library(ggpubr)
+#font_import(paths = "/Library/Fonts/")
+loadfonts()
 
 #Visualize alpha-diversity - ***Should be done on raw, untrimmed dataset***
 #total species diversity in a landscape (gamma diversity) is determined by two different things, the mean species diversity in sites or habitats at a more local scale (alpha diversity) and the differentiation among those habitats (beta diversity)
@@ -377,12 +386,61 @@ plot_richness(ps_no87, x="site", measures=c("Shannon", "Simpson"), color="zone")
 df.div <- data.frame(estimate_richness(ps_no87, split=TRUE, measures =c("Shannon","InvSimpson")))
 df.div
 
-df.div$site <- samdf.no87$site
-df.div$zone <- samdf.no87$zone
-df.div$site_zone <- samdf.no87$site_zone
+df.div$Sample <- rownames(df.div)
+df.div <- merge(df.div,samdf.no87,by="Sample") #add sample data
 
 #write.csv(df.div,file="~/moorea_holobiont/mr_ITS2/mrits_diversity.csv") #saving
 #df.div <- read.csv("~/Desktop/mrits/mrits_diversity.csv") #reading back in 
+
+diver.sh <- summarySE(data=df.div,measurevar=c("Shannon"),groupvars=c("zone","site"))
+diver.si <- summarySE(data=df.div,measurevar=c("InvSimpson"),groupvars=c("zone","site"))
+
+quartz()
+gg.sh <- ggplot(diver.sh, aes(x=site, y=Shannon,color=zone,shape=zone))+
+  geom_errorbar(aes(ymin=Shannon-se,ymax=Shannon+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
+  geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
+  xlab("Site")+
+  ylab("Shannon diversity")+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  theme(text=element_text(family="Times"))+
+  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
+gg.sh
+
+gg.si <- ggplot(diver.si, aes(x=site, y=InvSimpson,color=zone,shape=zone))+
+  geom_errorbar(aes(ymin=InvSimpson-se,ymax=InvSimpson+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
+  geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
+  xlab("Site")+
+  ylab("Inv. Simpson diversity")+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  theme(text=element_text(family="Times"))
+gg.si
+
+quartz()
+ggarrange(gg.sh,gg.si,common.legend=TRUE,legend="right")
+
+mnw <- subset(df.div,site=="MNW")
+mse <- subset(df.div,site=="MSE")
+tah <- subset(df.div,site=="TNW")
+
+wilcox.test(Shannon~zone,data=mnw)
+#not different
+wilcox.test(InvSimpson~zone,data=mnw)
+#p = 0.01
+
+wilcox.test(Shannon~zone,data=mse)
+#p = 0.001
+wilcox.test(InvSimpson~zone,data=mse)
+#p = 0.01
+
+wilcox.test(Shannon~zone,data=tah)
+#p = 0.04
+wilcox.test(InvSimpson~zone,data=tah)
+#p = 0.019
 
 ##checking out how diversity works with variables - nothing interesting
 #df.size <- read.csv("mr_size.csv",header=TRUE)
@@ -415,66 +473,6 @@ df.div$site_zone <- samdf.no87$site_zone
 # plot(Shannon~het,data=mergeddf2)
 # kruskal.test(Shannon~het,data=mergeddf2)
 ## not significant!
-
-library(ggplot2)
-#install.packages("extrafontdb")
-library(extrafontdb)
-library(extrafont)
-library(Rmisc)
-library(cowplot)
-library(ggpubr)
-#font_import(paths = "/Library/Fonts/")
-loadfonts()
-
-diver.sh <- summarySE(data=df.div,measurevar=c("Shannon"),groupvars=c("zone","site"))
-diver.si <- summarySE(data=df.div,measurevar=c("InvSimpson"),groupvars=c("zone","site"))
-
-quartz()
-gg.sh <- ggplot(diver.sh, aes(x=site, y=Shannon,color=zone,fill=zone,shape=zone))+
-  geom_errorbar(aes(ymin=Shannon-se,ymax=Shannon+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
-  geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
-  xlab("Site")+
-  ylab("Shannon diversity")+
-  theme_cowplot()+
-  scale_shape_manual(values=c(16,15))+
-  theme(text=element_text(family="Gill Sans MT"))+
-  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"))+
-  guides(fill=guide_legend(title="Reef zone"),color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
-gg.sh
-
-gg.si <- ggplot(diver.si, aes(x=site, y=InvSimpson,color=zone,fill=zone,shape=zone))+
-  geom_errorbar(aes(ymin=InvSimpson-se,ymax=InvSimpson+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
-  geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
-  xlab("Site")+
-  ylab("Inverse Simpson diversity")+
-  theme_cowplot()+
-  scale_shape_manual(values=c(16,15))+
-  theme(text=element_text(family="Gill Sans MT"))+
-  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"))+
-  guides(fill=guide_legend(title="Reef zone"),color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
-gg.si
-
-quartz()
-ggarrange(gg.sh,gg.si,common.legend=TRUE,legend="right")
-
-mnw <- subset(df.div,site=="MNW")
-mse <- subset(df.div,site=="MSE")
-tah <- subset(df.div,site=="TNW")
-
-wilcox.test(Shannon~zone,data=mnw)
-#not different
-wilcox.test(InvSimpson~zone,data=mnw)
-#p = 0.01
-
-wilcox.test(Shannon~zone,data=mse)
-#p = 0.001
-wilcox.test(InvSimpson~zone,data=mse)
-#p = 0.01
-
-wilcox.test(Shannon~zone,data=tah)
-#p = 0.04
-wilcox.test(InvSimpson~zone,data=tah)
-#p = 0.019
 
 #### Bar plot - raw table ####
 top <- names(sort(taxa_sums(ps_no87), decreasing=TRUE))[1:30]
@@ -509,7 +507,8 @@ all.otu <- ps2@otu_table
 all.otu2 <- as.data.frame(all.otu)
 mean(all.otu2$sq1)
 
-#### Pcoa ####
+#### Pcoa - raw data ####
+
 library(vegan)
 #install.packages("ggforce")
 #library(ggforce)
@@ -522,8 +521,9 @@ df.seq <- as.data.frame(seqtab.no87)
 all.log=logLin(data=df.seq)
 
 # computing Manhattan distances (sum of all log-fold-changes) and performing PCoA:
-all.dist=vegdist(all.log,method="manhattan")
+all.dist=vegdist(all.log,method="bray")
 all.pcoa=pcoa(all.dist)
+#32.7%, 23.2%
 
 # plotting:
 scores=all.pcoa$vectors[,1:2]
@@ -531,11 +531,19 @@ scorez <- as.data.frame(scores)
 scorez$Sample <- rownames(scorez)
 pcoa.all <- merge(scorez,samdf.no87)
 
-ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=site,shape=zone))+
+levels(pcoa.all$site) <- c("Moorea NW","Moorea SE","Tahiti NW")
+ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
   geom_point()+
-  stat_ellipse()
-
-#now by site
+  xlab('Axis 1 (32.7%)')+
+  ylab('Axis 2 (23.2%)')+
+  stat_ellipse()+
+  facet_wrap(~site)+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
+  
+#now by site - unnecessary actually thanks to facet_wrap
 pcoa.mnw <- subset(pcoa.all,site=="MNW")
 gg.mnw <- ggplot(pcoa.mnw,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
   geom_point()+
@@ -570,6 +578,28 @@ gg.tah
 quartz()
 ggarrange(gg.mnw,gg.mse,gg.tah,nrow=1,common.legend=TRUE,legend="right")
 
+#relative abundance instead of absolute abundance
+t.relabun <- scale(t(seqtab.no87), center=F, scale=colSums(t(seqtab.no87)))
+relabun <- t(t.relabun)
+all.dist=vegdist(relabun,method="manhattan")
+all.pcoa=pcoa(all.dist)
+
+scores=all.pcoa$vectors[,1:2]
+scorez <- as.data.frame(scores)
+scorez$Sample <- rownames(scorez)
+pcoa.all <- merge(scorez,samdf.no87,by="Sample")
+
+ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=site,shape=zone))+
+  geom_point()+
+  stat_ellipse()
+
+#alt method
+ps.rel <- transform_sample_counts(ps_no87, function(OTU) OTU/sum(OTU))
+iDist <- distance(ps.rel, method="bray")
+iMDS  <- ordinate(ps.rel, "MDS", distance=iDist)
+plot_ordination(ps.rel, iMDS, color="site")+
+  stat_ellipse()
+
 #~##########################################~#
 ###### Apply LULU to cluster ASVs ############
 #~##########################################~#
@@ -600,38 +630,59 @@ library("lulu")
 #must setting up table for lulu, saving it as a csv then reading back in 
 #write.csv(seqtab.no87,"seqtab.no87.csv")
 setwd("~/moorea_holobiont/mr_ITS2/")
-seq.lulu <- read.csv("seqtab.no87.csv")
-rownames(seq.lulu)<-seq.lulu$X
-ASVs<-data.frame(t(seq.lulu[,2:119])) 
+seq.lulu <- read.csv("seqtab.no87.csv",row.names=1)
+
+#rarefying
+library(vegan)
+
+rarecurve(seq.lulu,step=100,label=FALSE)
+total <- rowSums(seq.lulu)
+total
+subset(total, total <1994)
+summary(total)
+
+row.names.remove <- c("117","311","402","414","505","513","530","58","72","76")
+lulu.rare <- seq.lulu[!(row.names(seq.lulu) %in% row.names.remove),]
+samdf.rare <- samdf.no87[!(row.names(samdf.no87) %in% row.names.remove), ]
+#85 samples left
+
+counts.rare <- rrarefy(lulu.rare,sample=1994)
+rarecurve(counts.rare,step=100,label=FALSE)
+#save
+#write.csv(counts.rare,"~/moorea_holobiont/mr_ITS2/seqtabno87.rare.csv")
+
+#back to lulu sequence
+ASVs<-data.frame(t(counts.rare)) 
 head(ASVs)
 
 #just made this in terminal
 matchList<-read.table("match_list.txt")
 
+#had some zeroes to get rid of after rarefying - not the case with the raw table
+ASVs <- subset(ASVs,rowSums(ASVs)!=0)
 #Now, run the LULU curation
-curated_result <- lulu(ASVs, matchList,minimum_match=99)
+curated_result <- lulu(ASVs, matchList,minimum_match=99,minimum_relative_cooccurence=0.70)
 #default: minimum_relative_cooccurence = 0.95 default, changed to 0.70 to see what happens, nothing
 #default: minimum_match = 84 default, only 1 OTU different between 97 & 84
 summary(curated_result)
 #me: leaves 7 OTUs with 84% match - take home story is that they're all very similar
-#19 otus with match of 99$
+#19 otus with match of 99%
+#17 otus with rarefied result
 
 #Pull out the curated OTU list, re-transpose
 lulu.out <- data.frame(t(curated_result$curated_table))
 
 #Continue on to your favorite analysis
 #write.csv(lulu.out,"~/moorea_holobiont/mr_ITS2/lulu_output.csv")
-lulu.out <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_output.csv")
-#reformating to orignal (saving csv makes my row names a new column): 
-rownames(lulu.out) <- lulu.out$X #setting sample name as row names
-lulu.out <- lulu.out[,2:20] #removing sample names
+write.csv(lulu.out,"~/moorea_holobiont/mr_ITS2/lulu_output.rare.csv")
+lulu.out <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_output.csv",row.names=1)
 
 #removing X from row names to match up with previous data frames, was only necesary from original out, is fine in my .csv file
-#rownames(lulu.out) <- sub("X","",rownames(lulu.out))
+rownames(lulu.out) <- sub("X","",rownames(lulu.out))
 
 #phyloseq object with lulu results
 ps.lulu <- phyloseq(otu_table(lulu.out, taxa_are_rows=FALSE), 
-                    sample_data(samdf.no87), 
+                    sample_data(samdf.rare), 
                     tax_table(taxa2))
 
 #### Bar plot & alpha diversity - clustered results ####
@@ -684,10 +735,77 @@ ps1 <- merge_samples(ps0, "site_zone")
 ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
 plot_bar(ps2, fill="Class")
 
+ps.mcmc.melt <- psmelt(ps.mcmc)
+ps.mcmc.melt$newclass <- paste(ps.mcmc.melt$Class,ps.mcmc.melt$OTU,sep="_")
 
+#boxplot
+ggplot(ps.mcmc.melt,aes(x=site_zone,y=Abundance,color=newclass))+
+  geom_boxplot()
+
+#individually
+sq3 <- subset(ps.mcmc.melt,newclass==" C3k_sq3")
+ggplot(sq3,aes(x=site_zone,y=Abundance,color=Class))+
+  geom_boxplot()
+
+ps.all <- transform_sample_counts(ps.mcmc, function(OTU) OTU/sum(OTU))
+tb <- psmelt(ps.all)%>%
+  filter(!is.na(Abundance))%>%
+  group_by(site_zone,OTU)%>%
+  summarize_at("Abundance",mean)
+
+ggplot(tb,aes(x=site_zone,y=Abundance,fill=OTU))+
+  geom_bar(stat="identity", colour="black")+
+  theme_cowplot()
+
+#renaming
+
+#ps.all@tax_table
+# Taxonomy Table:     [9 taxa by 4 taxonomic ranks]:
+#   Kingdom        Phylum     Class  
+# sq1  "Symbiodinium" " Clade C" " C3k" - 1
+# sq2  "Symbiodinium" " Clade C" " Cspc" - 1
+# sq3  "Symbiodinium" " Clade C" " C3k" - 2
+# sq6  "Symbiodinium" " Clade C" " C3k" - 3
+# sq7  "Symbiodinium" " Clade A" " A1"  
+# sq12 "Symbiodinium" " Clade C" NA - 1    
+# sq18 "Symbiodinium" " Clade C" NA - 2    
+# sq24 "Symbiodinium" " Clade C" " C3k" - 4
+# sq32 "Symbiodinium" " Clade C" " Cspc" - 2
+
+tb$sym <- gsub("sq12","Clade C - 1",tb$OTU)
+tb$sym <- gsub("sq18","Clade C - 2",tb$sym)
+tb$sym <- gsub("sq1","C3k - 1",tb$sym)
+tb$sym <- gsub("sq24","C3k - 4",tb$sym)
+tb$sym <- gsub("sq2","Cspc - 1",tb$sym)
+tb$sym <- gsub("sq32","Cspc - 2",tb$sym)
+tb$sym <- gsub("sq3","C3k - 2",tb$sym)
+tb$sym <- gsub("sq6","C3k - 3",tb$sym)
+tb$sym <- gsub("sq7","A1",tb$sym)
+
+tb$site_zone <- gsub("MNWI","MNW-B",tb$site_zone)
+tb$site_zone <- gsub("MNWO","MNW-F",tb$site_zone)
+tb$site_zone <- gsub("MSEI","MSE-B",tb$site_zone)
+tb$site_zone <- gsub("MSEO","MSE-F",tb$site_zone)
+tb$site_zone <- gsub("TI","TNW-B",tb$site_zone)
+tb$site_zone <- gsub("TO","TNW-F",tb$site_zone)
+
+tb$sym <- factor(tb$sym, levels=c("C3k - 1","C3k - 2","C3k - 3","C3k - 4","Cspc - 1", "Cspc - 2","Clade C - 1","Clade C - 2","A1"))
+quartz()
+gg.bp <- ggplot(tb,aes(x=site_zone,y=Abundance,fill=sym))+
+  geom_bar(stat="identity", colour="black")+
+  theme_cowplot()+
+  theme(text=element_text(family="Times"))+
+  xlab('Site')+
+#  scale_fill_manual(name="Sym.",values=c("seagreen1","seagreen2","seagreen3","seagreen4","blue","darkblue","orange","yellow","purple"))
+  scale_fill_manual(name="Algal symbiont",values=c("#1E9C89FF","#25AB82FF","#58C765FF","#7ED34FFF","#365d8dff","#287d8eff","#440154FF", "#48196bff","#d4e21aff"))
+
+quartz()
+ggarrange(gg.bp,
+          ggarrange(gg.sh,gg.si,ncol=2,labels=c("B.","C."),common.legend=T,legend="right",font.label=list(family="Times")),nrow=2,labels="A.",font.label=list(family="Times"))
 
 #### Pcoa - clustered & trimmed ####
 library(vegan)
+library(cowplot)
 #install.packages("ggforce")
 #library(ggforce)
 #not sure if I need this one^
@@ -704,11 +822,24 @@ all.pcoa=pcoa(all.dist)
 scores=all.pcoa$vectors[,1:2]
 scorez <- as.data.frame(scores)
 scorez$Sample <- rownames(scorez)
-pcoa.all <- merge(scorez,samdf.no87)
+pcoa.all <- merge(scorez,samdf.mcmc)
 
-ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=zone,shape=site))+
+ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
   geom_point()+
-  stat_ellipse()
+  stat_ellipse()+
+  facet_wrap(~site)
+
+#now by site
+pcoa.mnw <- subset(pcoa.all,site=="MNW")
+gg.mnw <- ggplot(pcoa.mnw,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  xlab("Axis 1 ()")
+gg.mnw
 
 #### Deseq differentially abundant ####
 library(DESeq2)
@@ -818,7 +949,7 @@ pheatmap(dat2,colorRampPalette(c('white','blue'))(50))
 #### rarefy #####
 library(vegan)
 
-rarecurve(counts,step=100,label=FALSE)
+rarecurve(counts,step=100,label=FALSE) #after clustering & trimming
 
 total <- rowSums(counts)
 total
@@ -833,8 +964,14 @@ samdf.rare <- samdf.mcmc[!(row.names(samdf.mcmc) %in% row.names.remove), ]
 seq.rare <- rrarefy(counts.rare,sample=1994)
 rarecurve(seq.rare,step=100,label=FALSE)
 
+rarecurve(seqtab.no87,step=100,label=FALSE)#before clustering & trimming
+
+
 #save
 #write.csv(seq.rare,"~/moorea_holobiont/mr_ITS2/seqtab.rare_1994.csv")
+write.csv(seq.rare,"~/moorea_holobiont/mr_ITS2/seqtab.rare_1994_all.csv")
+#read back in
+seq.rare <- read.csv("~/moorea_holobiont/mr_ITS2/seqtab.rare_1994.csv",row.names=1)
 
 #phyloseq object
 ps.rare <- phyloseq(otu_table(seq.rare, taxa_are_rows=FALSE), 
@@ -867,6 +1004,32 @@ pcoa.all <- merge(scorez,samdf.rare)
 ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=site_zone,shape=site_zone))+
   geom_point()+
   stat_ellipse()
+#looks the same as before rarefying? 
+
+#now by site
+pcoa.mnw <- subset(pcoa.all,site=="MNW")
+gg.mnw <- ggplot(pcoa.mnw,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  xlab("Axis 1 ()")
+gg.mnw
+
+#3 outliers: 178, 116, 113
+row.names.remove <- c("178","116","113")
+pcoa.mnw.less <- pcoa.mnw[!(pcoa.mnw$Sample %in% row.names.remove),]
+gg.mnw <- ggplot(pcoa.mnw.less,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  xlab("Axis 1 ()")
+gg.mnw
 
 #### Stats ####
 #help on adonis here:
@@ -882,7 +1045,7 @@ adonis(seqtab.no87 ~ zone, strata=samdf.no87$site, data=samdf.no87, permutations
 adonis(counts ~ zone, strata=samdf.mcmc$site, data=samdf.mcmc, permutations=999)
 #0.04 *
 
-#relative abundance, does this by columns so much transform
+#relative abundance, does this by columns so must transform
 t.relabun <- scale(t(counts), center=F, scale=colSums(t(counts)))
 #un-transform
 relabun <- t(t.relabun)
@@ -924,6 +1087,59 @@ anova(betadisper(dist.tah,tah.rare$zone))
 adonis(tah.seq2 ~ zone, strata=tah.rare$site, data=tah.rare, permutations=999)
 #0.043 *
 
+#log-normalized
+df.seq <- as.data.frame(seqtab.no87)
+all.log=logLin(data=df.seq)
+
+adonis(df.seq ~ zone, strata=samdf.no87$site, data=samdf.no87, permutations=999)
+#0.012 *
+
+#rarefied, but not clustered & trimmed
+rarecurve(counts.rare,label=F) #yep def rarefied
+adonis(counts.rare ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=999)
+#0.01 **
+
+#### bray-curtis ####
+iDist <- distance(ps.rare, method="bray")
+iMDS  <- ordinate(ps.rare, "MDS", distance=iDist)
+plot_ordination(ps.rare, iMDS, color="zone", shape="site")
+#ugly
+
+#by site
+ps.mnw <- subset_samples(ps.rare,site=="MNW")
+iDist <- distance(ps.mnw, method="bray")
+iMDS  <- ordinate(ps.mnw, "MDS", distance=iDist)
+plot_ordination(ps.mnw, iMDS, color="zone")+
+  stat_ellipse()
+
+#relative abundance
+t.relabun <- scale(t(counts), center=F, scale=colSums(t(counts)))
+relabun <- t(t.relabun)
+all.dist=vegdist(relabun,method="bray")
+all.pcoa=pcoa(all.dist)
+
+# plotting:
+scores=all.pcoa$vectors[,1:2]
+scorez <- as.data.frame(scores)
+scorez$Sample <- rownames(scorez)
+pcoa.all <- merge(scorez,samdf.no87)
+
+ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=zone,shape=site))+
+  geom_point()+
+  stat_ellipse()
+
+#now by site
+pcoa.mnw <- subset(pcoa.all,site=="MNW")
+gg.mnw <- ggplot(pcoa.mnw,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  xlab("Axis 1 ()")
+gg.mnw
+
 #### CCA ####
 library(adegenet) # for transp()
 
@@ -939,3 +1155,79 @@ points(cmd,choices=axes2plot)
 ordihull(cmd,choices= axes2plot,groups=samdf.rare$site_zone,draw="polygon",label=F)
 #ordispider(cmd,choices= axes2plot,groups=samdf.rare$site,col="grey80")
 #ordiellipse(cmd,choices= axes2plot,groups=samdf.rare$zone,draw="polygon",label=T)
+
+#### indicator species ####
+#install.packages("indicspecies")
+library(indicspecies)
+library(vegan)
+#first testing out k means clustering
+mcmc.km <- kmeans(counts,centers=2)
+groupskm = mcmc.km$cluster
+groupskm
+
+all.log=logLin(data=counts)
+all.dist=vegdist(all.log,method="bray")
+all.pcoa=pcoa(all.dist)
+
+km.log <- kmeans(all.log,centers=3)
+groupskm = km.log$cluster
+
+scores=all.pcoa$vectors[,1:2]
+scorez <- as.data.frame(scores)
+scorez$Sample <- rownames(scorez)
+pcoa.all <- merge(scorez,samdf.mcmc)
+grps <- as.data.frame(groupskm)
+grps$Sample <- rownames(grps)
+pcoa2 <- merge(grps,pcoa.all,by="Sample")
+
+pcoa2$groupskm <- as.factor(pcoa2$groupskm)
+ggplot(pcoa2,aes(x=Axis.1,y=Axis.2,color=site,shape=groupskm))+
+  geom_point()+
+  stat_ellipse()
+#interesting - not sure what to do here
+
+#anyway back to indicspecies
+groups <- samdf.mcmc$site
+groups <- samdf.mcmc$zone
+indval <- multipatt(counts, groups, control = how(nperm=999))
+summary(indval,alpha=1)
+#doesn't really work with the clustered ASV
+
+#unclustered
+groups <- samdf.no87$zone
+indval <- multipatt(seqtab.no87, groups, control = how(nperm=999))
+summary(indval)
+# Group Backreef  #sps.  1 
+# stat p.value  
+# sq22 0.478   0.017 *
+#   
+#   Group Forereef  #sps.  7 
+# stat p.value    
+# sq15 0.711   0.001 ***
+#   sq9  0.526   0.007 ** 
+#   sq35 0.410   0.027 *  
+#   sq37 0.388   0.019 *  
+#   sq19 0.380   0.019 *  
+#   sq17 0.377   0.024 *  
+#   sq45 0.354   0.036 *  
+
+#now rarefied
+counts.rare <- read.csv(file="~/moorea_holobiont/mr_ITS2/seqtabno87.rare.csv",row.names=1)
+groups <- samdf.rare$zone
+groups <- samdf.rare$site_zone
+indval <- multipatt(counts.rare, groups, control = how(nperm=999))
+summary(indval)
+# Group Backreef  #sps.  4 
+# stat p.value   
+# sq10 0.620   0.004 **
+#   sq29 0.594   0.005 **
+#   sq22 0.556   0.003 **
+#   sq66 0.420   0.038 * 
+#   
+#   Group Forereef  #sps.  4 
+# stat p.value    
+# sq15 0.729   0.001 ***
+#   sq9  0.544   0.013 *  
+#   sq35 0.436   0.019 *  
+#   sq37 0.404   0.017 *  
+#^ the same ones as unrarefied, but lost some & gained some
