@@ -492,8 +492,25 @@ ps1 <- merge_samples(ps0, "Sample")
 ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
 plot_bar(ps2, fill="Class")
 
-#subset by class
-c3k <- subset_taxa(ps_no87,Class==" C3k")
+#getting raw average relative abundances
+ps.rel <- transform_sample_counts(ps_no87, function(x) x / sum(x))
+plot_bar(ps.rel,fill="Class")
+ps.glom <- tax_glom(ps.rel, "Class")
+
+c3k <- subset_taxa(ps.glom,Class==" C3k")
+c3k.otu <- as.data.frame(c3k@otu_table)
+mean(c3k.otu$sq1)
+
+#all the seqs - 9 total
+cspc <- subset_taxa(ps.rel,Class==" Cspc")
+#rel abundance
+cspc <- subset_taxa(ps.glom,Class==" Cspc")
+cspc.otu <- as.data.frame(cspc@otu_table)
+mean(cspc.otu$sq2)
+
+#background ones
+back <- subset_taxa(ps.rel,is.na(Class))
+
 
 all.otu <- ps2@otu_table
 # Taxonomy Table:     [6 taxa by 4 taxonomic ranks]:
@@ -777,10 +794,17 @@ ps.mcmc <- phyloseq(otu_table(counts, taxa_are_rows=FALSE),
                     tax_table(taxa2))
 
 ps.rel <- transform_sample_counts(ps.mcmc, function(x) x / sum(x))
+plot_bar(ps.rel,fill="Class")
 ps.glom <- tax_glom(ps.rel, "Class")
+
 c3k.mcmc <- subset_taxa(ps.glom,Class==" C3k")
 c3k.otu <- as.data.frame(c3k.mcmc@otu_table)
 mean(c3k.otu$sq1)
+
+cs.mcmc <- subset_taxa(ps.glom,Class==" Cspc")
+cs.otu <- as.data.frame(cs.mcmc@otu_table)
+mean(cs.otu$sq2)
+range(cs.otu$sq2)
 
 #bar plot
 ps_glom <- tax_glom(ps.mcmc, "Class")
