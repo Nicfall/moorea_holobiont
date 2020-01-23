@@ -919,6 +919,14 @@ gg.mnw <- ggplot(pcoa.mnw,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
   xlab("Axis 1 ()")
 gg.mnw
 
+#another method
+plot_ordination(ps.mcmc, ordinate(ps.mcmc, "PCoA"), color = "site") + geom_point(size = 5)
+
+ps.mnw <- subset_samples(ps.mcmc,site=="MNW")
+plot_ordination(ps.mnw, ordinate(ps.mnw, "PCoA"), color = "zone")+ 
+  geom_point()+
+  stat_ellipse(level=0.95)
+
 #### Deseq differentially abundant ####
 library(DESeq2)
 
@@ -1044,7 +1052,6 @@ rarecurve(seq.rare,step=100,label=FALSE)
 
 rarecurve(seqtab.no87,step=100,label=FALSE)#before clustering & trimming
 
-
 #save
 #write.csv(seq.rare,"~/moorea_holobiont/mr_ITS2/seqtab.rare_1994.csv")
 write.csv(seq.rare,"~/moorea_holobiont/mr_ITS2/seqtab.rare_1994_all.csv")
@@ -1062,7 +1069,11 @@ ps1 <- merge_samples(ps0, "site_zone")
 ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
 plot_bar(ps2, fill="Class")
 
-plot_ordination(ps.rare, ordinate(ps.rare, "PCoA"), color = "site") + geom_point(size = 5)
+plot_ordination(ps.rare, ordinate(ps.rare,method="PCoA"), color = "zone")+
+  geom_point()+
+  facet_wrap(~site)+
+  theme_cowplot()+
+  stat_ellipse()
 #ugly
 
 #### PCoA - rarefied, clustered, trimmed ####
@@ -1079,9 +1090,21 @@ scorez <- as.data.frame(scores)
 scorez$Sample <- rownames(scorez)
 pcoa.all <- merge(scorez,samdf.rare)
 
-ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=site_zone,shape=site_zone))+
+pcoa.all$site <- gsub("MNW","Moorea NW",pcoa.all$site)
+pcoa.all$site <- gsub("MSE","Moorea SE",pcoa.all$site)
+pcoa.all$site <- gsub("TNW","Tahiti NW",pcoa.all$site)
+
+quartz()
+ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
   geom_point()+
-  stat_ellipse()
+  stat_ellipse()+
+  facet_wrap(~site)+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  xlab("Axis 1 (54.14%)")+
+  ylab("Axis 2 (33.58%)")
 #looks the same as before rarefying? 
 
 #now by site
@@ -1110,6 +1133,7 @@ gg.mnw <- ggplot(pcoa.mnw.less,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
 gg.mnw
 
 #### Stats ####
+library(vegan)
 #help on adonis here:
 #https://thebiobucket.blogspot.com/2011/04/assumptions-for-permanova-with-adonis.html#more
 
@@ -1119,9 +1143,13 @@ gg.mnw
 adonis(seqtab.no87 ~ zone, strata=samdf.no87$site, data=samdf.no87, permutations=999)
 #0.01 **
 
+#clustered but not trimmed
+adonis(lulu.out ~ zone, strata=samdf.no87$site, data=samdf.no87, permutations=999)
+#p 0.009
+
 #clustered & trimmed 
 adonis(counts ~ zone, strata=samdf.mcmc$site, data=samdf.mcmc, permutations=999)
-#0.04 *
+#0.05 .
 
 #relative abundance, does this by columns so must transform
 t.relabun <- scale(t(counts), center=F, scale=colSums(t(counts)))
@@ -1132,8 +1160,9 @@ adonis(relabun ~ zone, strata=samdf.mcmc$site, data=samdf.mcmc, permutations=999
 #0.02 *
 
 #rarefied, clustered, trimmed
-#dist.rare <- vegdist(seq.rare)
-#betadisper(dist.rare,samdf.rare$site)
+dist.rare <- vegdist(seq.rare)
+anova(betadisper(dist.rare,samdf.rare$site))
+
 adonis(seq.rare ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=999)
 #0.07 . - 0.1
 
@@ -1144,7 +1173,7 @@ seq.rare2$sample <- rownames(seq.rare2)
 mnw.seq <- subset(seq.rare2, sample %in% mnw.rare$Sample)
 mnw.seq2 <- mnw.seq[,1:9]
 
-adonis(mnw.seq2 ~ zone, strata=mnw.rare$site, data=mnw.rare, permutations=999)
+adonis(mnw.seq2 ~ zone, data=mnw.rare, permutations=999)
 #0.044 *
 
 #Moorea SE
@@ -1169,6 +1198,19 @@ adonis(tah.seq2 ~ zone, strata=tah.rare$site, data=tah.rare, permutations=999)
 df.seq <- as.data.frame(seqtab.no87)
 all.log=logLin(data=df.seq)
 
+all.dist=vegdist(all.log,method="manhattan")
+all.pcoa=pcoa(all.dist)
+
+# plotting:
+scores=all.pcoa$vectors[,1:2]
+scorez <- as.data.frame(scores)
+scorez$Sample <- rownames(scorez)
+pcoa.all <- merge(scorez,samdf.no87)
+
+ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  facet_wrap(~site)
 adonis(df.seq ~ zone, strata=samdf.no87$site, data=samdf.no87, permutations=999)
 #0.012 *
 
