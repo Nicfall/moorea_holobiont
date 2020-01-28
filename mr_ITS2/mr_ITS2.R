@@ -693,6 +693,7 @@ lulu.out <- data.frame(t(curated_result$curated_table))
 #write.csv(lulu.out,"~/moorea_holobiont/mr_ITS2/lulu_output.csv")
 write.csv(lulu.out,"~/moorea_holobiont/mr_ITS2/lulu_output.rare.csv")
 lulu.out <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_output.csv",row.names=1)
+lulu.out <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_output.rare.csv",row.names=1)
 
 #removing X from row names to match up with previous data frames, was only necesary from original out, is fine in my .csv file
 rownames(lulu.out) <- sub("X","",rownames(lulu.out))
@@ -702,17 +703,13 @@ ps.lulu <- phyloseq(otu_table(lulu.out, taxa_are_rows=FALSE),
                     sample_data(samdf.no87), 
                     tax_table(taxa2))
 
-ps.lulu.rare <- phyloseq(otu_table(lulu.out, taxa_are_rows=FALSE), 
-                    sample_data(samdf.no87), 
-                    tax_table(taxa2))
-
 #### Bar plot & alpha diversity - clustered results ####
 library(cowplot)
 
 ps.top <- transform_sample_counts(ps.lulu, function(OTU) OTU/sum(OTU))
 plot_bar(ps.top, x="Sample",fill="Class") + facet_wrap(~zone, scales="free_x")
 
-df.div <- data.frame(estimate_richness(ps.lulu.rare, split=TRUE, measures =c("Shannon","InvSimpson")))
+df.div <- data.frame(estimate_richness(ps.lulu, split=TRUE, measures =c("Shannon","InvSimpson")))
 df.div
 
 df.div$Sample <- rownames(df.div)
@@ -751,19 +748,23 @@ mse <- subset(df.div,site=="MSE")
 tah <- subset(df.div,site=="TNW")
 
 wilcox.test(Shannon~zone,data=mnw)
-#not different
+#0.07459
 wilcox.test(InvSimpson~zone,data=mnw)
-#p = 0.01
+#p-value = 0.05286
 
 wilcox.test(Shannon~zone,data=mse)
-#p = 0.001
+#p = 0.004816
 wilcox.test(InvSimpson~zone,data=mse)
-#p = 0.01
+#p-value = 0.01058
 
 wilcox.test(Shannon~zone,data=tah)
-#p = 0.04
+#p-value = 0.5502
 wilcox.test(InvSimpson~zone,data=tah)
-#p = 0.019
+#p-value = 0.6848
+
+#install.packages("dunn.test")
+library(dunn.test)
+dunn.test(df.div$Shannon,df.div$site_zone,method="bh")
 
 #### MCMC.OTU to remove underrepresented ASVs ####
 library(MCMC.OTU)
