@@ -743,6 +743,16 @@ gg.si <- ggplot(diver.si, aes(x=site, y=InvSimpson,color=zone,shape=zone))+
   theme(text=element_text(family="Times"))
 gg.si
 
+df.div$shlog <- log(df.div$Shannon+1)
+shapiro.test(df.div$shlog) #worse
+library(bestNormalize)
+bestNormalize(df.div$Shannon) #says to leave it 
+
+summary(aov(Shannon~zone + Error(site),data=df.div))
+wilcox.test(Shannon~zone,data=df.div)
+ggplot(df.div,aes(x=site_zone,y=Shannon))+
+  geom_boxplot()
+
 mnw <- subset(df.div,site=="MNW")
 mse <- subset(df.div,site=="MSE")
 tah <- subset(df.div,site=="TNW")
@@ -772,6 +782,7 @@ library(MCMC.OTU)
 #added a column with a blank name in the beginning, with 1-95 in the column, mcmc.otu likes this
 #also removed the X from the beginning of sample names
 lulu.mcmc <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_formcmc.csv")
+lulu.mcmc <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_rare_formcmc.csv")
 #& reading back in things
 
 goods <- purgeOutliers(lulu.mcmc,count.columns=3:21,otu.cut=0.001,zero.cut=0.02)
@@ -789,6 +800,9 @@ counts <- goods[,3:11]
 #mcmc.otu removed 3 undersequenced samples: "513" "530" "76"
 remove <- c("513","530","76")
 samdf.mcmc <- samdf.no87[!row.names(samdf.no87)%in%remove,]
+
+write.csv(samdf.mcmc,"~/Desktop/mr_samples.csv")
+write.csv(counts,"~/Desktop/mr_counts.csv")
 
 ps.mcmc <- phyloseq(otu_table(counts, taxa_are_rows=FALSE), 
                     sample_data(samdf.mcmc), 
@@ -826,7 +840,9 @@ sq3 <- subset(ps.mcmc.melt,newclass==" C3k_sq3")
 ggplot(sq3,aes(x=site_zone,y=Abundance,color=Class))+
   geom_boxplot()
 
+library(dplyr)
 ps.all <- transform_sample_counts(ps.mcmc, function(OTU) OTU/sum(OTU))
+pa <- psmelt(ps.all)
 tb <- psmelt(ps.all)%>%
   filter(!is.na(Abundance))%>%
   group_by(site_zone,OTU)%>%
@@ -877,6 +893,7 @@ gg.bp <- ggplot(tb,aes(x=site_zone,y=Abundance,fill=sym))+
   xlab('Site')+
 #  scale_fill_manual(name="Sym.",values=c("seagreen1","seagreen2","seagreen3","seagreen4","blue","darkblue","orange","yellow","purple"))
   scale_fill_manual(name="Algal symbiont",values=c("#1E9C89FF","#25AB82FF","#58C765FF","#7ED34FFF","#365d8dff","#287d8eff","#440154FF", "#48196bff","#d4e21aff"))
+gg.bp
 
 quartz()
 ggarrange(gg.bp,
@@ -920,13 +937,50 @@ gg.mnw <- ggplot(pcoa.mnw,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
   xlab("Axis 1 ()")
 gg.mnw
 
+pcoa.mse <- subset(pcoa.all,site=="MSE")
+gg.mse <- ggplot(pcoa.mse,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  xlab("Axis 1 ()")
+gg.mse
+
+pcoa.tah <- subset(pcoa.all,site=="TNW")
+gg.tah <- ggplot(pcoa.tah,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  xlab("Axis 1 ()")
+gg.tah
+
+ggarrange(gg.mnw,gg.mse,gg.tah,nrow=1,common.legend=TRUE,legend="right")
+
 #another method
 plot_ordination(ps.mcmc, ordinate(ps.mcmc, "PCoA"), color = "site") + geom_point(size = 5)
 
 ps.mnw <- subset_samples(ps.mcmc,site=="MNW")
-plot_ordination(ps.mnw, ordinate(ps.mnw, "PCoA"), color = "zone")+ 
+gg.mnw <- plot_ordination(ps.mnw, ordinate(ps.mnw, "PCoA"), color = "zone")+ 
   geom_point()+
   stat_ellipse(level=0.95)
+gg.mnw
+
+ps.mse <- subset_samples(ps.mcmc,site=="MSE")
+gg.mse <- plot_ordination(ps.mse, ordinate(ps.mse, "PCoA"), color = "zone")+ 
+  geom_point()+
+  stat_ellipse(level=0.95)
+
+ps.tah <- subset_samples(ps.mcmc,site=="TNW")
+gg.tah <- plot_ordination(ps.tah, ordinate(ps.tah, "PCoA"), color = "zone")+ 
+  geom_point()+
+  stat_ellipse(level=0.95)
+
+ggarrange(gg.mnw,gg.mse,gg.tah,nrow=1,common.legend=TRUE)
 
 #### Deseq differentially abundant ####
 library(DESeq2)
@@ -1085,6 +1139,10 @@ all.log=logLin(data=df.seq)
 all.dist=vegdist(all.log,method="manhattan")
 all.pcoa=pcoa(all.dist)
 
+write.csv(counts,"~/Desktop/mr_counts_rare.csv")
+write.csv(samdf.rare,"~/Desktop/mr_samples_rare.csv")
+
+
 # plotting:
 scores=all.pcoa$vectors[,1:2]
 scorez <- as.data.frame(scores)
@@ -1164,12 +1222,13 @@ adonis(relabun ~ zone, strata=samdf.mcmc$site, data=samdf.mcmc, permutations=999
 dist.rare <- vegdist(seq.rare)
 anova(betadisper(dist.rare,samdf.rare$site))
 
+adonis(counts ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=999)
 adonis(seq.rare ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=999)
 #0.07 . - 0.1
 
 #Moorea NW
 mnw.rare <- subset(samdf.rare,site=="MNW")
-seq.rare2 <- as.data.frame(seq.rare)
+seq.rare2 <- as.data.frame(counts)
 seq.rare2$sample <- rownames(seq.rare2)
 mnw.seq <- subset(seq.rare2, sample %in% mnw.rare$Sample)
 mnw.seq2 <- mnw.seq[,1:9]
@@ -1193,6 +1252,7 @@ tah.seq2 <- tah.seq[,1:9]
 dist.tah <- vegdist(tah.seq2)
 anova(betadisper(dist.tah,tah.rare$zone))
 adonis(tah.seq2 ~ zone, strata=tah.rare$site, data=tah.rare, permutations=999)
+#0.055 rarefied
 #0.043 *
 
 #log-normalized
