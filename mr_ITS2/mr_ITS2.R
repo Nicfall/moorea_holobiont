@@ -785,7 +785,9 @@ library(bestNormalize)
 bestNormalize(df.div$Shannon) #says to leave it 
 
 summary(aov(Shannon~zone + Error(site),data=df.div))
-wilcox.test(Shannon~zone,data=df.div)
+wilcox.test(Shannon~zone,data=df.div,paired=FALSE)
+wilcox.test(InvSimpson~zone,data=df.div,paired=FALSE)
+
 ggplot(df.div,aes(x=site_zone,y=Shannon))+
   geom_boxplot()
 
@@ -1264,9 +1266,12 @@ adonis(relabun ~ zone, strata=samdf.mcmc$site, data=samdf.mcmc, permutations=999
 
 #rarefied, clustered, trimmed
 dist.rare <- vegdist(seq.rare)
+dist.rare <- vegdist(counts.rare)
+
 anova(betadisper(dist.rare,samdf.rare$site))
 
-adonis(counts ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=999)
+adonis(counts.rare ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=999)
+
 adonis(seq.rare ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=999)
 #0.07 . - 0.1
 
