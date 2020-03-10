@@ -743,6 +743,42 @@ gg.si <- ggplot(diver.si, aes(x=site, y=InvSimpson,color=zone,shape=zone))+
   theme(text=element_text(family="Times"))
 gg.si
 
+#maybe a boxplot instead
+df.div$zone <- gsub("Backreef","Back",df.div$zone)
+df.div$zone <- gsub("Forereef","Fore",df.div$zone)
+gg.si <- ggplot(df.div, aes(x=zone, y=InvSimpson,color=zone,shape=zone))+
+  #geom_errorbar(aes(ymin=InvSimpson-se,ymax=InvSimpson+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
+  #geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
+  geom_boxplot(outlier.shape=NA)+
+  xlab("Reef zone")+
+  ylab("Inv. Simpson diversity")+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  #guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  theme(text=element_text(family="Times"),legend.position="none")+
+  geom_jitter(alpha=0.5)+
+  facet_wrap(~site)
+  #geom_point()
+  #geom_jitter(aes(color=zone,shape=zone,group=zone))
+gg.si
+
+gg.sh <- ggplot(df.div, aes(x=zone, y=Shannon,color=zone,shape=zone))+
+  #geom_errorbar(aes(ymin=InvSimpson-se,ymax=InvSimpson+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
+  #geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
+  geom_boxplot(outlier.shape=NA)+
+  xlab("Reef zone")+
+  ylab("Shannon diversity")+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  theme(text=element_text(family="Times"),legend.position="none")+
+  geom_jitter(alpha=0.5)+
+  facet_wrap(~site)
+gg.sh
+
+
 df.div$shlog <- log(df.div$Shannon+1)
 shapiro.test(df.div$shlog) #worse
 library(bestNormalize)
@@ -785,7 +821,7 @@ lulu.mcmc <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_formcmc.csv")
 lulu.mcmc <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_rare_formcmc.csv")
 #& reading back in things
 
-goods <- purgeOutliers(lulu.mcmc,count.columns=3:21,otu.cut=0.001,zero.cut=0.02)
+goods <- purgeOutliers(lulu.mcmc,count.columns=3:19,otu.cut=0.001,zero.cut=0.02)
 #otu.cut = 0.1% of reads represented by ASV 
 #zero.cut = present in more than 1 sample (2% of samples)
 colnames(goods)
@@ -812,14 +848,14 @@ ps.rel <- transform_sample_counts(ps.mcmc, function(x) x / sum(x))
 plot_bar(ps.rel,fill="Class")
 ps.glom <- tax_glom(ps.rel, "Class")
 
-c3k.mcmc <- subset_taxa(ps.glom,Class==" C3k")
-c3k.otu <- as.data.frame(c3k.mcmc@otu_table)
-mean(c3k.otu$sq1)
+#c3k.mcmc <- subset_taxa(ps.glom,Class==" C3k")
+#c3k.otu <- as.data.frame(c3k.mcmc@otu_table)
+#mean(c3k.otu$sq1)
 
-cs.mcmc <- subset_taxa(ps.glom,Class==" Cspc")
-cs.otu <- as.data.frame(cs.mcmc@otu_table)
-mean(cs.otu$sq2)
-range(cs.otu$sq2)
+#cs.mcmc <- subset_taxa(ps.glom,Class==" Cspc")
+#cs.otu <- as.data.frame(cs.mcmc@otu_table)
+#mean(cs.otu$sq2)
+#range(cs.otu$sq2)
 
 #bar plot
 ps_glom <- tax_glom(ps.mcmc, "Class")
@@ -848,6 +884,12 @@ tb <- psmelt(ps.all)%>%
   group_by(site_zone,OTU)%>%
   summarize_at("Abundance",mean)
 
+#some more grouping variables
+tb <- psmelt(ps.all)%>%
+  filter(!is.na(Abundance))%>%
+  group_by(site,zone,site_zone,OTU)%>%
+  summarize_at("Abundance",mean)
+
 ggplot(tb,aes(x=site_zone,y=Abundance,fill=OTU))+
   geom_bar(stat="identity", colour="black")+
   theme_cowplot()
@@ -867,8 +909,8 @@ ggplot(tb,aes(x=site_zone,y=Abundance,fill=OTU))+
 # sq24 "Symbiodinium" " Clade C" " C3k" - 4
 # sq32 "Symbiodinium" " Clade C" " Cspc" - 2
 
-tb$sym <- gsub("sq12","Clade C - 1",tb$OTU)
-tb$sym <- gsub("sq18","Clade C - 2",tb$sym)
+tb$sym <- gsub("sq12","C. - 1",tb$OTU)
+tb$sym <- gsub("sq18","C. - 2",tb$sym)
 tb$sym <- gsub("sq1","C3k - 1",tb$sym)
 tb$sym <- gsub("sq24","C3k - 4",tb$sym)
 tb$sym <- gsub("sq2","Cspc - 1",tb$sym)
@@ -877,27 +919,29 @@ tb$sym <- gsub("sq3","C3k - 2",tb$sym)
 tb$sym <- gsub("sq6","C3k - 3",tb$sym)
 tb$sym <- gsub("sq7","A1",tb$sym)
 
-tb$site_zone <- gsub("MNWI","MNW-B",tb$site_zone)
-tb$site_zone <- gsub("MNWO","MNW-F",tb$site_zone)
-tb$site_zone <- gsub("MSEI","MSE-B",tb$site_zone)
-tb$site_zone <- gsub("MSEO","MSE-F",tb$site_zone)
-tb$site_zone <- gsub("TI","TNW-B",tb$site_zone)
-tb$site_zone <- gsub("TO","TNW-F",tb$site_zone)
+tb$zone <- gsub("Forereef","Fore",tb$zone)
+tb$zone <- gsub("Backreef","Back",tb$zone)
 
-tb$sym <- factor(tb$sym, levels=c("C3k - 1","C3k - 2","C3k - 3","C3k - 4","Cspc - 1", "Cspc - 2","Clade C - 1","Clade C - 2","A1"))
+tb$sym <- factor(tb$sym, levels=c("C3k - 1","C3k - 2","C3k - 3","C3k - 4","Cspc - 1", "Cspc - 2","C. - 1","C. - 2","A1"))
 quartz()
-gg.bp <- ggplot(tb,aes(x=site_zone,y=Abundance,fill=sym))+
-  geom_bar(stat="identity", colour="black")+
+gg.bp <- ggplot(tb,aes(x=zone,y=Abundance,fill=sym))+
+  geom_bar(stat="identity")+
   theme_cowplot()+
   theme(text=element_text(family="Times"))+
-  xlab('Site')+
+  xlab('Reef zone')+
 #  scale_fill_manual(name="Sym.",values=c("seagreen1","seagreen2","seagreen3","seagreen4","blue","darkblue","orange","yellow","purple"))
-  scale_fill_manual(name="Algal symbiont",values=c("#1E9C89FF","#25AB82FF","#58C765FF","#7ED34FFF","#365d8dff","#287d8eff","#440154FF", "#48196bff","#d4e21aff"))
+  scale_fill_manual(name="Algal symbiont",values=c("#1E9C89FF","#25AB82FF","#58C765FF","#7ED34FFF","#365d8dff","#287d8eff","darkorchid4", "darkorchid1","#d4e21aff"))+
+  facet_wrap(~site)
 gg.bp
+
+#"#1E9C89FF","#25AB82FF","#58C765FF","#7ED34FFF","#365d8dff","#287d8eff","#440154FF", "#48196bff","#d4e21aff"
 
 quartz()
 ggarrange(gg.bp,
-          ggarrange(gg.sh,gg.si,ncol=2,labels=c("B.","C."),common.legend=T,legend="right",font.label=list(family="Times")),nrow=2,labels="A.",font.label=list(family="Times"))
+          ggarrange(gg.sh,gg.si,ncol=2,labels=c("B.","C."),common.legend=T,legend="none",font.label=list(family="Times")),nrow=2,labels="A.",font.label=list(family="Times"))
+
+#new & improved:
+ggarrange(gg.bp,gg.si,ncol=1,nrow=2,labels=c("A.","B."))
 
 #### Pcoa - clustered & trimmed ####
 library(vegan)
