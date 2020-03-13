@@ -301,8 +301,9 @@ write.csv(taxa, file="mr16s_taxa.csv")
 
 saveRDS(seqtab.nochim, file="mr16s_seqtab.nochim.rds")
 write.csv(seqtab.nochim, file="mr16s_seqtab.nochim.csv")
+write.csv(seqtab.nochim, file="mr16s_seqtab.nochim_renamed.csv")
 
-##If you need to read in previously saved datafiles
+#### Read in previously saved datafiles ####
 setwd("~/moorea_holobiont/mr_16S/")
 seqtab.nochim <- readRDS("mr16s_seqtab.nochim.rds")
 taxa <- readRDS("mr16s_taxa.rds")
@@ -326,7 +327,7 @@ rownames(samdf) <- samdf$id
 # Construct phyloseq object (straightforward from dada2 outputs)
 ps <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE), 
                sample_data(samdf), 
-               tax_table(taxa.plus))
+               tax_table(taxa2))
 
 ps
 
@@ -374,6 +375,8 @@ ps.rare
 #saving
 write.csv(seqtab.rare, file="mr16s_seqtab.rare_13.6k.csv")
 write.csv(samdf.rare, file="mr16s_samdf.rare_13.6k.csv")
+samdf.rare <- read.csv("mr16s_samdf.rare_13.6k.csv",row.names = 1)
+seqtab.rare <- read.csv("mr16s_seqtab.rare_13.6k.csv",row.names=1)
 
 #Visualize alpha-diversity - ***Should be done on raw, untrimmed dataset***
 #total species diversity in a landscape (gamma diversity) is determined by two different things, the mean species diversity in sites or habitats at a more local scale (alpha diversity) and the differentiation among those habitats (beta diversity)
@@ -455,9 +458,34 @@ wilcox.test(InvSimpson~zone,data=tah)
 #W = 160, p-value = 0.2388
 #W = 115, p-value = 0.2588 rarefied
 
-#### trim low abundance ASVs ####
+#### trim low abundance ASVs & chloroplasts/mitochondria ####
+#using relative abundance
 ps.rare.relabun <- transform_sample_counts(ps.rare, function(x) x / sum(x) )
 ps.rare.less <- filter_taxa(ps.rare.relabun, function(x) mean(x) > 1e-5, TRUE)
+
+ps.trim0 <- prune_taxa(taxa_sums(ps)>27,ps) #remove taxa with <0.1% of reads per sample
+ps.trim0 #1160 taxa
+ps.trim1 <- subset_taxa(ps.trim0, (Family!="Mitochondria") | is.na(Family))
+ps.trim1 #1143 taxa
+ps.trim <- subset_taxa(ps.trim1, (Order!="Chloroplast") | is.na(Order))
+ps.trim #1096 taxa
+
+#regular
+mean(rowSums(seqtab.nochim))
+#27 reads = 0.1% of average 27k reads
+seqtab.trim <- data.frame(otu_table(ps.trim))
+write.csv(seqtab.trim,file="seqtab.trim.csv")
+
+#rarefied
+ps.rare0 <- prune_taxa(taxa_sums(ps.rare)>13,ps.rare) #remove taxa with <0.1% of reads per sample
+ps.rare0 #1106 taxa
+ps.rare1 <- subset_taxa(ps.rare0, (Family!="Mitochondria") | is.na(Family))
+ps.rare1 #1089 taxa
+ps.rare.trim <- subset_taxa(ps.rare1, (Order!="Chloroplast") | is.na(Order))
+ps.rare.trim #1043 taxa
+
+seqtab.rare.trim <- data.frame(otu_table(ps.rare.trim))
+write.csv(seqtab.rare.trim,file="seqtab.rare.trim.csv")
 
 #### Bar-plots ####
 top30 <- names(sort(taxa_sums(ps.rare.less), decreasing=TRUE))[1:30]
@@ -470,20 +498,30 @@ ps1 <- merge_samples(ps_glom, "site_zone")
 ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
 plot_bar(ps2, x="site_zone", fill="Family")
 
-#### reorganized up to this point ####
 totalsums <- colSums(seqtab.rare)
 summary(totalsums)
 
-ps.rare.13 <- prune_taxa(taxa_sums(ps.rare)>13,ps.rare) #remove taxa with <0.1% of reads total
-ps.rare.13
+#### indicspecies ####
+library(indicspecies)
+
+#normal
+indval = multipatt(seqtab.trim, samdf$zone, control = how(nperm=999))
+summary(indval)
+#10 go to inshore, 14 go to offshore (24 total)
+
+#rarefied
+indval_rare = multipatt(seqtab.rare.trim, samdf.rare$zone, control = how(nperm=999))
+summary(indval_rare)
+#12 go to inshore, 11 go to offshore (23 total)
 
 #### DESEQ to find differentially abundant ASVs ####
 library(DESeq2)
 
-ps.mnw = subset_samples(ps.rare.less, site=="MNW")
-ps.mnw.0 <- prune_taxa(taxa_sums(ps.mnw)>0,ps.mnw) #remove samples with 0 total
+#ps.mnw = subset_samples(ps.rare.trim, site=="MNW")
+ps.mnw = subset_samples(ps.trim, site=="MNW")
+#ps.mnw.0 <- prune_taxa(taxa_sums(ps.mnw)>0,ps.mnw) #remove samples with 0 total
 
-ds.mnw = phyloseq_to_deseq2(ps.mnw.0, ~ zone)
+ds.mnw = phyloseq_to_deseq2(ps.mnw, ~ zone)
 dds.mnw <- estimateSizeFactors(ds.mnw,type="poscounts")
 stat.mnw = DESeq(dds.mnw, test="Wald", fitType="parametric")
 
@@ -491,14 +529,11 @@ res = results(stat.mnw, cooksCutoff = FALSE)
 alpha = 0.05
 sigtab.mnw = res[which(res$padj < alpha), ]
 sigtab.mnw = cbind(as(sigtab.mnw, "data.frame"), as(tax_table(ps.mnw)[rownames(sigtab.mnw), ], "matrix"))
-head(sigtab.mnw)
+sigtab.mnw
 dim(sigtab.mnw)
 write.csv(sigtab.mnw,"sigtab.mnw.csv")
-#6 for MNW after rarefying & removing low quality samples! 
-#1 is just a chloroplast though
-#removing chloroplasts
-row.names.remove <- c("sq5")
-sigtab.mnw <- sigtab.mnw[!(row.names(sigtab.mnw) %in% row.names.remove), ]
+#6 for MNW after rarefying, removing low count samples & taxa
+#14 without rarefying
 
 goodtaxa <- c(row.names(sigtab.mnw))
 allTaxa = taxa_names(ps.rare)
@@ -515,7 +550,10 @@ plot_bar(ps.mnw, x="zone", fill="class")+
   ggtitle("Moorea NW")+
   facet_wrap(~class)
 
-ps.mse = subset_samples(ps.rare, site=="MSE")
+#ps.mse = subset_samples(ps.rare.trim, site=="MSE")
+ps.mse = subset_samples(ps.trim, site=="MSE")
+#ps.mse.0 <- prune_taxa(taxa_sums(ps.mse)>0,ps.mse) #remove samples with 0 total
+
 ds.mse = phyloseq_to_deseq2(ps.mse, ~ zone)
 dds.mse <- estimateSizeFactors(ds.mse,type="poscounts")
 stat.mse = DESeq(dds.mse, test="Wald", fitType="parametric")
@@ -525,11 +563,10 @@ alpha = 0.05
 sigtab.mse = res[which(res$padj < alpha), ]
 sigtab.mse = cbind(as(sigtab.mse, "data.frame"), as(tax_table(ps.mse)[rownames(sigtab.mse), ], "matrix"))
 dim(sigtab.mse)
+sigtab.mse
 write.csv(sigtab.mse,"sigtab.mse.csv")
-#9 for MSE 
-#removing 2 chloroplasts
-row.names.remove <- c("sq5","sq29")
-sigtab.mse <- sigtab.mse[!(row.names(sigtab.mse) %in% row.names.remove), ]
+#5 for MSE 
+#6 without rarefying
 
 goodtaxa <- c(row.names(sigtab.mse))
 allTaxa = taxa_names(ps.rare)
@@ -546,7 +583,8 @@ plot_bar(ps.mse, x="zone", fill="class")+
   ggtitle("Moorea SE")+
   facet_wrap(~class)
 
-ps.t = subset_samples(ps.rare, site=="TNW")
+#ps.t = subset_samples(ps.rare.trim, site=="TNW")
+ps.t = subset_samples(ps.trim, site=="TNW")
 ds.t = phyloseq_to_deseq2(ps.t, ~ zone)
 dds.t <- estimateSizeFactors(ds.t,type="poscounts")
 stat.t = DESeq(dds.t, test="Wald", fitType="parametric")
@@ -556,10 +594,11 @@ alpha = 0.05
 sigtab.t = res[which(res$padj < alpha), ]
 sigtab.t = cbind(as(sigtab.t, "data.frame"), as(tax_table(ps.t)[rownames(sigtab.t), ], "matrix"))
 dim(sigtab.t)
+sigtab.t
+#7 for TNW
+#8 without rarefying
 write.csv(sigtab.t,"sigtab.tah.csv")
-#8 for tahiti finally
-row.names.remove <- c("sq3") #doesn't even blast to bacteria
-sigtab.t <- sigtab.t[!(row.names(sigtab.t) %in% row.names.remove), ]
+
 tax_table(ps.rare)
 #visualizing deseq results - can't do with no results
 theme_set(theme_cowplot())
@@ -669,6 +708,7 @@ plot_bar(mnw, x="zone", fill="genus")+
   ggtitle("Moorea NW")+
   facet_wrap(~genus)
 
+#### function ####
 
 #### DESEQ to normalize counts ####
 #BiocManager::install("DESeq2")
@@ -699,9 +739,12 @@ row.names(sam) <- sam$id
 row.names.remove <- c("F9")
 sam <- sam[!(row.names(sam) %in% row.names.remove), ]
 
+#### started here ####
+seqt <- t(seqtab.trim) #deseq requires count data in columns
+
 #method from here:
 #https://astrobiomike.github.io/amplicon/dada2_workflow_ex#dereplication
-deseq_counts <- DESeqDataSetFromMatrix(seqt, colData = sam, design = ~site*zone) 
+deseq_counts <- DESeqDataSetFromMatrix(seqt, colData = samdf, design = ~site*zone) 
 # we have to include the "colData" and "design" arguments because they are 
 # required, as they are needed for further downstream processing by DESeq2, 
 # but for our purposes of simply transforming the data right now, they don't 
@@ -719,21 +762,30 @@ deseq_counts_vst <- varianceStabilizingTransformation(deseq_counts)
 
 # and here is pulling out our transformed table
 vst_trans_count_tab <- assay(deseq_counts_vst)
-#vst_trans_count_tab[vst_trans_count_tab < 0.0] <- 0.0 #getting rid of 0s
+vst_trans_count_tab[vst_trans_count_tab < 0.0] <- 0.0 #getting rid of negatives
 
 # back into phyloseq
 vstt <- t(vst_trans_count_tab)
 
-ids <- paste0("sq", seq(1, length(colnames(seqtab.nochim))))
-colnames(vstt)<-ids
-##replace sequences with shorter names (correspondence table output below)
-row.names(taxid)<-ids
-
 ps.norm <- phyloseq(otu_table(vstt, taxa_are_rows=FALSE), 
-                    sample_data(sam), 
-                    tax_table(taxid))
+                    sample_data(samdf), 
+                    tax_table(taxa2))
 ps.norm
-tax_table(ps.norm)
+
+ps.mnw = subset_samples(ps.norm, site=="MNW")
+ds.mnw = phyloseq_to_deseq2(ps.mnw, ~ zone)
+dds.mnw <- estimateSizeFactors(ds.mnw,type="poscounts")
+stat.mnw = DESeq(dds.mnw, test="Wald", fitType="parametric")
+
+res = results(stat.mnw, cooksCutoff = FALSE)
+alpha = 0.05
+sigtab.mnw = res[which(res$padj < alpha), ]
+sigtab.mnw = cbind(as(sigtab.mnw, "data.frame"), as(tax_table(ps.mnw)[rownames(sigtab.mnw), ], "matrix"))
+head(sigtab.mnw)
+dim(sigtab.mnw)
+
+#### not sure what this was ####
+
 # sam$new.norm <- sample_sums(ps.norm)
 # plot(new.norm~site_zone,data=sam) #more normalized now
 # a1 <- aov(new.norm~site_zone,data=sam)
@@ -744,7 +796,7 @@ tax_table(ps.norm)
 # a1 <- aov(new.norm~in_off,data=sam)
 # summary(a1) # p = significant
 
-#### rarefy ####
+#### rarefy - outdated ####
 library(vegan)
 library(MCMC.OTU)
 library(phyloseq)
