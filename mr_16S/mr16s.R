@@ -327,7 +327,7 @@ rownames(samdf) <- samdf$id
 # Construct phyloseq object (straightforward from dada2 outputs)
 ps <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE), 
                sample_data(samdf), 
-               tax_table(taxa2))
+               tax_table(taxa))
 
 ps
 
@@ -349,143 +349,162 @@ colnames(seqtab.nochim)<-ids
 taxa2 <- cbind(taxa.plus, rownames(taxa.plus)) #retaining raw sequence info before renaming
 rownames(taxa2)<-ids
 
+#phyloseq object with new taxa ids
+ps <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE), 
+               sample_data(samdf), 
+               tax_table(taxa2))
+
+ps #2380 taxa
+
+#### remove phyloseq trimming? #####
+#ps.trim0 <- prune_taxa(taxa_sums(ps)>27,ps) #remove taxa with <0.1% of reads per sample
+#regular
+#mean(rowSums(seqtab.nochim))
+#27 reads = 0.1% of average 27k reads
+#ps.rare0 <- prune_taxa(taxa_sums(ps.rare)>13,ps.rare) #remove taxa with <0.1% of reads per sample
+#using relative abundance
+#ps.rare.relabun <- transform_sample_counts(ps.rare, function(x) x / sum(x) )
+#ps.rare.less <- filter_taxa(ps.rare.relabun, function(x) mean(x) > 1e-5, TRUE)
+
+#### remove mitochondria, chloroplasts, non-bacteria #### 
+
+ps.mito <- subset_taxa(ps, (Family=="Mitochondria"))
+ps.mito #52 taxa to remove
+ps.chlor <- subset_taxa(ps, (Order=="Chloroplast"))
+ps.chlor #75 taxa to remove
+ps.notbact <- subset_taxa(ps, (Kingdom!="Bacteria") | is.na(Kingdom))
+ps.notbact #85 taxa to remove
+
+ps.nomito <- subset_taxa(ps, (Family!="Mitochondria") | is.na(Family))
+ps.nomito #2328 taxa
+ps.nochlor <- subset_taxa(ps.nomito, (Order!="Chloroplast") | is.na(Order))
+ps.nochlor #2253 taxa
+ps.clean <- subset_taxa(ps.nochlor, (Kingdom=="Bacteria"))
+ps.clean #2168 taxa
+
+seqtab.clean <- data.frame(otu_table(ps.clean))
+write.csv(seqtab.clean,file="seqtab.cleaned.csv")
+
 #### rarefy #####
 library(vegan)
 
-rarecurve(seqtab.nochim,step=100,label=FALSE) #after clustering & trimming
+rarecurve(seqtab.clean,step=100,label=FALSE) #after removing contaminats
 
-total <- rowSums(seqtab.nochim)
-subset(total, total <13603)
+total <- rowSums(seqtab.clean)
+subset(total, total <12000)
 #9 samples
 
-row.names.remove <- c("A8","B5","B6","B8","C2","F9","H4","H5")
-seqtab.less <- seqtab.nochim[!(row.names(seqtab.nochim) %in% row.names.remove),]
+row.names.remove <- c("A8","B5","B8","C2","D4","E8","F9","H4","H5")
+seqtab.less <- seqtab.trim[!(row.names(seqtab.clean) %in% row.names.remove),]
 samdf.rare <- samdf[!(row.names(samdf) %in% row.names.remove), ]
-#85 samples left
+#84 samples left
 
-seqtab.rare <- rrarefy(seqtab.less,sample=13603)
+seqtab.rare <- rrarefy(seqtab.less,sample=12000)
 rarecurve(seqtab.rare,step=100,label=FALSE)
 
 #phyloseq object but rarefied
 ps.rare <- phyloseq(otu_table(seqtab.rare, taxa_are_rows=FALSE), 
                sample_data(samdf.rare), 
                tax_table(taxa2))
-ps.rare
+ps.rare #2253 taxa
+
+#removing missing taxa - lost after rarefying
+ps.rare <- prune_taxa(taxa_sums(ps.rare) > 0, ps.rare)
+ps.rare #2101 taxa
+
+seqtab.rare <- data.frame(otu_table(ps.rare))
 
 #saving
-write.csv(seqtab.rare, file="mr16s_seqtab.rare_13.6k.csv")
-write.csv(samdf.rare, file="mr16s_samdf.rare_13.6k.csv")
-samdf.rare <- read.csv("mr16s_samdf.rare_13.6k.csv",row.names = 1)
-seqtab.rare <- read.csv("mr16s_seqtab.rare_13.6k.csv",row.names=1)
+write.csv(seqtab.rare, file="mr16s_seqtab.rare_12k.csv")
+write.csv(samdf.rare, file="mr16s_samdf.rare_12k.csv")
+#re-reading
+samdf.rare <- read.csv("mr16s_samdf.rare_12k.csv",row.names=1)
+seqtab.rare <- read.csv("mr16s_seqtab.rare_12k.csv",row.names=1)
 
+#### alpha diversity ####
 #Visualize alpha-diversity - ***Should be done on raw, untrimmed dataset***
 #total species diversity in a landscape (gamma diversity) is determined by two different things, the mean species diversity in sites or habitats at a more local scale (alpha diversity) and the differentiation among those habitats (beta diversity)
 #Shannon:Shannon entropy quantifies the uncertainty (entropy or degree of surprise) associated with correctly predicting which letter will be the next in a diverse string. Based on the weighted geometric mean of the proportional abundances of the types, and equals the logarithm of true diversity. When all types in the dataset of interest are equally common, the Shannon index hence takes the value ln(actual # of types). The more unequal the abundances of the types, the smaller the corresponding Shannon entropy. If practically all abundance is concentrated to one type, and the other types are very rare (even if there are many of them), Shannon entropy approaches zero. When there is only one type in the dataset, Shannon entropy exactly equals zero (there is no uncertainty in predicting the type of the next randomly chosen entity).
 #Simpson:equals the probability that two entities taken at random from the dataset of interest represent the same type. equal to the weighted arithmetic mean of the proportional abundances pi of the types of interest, with the proportional abundances themselves being used as the weights. Since mean proportional abundance of the types increases with decreasing number of types and increasing abundance of the most abundant type, λ obtains small values in datasets of high diversity and large values in datasets of low diversity. This is counterintuitive behavior for a diversity index, so often such transformations of λ that increase with increasing diversity have been used instead. The most popular of such indices have been the inverse Simpson index (1/λ) and the Gini–Simpson index (1 − λ).
-plot_richness(ps, x="site", measures=c("Shannon", "Simpson"), color="zone") + theme_bw()
+plot_richness(ps.rare, x="site", measures=c("Shannon", "Simpson"), color="zone") + theme_bw()
 
-##if I had more missing data:
-#ps_pruned <- prune_taxa(taxa_sums(ps) > 0, ps)
 df <- data.frame(estimate_richness(ps.rare, split=TRUE, measures=c("Shannon","InvSimpson")))
-df
-df <- data.frame(estimate_richness(ps, split=TRUE, measures=c("Shannon","InvSimpson")))
+df <- data.frame(estimate_richness(ps.clean, split=TRUE, measures=c("Shannon","InvSimpson")))
 df
 
 df$id <- rownames(df)
-df.div <- merge(df,samdf,by="id") #add sample data
+#df.div <- merge(df,samdf,by="id") #add sample data
 df.div <- merge(df,samdf.rare,by="id") #add sample data
 
-#write.csv(df,file="~/moorea_holobiont/mr_16S/mr16s_diversity.csv") #saving
-#df <- read.csv("~/Desktop/mrits/mr16s_diversity.csv") #reading back in 
-
-diver.sh <- summarySE(data=df.div,measurevar=c("Shannon"),groupvars=c("zone","site"))
-diver.si <- summarySE(data=df.div,measurevar=c("InvSimpson"),groupvars=c("zone","site"))
+write.csv(df,file="mr16s_diversity_rare12k.csv") #saving
+df.div <- read.csv("mr16s_diversity.csv") #reading back in 
 
 quartz()
-gg.sh <- ggplot(diver.sh, aes(x=site, y=Shannon,color=zone,fill=zone,shape=zone))+
-  geom_errorbar(aes(ymin=Shannon-sd,ymax=Shannon+sd),position=position_dodge(0.5),lwd=0.4,width=0.4)+
-  geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
-  xlab("Site")+
+gg.sh <- ggplot(df.div, aes(x=zone, y=Shannon,color=zone,shape=zone))+
+  geom_boxplot(outlier.shape=NA)+
+  xlab("Reef zone")+
   ylab("Shannon diversity")+
   theme_cowplot()+
-  scale_shape_manual(values=c(16,15),labels=c("Backreef","Forereef"))+
-  theme(text=element_text(family="Gill Sans MT"))+
-  scale_fill_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Backreef","Forereef"))+
-  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Backreef","Forereef"))+
-  guides(fill=guide_legend(title="Reef zone"),color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  #guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  theme(text=element_text(family="Times"),legend.position="none")+
+  geom_jitter(alpha=0.5)+
+  facet_wrap(~site)
 gg.sh
 
-gg.si <- ggplot(diver.si, aes(x=site, y=InvSimpson,color=zone,fill=zone,shape=zone))+
-  geom_errorbar(aes(ymin=InvSimpson-sd,ymax=InvSimpson+sd),position=position_dodge(0.5),lwd=0.4,width=0.4)+
-  geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
-  xlab("Site")+
-  ylab("Inverse Simpson diversity")+
+gg.si <- ggplot(df.div, aes(x=zone, y=InvSimpson,color=zone,shape=zone))+
+  geom_boxplot(outlier.shape=NA)+
+  xlab("Reef zone")+
+  ylab("Inv. Simpson diversity")+
   theme_cowplot()+
-  scale_shape_manual(values=c(16,15),labels=c("Backreef","Forereef"))+
-  scale_fill_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Backreef","Forereef"))+
-  theme(text=element_text(family="Gill Sans MT"))+
-  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Backreef","Forereef"))+
-  guides(fill=guide_legend(title="Reef zone"),color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  #guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  theme(text=element_text(family="Times"),legend.position="none")+
+  geom_jitter(alpha=0.5)+
+  facet_wrap(~site)
 gg.si
 
-wilcox.test(Shannon~zone,data=df.div)
-#W = 1101, p-value = 0.8815
-#W = 944, p-value = 0.7232 rarefied
-wilcox.test(InvSimpson~zone,data=df.div)
-#W = 1138, p-value = 0.6656
-#W = 956, p-value = 0.6461 rarefied
+shapiro.test(df.div$Shannon)
+hist(df.div$Shannon) #NORMAL
+
+df.div$si.log <- log(df.div$InvSimpson)
+shapiro.test(df.div$InvSimpson) #not normal
+shapiro.test(df.div$si.log) #NORMAL
+
+a.div <- aov(Shannon~site*zone,data=df.div)
+TukeyHSD(a.div) #nothing
+
+a.div <- aov(InvSimpson~site*zone,data=df.div)
+TukeyHSD(a.div) #nothing
 
 mnw <- subset(df.div,site=="MNW")
 mse <- subset(df.div,site=="MSE")
 tah <- subset(df.div,site=="TNW")
 
-wilcox.test(Shannon~zone,data=mnw)
-#W = 148, p-value = 0.1485
-#W = 127, p-value = 0.1936 rarefied
-wilcox.test(InvSimpson~zone,data=mnw)
-#W = 158, p-value = 0.06128 . 
-#W = 137, p-value = 0.07666 rarefied
-wilcox.test(Shannon~zone,data=mse)
-#W = 63, p-value = 0.02398 *
-#W = 62, p-value = 0.03672 * rarefied
-wilcox.test(InvSimpson~zone,data=mse)
-#W = 78, p-value = 0.1015
-#W = 74, p-value = 0.116 rarefied
-wilcox.test(Shannon~zone,data=tah)
-#W = 157, p-value = 0.2871
-#W = 115, p-value = 0.2588 rarefied
-wilcox.test(InvSimpson~zone,data=tah)
-#W = 160, p-value = 0.2388
-#W = 115, p-value = 0.2588 rarefied
+summary(aov(Shannon~zone,data=mnw)) #0.439
+summary(aov(Shannon~zone,data=mse)) #0.1
+summary(aov(Shannon~zone,data=tah)) #0.295
 
-#### trim low abundance ASVs & chloroplasts/mitochondria ####
-#using relative abundance
-ps.rare.relabun <- transform_sample_counts(ps.rare, function(x) x / sum(x) )
-ps.rare.less <- filter_taxa(ps.rare.relabun, function(x) mean(x) > 1e-5, TRUE)
+summary(aov(si.log~zone,data=mnw)) #0.67
+summary(aov(si.log~zone,data=mse)) #0.157
+summary(aov(si.log~zone,data=tah)) #0.238
 
-ps.trim0 <- prune_taxa(taxa_sums(ps)>27,ps) #remove taxa with <0.1% of reads per sample
-ps.trim0 #1160 taxa
-ps.trim1 <- subset_taxa(ps.trim0, (Family!="Mitochondria") | is.na(Family))
-ps.trim1 #1143 taxa
-ps.trim <- subset_taxa(ps.trim1, (Order!="Chloroplast") | is.na(Order))
-ps.trim #1096 taxa
+#### trim low abundance ASVs ####
+library(MCMC.OTU)
+
+seq.formcmc <- read.csv("seqtab.cleaned_formcmc.csv")
+seq.formcmc <- read.csv("mr16s_seqtab.rare_12k_formcmc.csv")
 
 #regular
-mean(rowSums(seqtab.nochim))
-#27 reads = 0.1% of average 27k reads
-seqtab.trim <- data.frame(otu_table(ps.trim))
-write.csv(seqtab.trim,file="seqtab.trim.csv")
-
+seq.trim <- purgeOutliers(seq.formcmc,count.columns=3:2170,sampleZcut=-2.5,otu.cut=0.0001)
+#2 bad samples - B5 & F9
+#207 ASVs passing cutoff
 #rarefied
-ps.rare0 <- prune_taxa(taxa_sums(ps.rare)>13,ps.rare) #remove taxa with <0.1% of reads per sample
-ps.rare0 #1106 taxa
-ps.rare1 <- subset_taxa(ps.rare0, (Family!="Mitochondria") | is.na(Family))
-ps.rare1 #1089 taxa
-ps.rare.trim <- subset_taxa(ps.rare1, (Order!="Chloroplast") | is.na(Order))
-ps.rare.trim #1043 taxa
-
-seqtab.rare.trim <- data.frame(otu_table(ps.rare.trim))
-write.csv(seqtab.rare.trim,file="seqtab.rare.trim.csv")
+seq.trim <- purgeOutliers(seq.formcmc,count.columns=3:2103,sampleZcut=-2.5,otu.cut=0.0001)
+#no bad samples
+#223 ASVs passing cutoffs
 
 #### Bar-plots ####
 top30 <- names(sort(taxa_sums(ps.rare.less), decreasing=TRUE))[1:30]
