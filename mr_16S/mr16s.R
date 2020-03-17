@@ -327,7 +327,7 @@ rownames(samdf) <- samdf$id
 # Construct phyloseq object (straightforward from dada2 outputs)
 ps <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE), 
                sample_data(samdf), 
-               tax_table(taxa))
+               tax_table(taxa.plus))
 
 ps
 
@@ -356,18 +356,7 @@ ps <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE),
 
 ps #2380 taxa
 
-#### remove phyloseq trimming? #####
-#ps.trim0 <- prune_taxa(taxa_sums(ps)>27,ps) #remove taxa with <0.1% of reads per sample
-#regular
-#mean(rowSums(seqtab.nochim))
-#27 reads = 0.1% of average 27k reads
-#ps.rare0 <- prune_taxa(taxa_sums(ps.rare)>13,ps.rare) #remove taxa with <0.1% of reads per sample
-#using relative abundance
-#ps.rare.relabun <- transform_sample_counts(ps.rare, function(x) x / sum(x) )
-#ps.rare.less <- filter_taxa(ps.rare.relabun, function(x) mean(x) > 1e-5, TRUE)
-
 #### remove mitochondria, chloroplasts, non-bacteria #### 
-
 ps.mito <- subset_taxa(ps, (Family=="Mitochondria"))
 ps.mito #52 taxa to remove
 ps.chlor <- subset_taxa(ps, (Order=="Chloroplast"))
@@ -382,8 +371,13 @@ ps.nochlor #2253 taxa
 ps.clean <- subset_taxa(ps.nochlor, (Kingdom=="Bacteria"))
 ps.clean #2168 taxa
 
+#just archaea
+ps.arch <- subset_taxa(ps.nomito, (Kingdom=="Archaea"))
+ps.arch #17 taxa
+
 seqtab.clean <- data.frame(otu_table(ps.clean))
 write.csv(seqtab.clean,file="seqtab.cleaned.csv")
+seqtab.clean <- read.csv("seqtab.cleaned.csv",row.names=1)
 
 #### rarefy #####
 library(vegan)
@@ -393,11 +387,14 @@ rarecurve(seqtab.clean,step=100,label=FALSE) #after removing contaminats
 total <- rowSums(seqtab.clean)
 subset(total, total <12000)
 #9 samples
+#B5 & F9 identified by MCMC.OTU below as being too low
 
+row.names.remove <- c("B5","F9") #being less strict
 row.names.remove <- c("A8","B5","B8","C2","D4","E8","F9","H4","H5")
-seqtab.less <- seqtab.trim[!(row.names(seqtab.clean) %in% row.names.remove),]
+seqtab.less <- seqtab.clean[!(row.names(seqtab.clean) %in% row.names.remove),]
 samdf.rare <- samdf[!(row.names(samdf) %in% row.names.remove), ]
-#84 samples left
+#84 samples left being strict
+#91 samples left being less strict
 
 seqtab.rare <- rrarefy(seqtab.less,sample=12000)
 rarecurve(seqtab.rare,step=100,label=FALSE)
@@ -491,31 +488,107 @@ summary(aov(si.log~zone,data=mnw)) #0.67
 summary(aov(si.log~zone,data=mse)) #0.157
 summary(aov(si.log~zone,data=tah)) #0.238
 
-#### trim low abundance ASVs ####
+#### trim underrepresented ASVs ####
 library(MCMC.OTU)
 
 seq.formcmc <- read.csv("seqtab.cleaned_formcmc.csv")
 seq.formcmc <- read.csv("mr16s_seqtab.rare_12k_formcmc.csv")
 
 #regular
-seq.trim <- purgeOutliers(seq.formcmc,count.columns=3:2170,sampleZcut=-2.5,otu.cut=0.0001)
+seq.trim <- purgeOutliers(seq.formcmc,count.columns=3:2170,sampleZcut=-2.5,otu.cut=0.0001,zero.cut=0.02)
 #2 bad samples - B5 & F9
-#207 ASVs passing cutoff
+#207 ASVs passing cutoff for reads
+#195 ASVs show up in 2% of samples 
 #rarefied
-seq.trim <- purgeOutliers(seq.formcmc,count.columns=3:2103,sampleZcut=-2.5,otu.cut=0.0001)
+seq.trim <- purgeOutliers(seq.formcmc,count.columns=3:2103,sampleZcut=-2.5,otu.cut=0.0001,zero.cut=0.02)
 #no bad samples
 #223 ASVs passing cutoffs
+#209 show up in 2% of samples
+
+#rename rows
+rownames(seq.trim) <- seq.trim$sample
+#remove sample info
+seq.trim <- seq.trim[,3:211]
+
+write.csv(seq.trim,file="seq.rare12k.trim.csv")
+
+#remake phyloseq object
+ps.rare.trim <- phyloseq(otu_table(seq.trim, taxa_are_rows=FALSE), 
+               sample_data(samdf.rare), 
+               tax_table(taxa2))
+ps.rare.trim
+
+#### core v accessory microbiome ####
+#BiocManager::install("microbiome")
+#remotes::install_github("r-lib/rlang")
+library(rlang)
+library(microbiome)
+
+pseq.core <- core(ps.rare.trim, detection = 0, prevalence = .7)
+pseq.core
+
+tax <- as.data.frame(pseq.core@tax_table@.Data)
+
+tax.clean <- data.frame(row.names = row.names(tax),
+                        Kingdom = str_replace(tax[,1], "D_0__",""),
+                        Phylum = str_replace(tax[,2], "D_1__",""),
+                        Class = str_replace(tax[,3], "D_2__",""),
+                        Order = str_replace(tax[,4], "D_3__",""),
+                        Family = str_replace(tax[,5], "D_4__",""),
+                        Genus = str_replace(tax[,6], "D_5__",""),
+                        Species = str_replace(tax[,7], "D_6__",""),
+                        stringsAsFactors = FALSE)
+tax.clean[is.na(tax.clean)] <- ""
+
+for (i in 1:7){ tax.clean[,i] <- as.character(tax.clean[,i])}
+####### Fill holes in the tax table
+tax.clean[is.na(tax.clean)] <- ""
+for (i in 1:nrow(tax.clean)){
+  if (tax.clean[i,2] == ""){
+    kingdom <- paste("Kingdom_", tax.clean[i,1], sep = "")
+    tax.clean[i, 2:7] <- kingdom
+  } else if (tax.clean[i,3] == ""){
+    phylum <- paste("Phylum_", tax.clean[i,2], sep = "")
+    tax.clean[i, 3:7] <- phylum
+  } else if (tax.clean[i,4] == ""){
+    class <- paste("Class_", tax.clean[i,3], sep = "")
+    tax.clean[i, 4:7] <- class
+  } else if (tax.clean[i,5] == ""){
+    order <- paste("Order_", tax.clean[i,4], sep = "")
+    tax.clean[i, 5:7] <- order
+  } else if (tax.clean[i,6] == ""){
+    family <- paste("Family_", tax.clean[i,5], sep = "")
+    tax.clean[i, 6:7] <- family
+  } else if (tax.clean[i,7] == ""){
+    tax.clean$Species[i] <- paste("Genus",tax.clean$Genus[i], sep = "_")
+  }
+}
+
+tax_table(pseq.core) <- as.matrix(tax.clean)
+
+ps_glom <- tax_glom(pseq.core, "Family")
+ps0 <- transform_sample_counts(ps_glom, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "site_zone")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+
+plot_bar(ps2, fill="Family")+
+  geom_bar(stat="identity")+
+  theme_cowplot()+
+  scale_fill_brewer(palette="BrBG")
+
+library(RColorBrewer)
+display.brewer.all(colorblindFriendly = TRUE)
+
 
 #### Bar-plots ####
-top30 <- names(sort(taxa_sums(ps.rare.less), decreasing=TRUE))[1:30]
-ps.top30 <- prune_taxa(top30, ps.rare.less)
-plot_bar(ps.top30, x="site_zone", fill="Class") 
-
-ps_glom <- tax_glom(ps.rare.less, "Family")
-#this step gets rid of NAs which we don't want
-ps1 <- merge_samples(ps_glom, "site_zone")
+ps_glom <- tax_glom(ps.rare.trim, "Family")
+ps0 <- transform_sample_counts(ps_glom, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "site_zone")
 ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
-plot_bar(ps2, x="site_zone", fill="Family")
+plot_bar(ps2, fill="Family")+
+  geom_bar(stat="identity")+
+  theme_cowplot()+
+  theme(legend.position="none")
 
 totalsums <- colSums(seqtab.rare)
 summary(totalsums)
