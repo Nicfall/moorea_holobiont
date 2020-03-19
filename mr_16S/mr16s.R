@@ -430,7 +430,7 @@ df <- data.frame(estimate_richness(ps.clean, split=TRUE, measures=c("Shannon","I
 df
 
 df$id <- rownames(df)
-#df.div <- merge(df,samdf,by="id") #add sample data
+df.div <- merge(df,samdf,by="id") #add sample data
 df.div <- merge(df,samdf.rare,by="id") #add sample data
 
 write.csv(df,file="mr16s_diversity_rare12k.csv") #saving
@@ -499,6 +499,9 @@ seq.trim <- purgeOutliers(seq.formcmc,count.columns=3:2170,sampleZcut=-2.5,otu.c
 #2 bad samples - B5 & F9
 #207 ASVs passing cutoff for reads
 #195 ASVs show up in 2% of samples 
+#remove bad samples from sample data frame
+row.names.remove <- c("B5","F9")
+samdf.trim <- samdf[!(row.names(samdf) %in% row.names.remove), ]
 #rarefied
 seq.trim <- purgeOutliers(seq.formcmc,count.columns=3:2103,sampleZcut=-2.5,otu.cut=0.0001,zero.cut=0.02)
 #no bad samples
@@ -508,26 +511,31 @@ seq.trim <- purgeOutliers(seq.formcmc,count.columns=3:2103,sampleZcut=-2.5,otu.c
 #rename rows
 rownames(seq.trim) <- seq.trim$sample
 #remove sample info
-seq.trim <- seq.trim[,3:211]
+seq.trim <- seq.trim[,3:211] #rarefied
+seq.trim <- seq.trim[,3:197] #regular
+
+write.csv(seq.trim,file="seq.trim.csv")
+seq.trim <- read.csv("seq.trim.csv",row.names=1)
 
 write.csv(seq.trim,file="seq.rare12k.trim.csv")
+seq.trim <- read.csv("seq.rare12k.trim.csv",row.names=1)
 
-#remake phyloseq object
+#remake phyloseq objects
+ps.trim <- phyloseq(otu_table(seq.trim, taxa_are_rows=FALSE), 
+                         sample_data(samdf.trim), 
+                         tax_table(taxa2))
+ps.trim #195 taxa
+
 ps.rare.trim <- phyloseq(otu_table(seq.trim, taxa_are_rows=FALSE), 
                sample_data(samdf.rare), 
                tax_table(taxa2))
-ps.rare.trim
+ps.rare.trim #209 taxa
 
-#### core v accessory microbiome ####
-#BiocManager::install("microbiome")
-#remotes::install_github("r-lib/rlang")
+#### rename ASVs ####
 library(rlang)
-library(microbiome)
+library(stringr)
 
-pseq.core <- core(ps.rare.trim, detection = 0, prevalence = .7)
-pseq.core
-
-tax <- as.data.frame(pseq.core@tax_table@.Data)
+tax <- as.data.frame(ps.rare.trim@tax_table@.Data)
 
 tax.clean <- data.frame(row.names = row.names(tax),
                         Kingdom = str_replace(tax[,1], "D_0__",""),
@@ -564,7 +572,213 @@ for (i in 1:nrow(tax.clean)){
   }
 }
 
-tax_table(pseq.core) <- as.matrix(tax.clean)
+tax_table(ps.rare.trim) <- as.matrix(tax.clean)
+
+ps_glom <- tax_glom(ps.rare.trim, "Family")
+ps0 <- transform_sample_counts(ps_glom, function(x) x / sum(x))
+plot_bar(ps0, x="id", fill="Family")+
+  theme(legend.position="none")
+
+ps1 <- merge_samples(ps0, "site_zone")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+plot_bar(ps2, x="site_zone", fill="Family")+
+  theme(legend.position="none")
+
+#### plots ####
+library(stats)
+library(MCMC.OTU)
+
+ord <- ordinate(ps.trim, "PCoA", "bray")
+plot_ordination(ps.trim, ord,color="zone", shape="zone")+
+  stat_ellipse()
+
+ord <- ordinate(ps.rare.trim, "PCoA", "bray")
+plot_ordination(ps.rare.trim, ord,color="zone", shape="zone")+
+  stat_ellipse()
+
+#now by site
+ps.mnw <- subset_samples(ps.rare.trim,site=="MNW")
+ord.mnw <- ordinate(ps.mnw, "PCoA", "bray")
+gg.mnw <- plot_ordination(ps.mnw, ord.mnw,color="zone", shape="zone")+
+  geom_point(size=2)+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  ggtitle("Moorea NW")
+gg.mnw
+
+ps.mse <- subset_samples(ps.rare.trim,site=="MSE")
+ord.mse <- ordinate(ps.mse, "PCoA", "bray")
+gg.mse <- plot_ordination(ps.mse, ord.mse,color="zone", shape="zone")+
+  geom_point(size=2)+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  ggtitle("Moorea SE")+
+  annotate(geom="text", x=-0.35, y=0.55, label="p < 0.01**",size=4)
+gg.mse
+
+ps.tnw <- subset_samples(ps.rare.trim,site=="TNW")
+ord.tnw <- ordinate(ps.tnw, "PCoA", "bray")
+gg.tnw <- plot_ordination(ps.tnw, ord.tnw,color="zone", shape="zone")+
+  geom_point(size=2)+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  ggtitle("Tahiti NW")+
+  annotate(geom="text", x=-0.25, y=0.5, label="p < 0.01**",size=4)
+gg.tnw
+
+#### pcoa plot ####
+library(ggpubr)
+
+quartz()
+ggarrange(gg.mnw,gg.mse,gg.tnw,nrow=1,common.legend=TRUE,legend="right")
+
+### carly's method
+df.seq <- as.data.frame(seq.trim)
+all.log=logLin(data=df.seq)
+
+# computing Manhattan distances (sum of all log-fold-changes) and performing PCoA:
+all.dist=vegdist(all.log,method="bray")
+all.pcoa=pcoa(all.dist)
+
+# plotting:
+scores=all.pcoa$vectors[,1:2]
+scorez <- as.data.frame(scores)
+scorez$id <- rownames(scorez)
+pcoa.all <- merge(scorez,samdf.rare,by='id')
+pcoa.all <- merge(scorez,samdf.trim,by='id')
+
+quartz()
+ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  facet_wrap(~site)+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  xlab("Axis 1 (54.14%)")+
+  ylab("Axis 2 (33.58%)")
+#looks the same as before rarefying
+
+#### Stats ####
+library(vegan)
+#help on adonis here:
+#https://thebiobucket.blogspot.com/2011/04/assumptions-for-permanova-with-adonis.html#more
+
+#not rarefied
+dist.seqtab <- vegdist(seq.trim)
+bet.all <- betadisper(dist.seqtab,samdf.trim$zone)
+anova(bet.all)
+#not sig
+plot(bet.all)
+adonis(seq.trim ~ zone, strata=samdf.trim$site, data=samdf.trim, permutations=999)
+#not sig
+
+#by site
+samdf.mnw <- subset(samdf.trim,site=="MNW")
+sam.mnw <- rownames(samdf.mnw)
+seq.mnw <- seq.trim[(row.names(seq.trim) %in% sam.mnw),]
+
+dist.mnw <- vegdist(seq.mnw)
+bet.mnw <- betadisper(dist.mnw,samdf.mnw$zone,bias.adjust = TRUE,type="median")
+anova(bet.mnw)
+permutest(bet.mnw, pairwise = FALSE, permutations = 99)
+plot(bet.mnw)
+#not sig
+adonis(seq.mnw ~ zone, strata=samdf.mnw$site, data=samdf.mnw, permutations=999)
+#0.299
+
+samdf.mse <- subset(samdf.trim,site=="MSE")
+sam.mse <- rownames(samdf.mse)
+seq.mse <- seq.trim[(row.names(seq.trim) %in% sam.mse),]
+
+dist.mse <- vegdist(seq.mse)
+bet.mse <- betadisper(dist.mse,samdf.mse$zone,bias.adjust = TRUE,type="median")
+anova(bet.mse)
+permutest(bet.mse, pairwise = FALSE, permutations = 99)
+plot(bet.mse)
+#not sig
+adonis(seq.mse ~ zone, strata=samdf.mse$site, data=samdf.mse, permutations=999)
+#sig! 0.004 **
+
+samdf.tnw <- subset(samdf.trim,site=="TNW")
+sam.tnw <- rownames(samdf.tnw)
+seq.tnw <- seq.trim[(row.names(seq.trim) %in% sam.tnw),]
+
+dist.tnw <- vegdist(seq.tnw)
+bet.tnw <- betadisper(dist.tnw,samdf.tnw$zone,bias.adjust = TRUE,type="median")
+anova(bet.tnw)
+permutest(bet.tnw, pairwise = FALSE, permutations = 99)
+plot(bet.tnw)
+#not sig
+adonis(seq.tnw ~ zone, strata=samdf.tnw$site, data=samdf.tnw, permutations=999)
+#sig! 0.001 **
+
+#rarefied
+dist.seqtab <- vegdist(seq.trim)
+bet.all <- betadisper(dist.seqtab,samdf.rare$zone)
+anova(bet.all)
+#not sig
+plot(bet.all)
+adonis(seq.trim ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=999)
+#not sig
+
+#by site
+samdf.mnw <- subset(samdf.rare,site=="MNW")
+sam.mnw <- rownames(samdf.mnw)
+seq.mnw <- seq.trim[(row.names(seq.trim) %in% sam.mnw),]
+
+dist.mnw <- vegdist(seq.mnw)
+bet.mnw <- betadisper(dist.mnw,samdf.mnw$zone,bias.adjust = TRUE,type="median")
+anova(bet.mnw)
+permutest(bet.mnw, pairwise = FALSE, permutations = 99)
+plot(bet.mnw)
+#not sig
+adonis(seq.mnw ~ zone, strata=samdf.mnw$site, data=samdf.mnw, permutations=999)
+#0.299
+
+samdf.mse <- subset(samdf.rare,site=="MSE")
+sam.mse <- rownames(samdf.mse)
+seq.mse <- seq.trim[(row.names(seq.trim) %in% sam.mse),]
+
+dist.mse <- vegdist(seq.mse)
+bet.mse <- betadisper(dist.mse,samdf.mse$zone,bias.adjust = TRUE,type="median")
+anova(bet.mse)
+permutest(bet.mse, pairwise = FALSE, permutations = 99)
+plot(bet.mse)
+#not sig
+adonis(seq.mse ~ zone, strata=samdf.mse$site, data=samdf.mse, permutations=999)
+#sig! 0.001 **
+
+samdf.tnw <- subset(samdf.rare,site=="TNW")
+sam.tnw <- rownames(samdf.tnw)
+seq.tnw <- seq.trim[(row.names(seq.trim) %in% sam.tnw),]
+
+dist.tnw <- vegdist(seq.tnw)
+bet.tnw <- betadisper(dist.tnw,samdf.tnw$zone,bias.adjust = TRUE,type="median")
+anova(bet.tnw)
+permutest(bet.tnw, pairwise = FALSE, permutations = 99)
+plot(bet.tnw)
+#not sig
+adonis(seq.tnw ~ zone, strata=samdf.tnw$site, data=samdf.tnw, permutations=999)
+#sig! 0.003 **
+
+#### core v accessory microbiome ####
+#BiocManager::install("microbiome")
+#remotes::install_github("r-lib/rlang")
+library(microbiome)
+
+pseq.core <- core(ps.rare.trim, detection = 0, prevalence = .7)
+pseq.core
 
 ps_glom <- tax_glom(pseq.core, "Family")
 ps0 <- transform_sample_counts(ps_glom, function(x) x / sum(x))
@@ -597,14 +811,62 @@ summary(totalsums)
 library(indicspecies)
 
 #normal
-indval = multipatt(seqtab.trim, samdf$zone, control = how(nperm=999))
+indval = multipatt(seq.trim, samdf.trim$zone, control = how(nperm=999))
 summary(indval)
-#10 go to inshore, 14 go to offshore (24 total)
+#10 go to inshore, 12 go to offshore (22 total)
 
-#rarefied
-indval_rare = multipatt(seqtab.rare.trim, samdf.rare$zone, control = how(nperm=999))
-summary(indval_rare)
-#12 go to inshore, 11 go to offshore (23 total)
+#rarefied - done 3 times
+indval_rare_1 = multipatt(seq.trim, samdf.rare$zone, control = how(nperm=999))
+summary(indval_rare_1) #8 to in, 12 to off
+
+indval_rare_2 = multipatt(seq.trim, samdf.rare$zone, control = how(nperm=999))
+summary(indval_rare_2) #7 to in, 11 to off
+
+indval_rare_3 = multipatt(seq.trim, samdf.rare$zone, control = how(nperm=999))
+summary(indval_rare_3) #9 to in, 10 to off
+
+#plotting abundances
+sqs1 <- data.frame(indval_rare_1[["sign"]])
+sqs_sig1 <- subset(sqs1,p.value < 0.05)
+sqs_sig1$sqs <- rownames(sqs_sig1)
+
+sqs2 <- data.frame(indval_rare_2[["sign"]])
+sqs_sig2 <- subset(sqs2,p.value < 0.05)
+sqs_sig2$sqs <- rownames(sqs_sig2)
+
+sqs3 <- data.frame(indval_rare_3[["sign"]])
+sqs_sig3 <- subset(sqs3,p.value < 0.05)
+sqs_sig3$sqs <- rownames(sqs_sig3)
+
+sqs_12 <- merge(sqs_sig1,sqs_sig2,by="sqs")
+sqs <- merge(sqs_sig3,sqs_12,by="sqs")
+#saving
+write.csv(sqs,"sqs.csv")
+
+goodtaxa <- sqs$sqs
+allTaxa <- taxa_names(ps.rare.trim)
+allTaxa <- allTaxa[(allTaxa %in% goodtaxa)]
+indic.rare <- prune_taxa(allTaxa, ps.rare.trim)
+plot_bar(indic.rare,x="site_zone",fill="Family")+
+  facet_wrap(~Family,scales="free")
+
+#now by more specific results
+sqs_in <- subset(sqs,index==1)
+sqs_out <- subset(sqs,index==2)
+
+taxa_in <- sqs_in$sqs
+allTaxa <- taxa_names(ps.rare.trim)
+allTaxa <- allTaxa[(allTaxa %in% taxa_in)]
+indic.in <- prune_taxa(allTaxa, ps.rare.trim)
+plot_bar(indic.in,x="site_zone",fill="Family")+
+  facet_wrap(~Family,scales="free")
+
+taxa_out <- sqs_out$sqs
+allTaxa <- taxa_names(ps.rare.trim)
+allTaxa <- allTaxa[(allTaxa %in% taxa_out)]
+indic.out <- prune_taxa(allTaxa, ps.rare.trim)
+plot_bar(indic.out,x="site_zone",fill="Family")+
+  facet_wrap(~Family,scales="free")
 
 #### DESEQ to find differentially abundant ASVs ####
 library(DESeq2)
