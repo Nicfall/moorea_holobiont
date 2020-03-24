@@ -597,7 +597,7 @@ plot_ordination(ps.rare.trim, ord,color="zone", shape="zone")+
   stat_ellipse()
 
 #now by site
-ps.mnw <- subset_samples(ps.rare.trim,site=="MNW")
+ps.mnw <- subset_samples(ps.trim,site=="MNW")
 ord.mnw <- ordinate(ps.mnw, "PCoA", "bray")
 gg.mnw <- plot_ordination(ps.mnw, ord.mnw,color="zone", shape="zone")+
   geom_point(size=2)+
@@ -606,10 +606,15 @@ gg.mnw <- plot_ordination(ps.mnw, ord.mnw,color="zone", shape="zone")+
   scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
   scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
   guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
-  ggtitle("Moorea NW")
+  ggtitle("Moorea NW")+
+  #xlab("Axis 1 (33.2%)")+#rarefied
+  #ylab("Axis 2 (22.5%)")+#rarefied
+  xlab("Axis 1 (26.2%)")+#non-rarefied
+  ylab("Axis 2 (21.3%)")+#non-rarefied
+  theme(axis.text=element_text(size=10))
 gg.mnw
 
-ps.mse <- subset_samples(ps.rare.trim,site=="MSE")
+ps.mse <- subset_samples(ps.trim,site=="MSE")
 ord.mse <- ordinate(ps.mse, "PCoA", "bray")
 gg.mse <- plot_ordination(ps.mse, ord.mse,color="zone", shape="zone")+
   geom_point(size=2)+
@@ -619,10 +624,15 @@ gg.mse <- plot_ordination(ps.mse, ord.mse,color="zone", shape="zone")+
   scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
   guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
   ggtitle("Moorea SE")+
-  annotate(geom="text", x=-0.35, y=0.55, label="p < 0.01**",size=4)
+  annotate(geom="text", x=-0.35, y=0.55, label="p < 0.01**",size=4)+#change for non-rarefied
+  #xlab("Axis 1 (33.1%)")+ #rarefied
+  #ylab("Axis 2 (22.2%)")+ #rarefied
+  xlab("Axis 1 (27.9%)")+#non-rarefied
+  ylab("Axis 2 (19%)")+#non-rarefied
+  theme(axis.text=element_text(size=10))
 gg.mse
 
-ps.tnw <- subset_samples(ps.rare.trim,site=="TNW")
+ps.tnw <- subset_samples(ps.trim,site=="TNW")
 ord.tnw <- ordinate(ps.tnw, "PCoA", "bray")
 gg.tnw <- plot_ordination(ps.tnw, ord.tnw,color="zone", shape="zone")+
   geom_point(size=2)+
@@ -632,14 +642,20 @@ gg.tnw <- plot_ordination(ps.tnw, ord.tnw,color="zone", shape="zone")+
   scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
   guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
   ggtitle("Tahiti NW")+
-  annotate(geom="text", x=-0.25, y=0.5, label="p < 0.01**",size=4)
+  #annotate(geom="text", x=-0.4, y=0.6, label="p < 0.01**",size=4)+ #rarefied
+  annotate(geom="text", x=-0.25, y=0.6, label="p < 0.01**",size=4)+ #not rarefied
+  #xlab("Axis 1 (42.6%)")+ #rarefied
+  #ylab("Axis 2 (27.9%)")+ #rarefied
+  xlab("Axis 1 (34.3%)")+#non-rarefied
+  ylab("Axis 2 (26.5%)")+#non-rarefied
+  theme(axis.text=element_text(size=10))
 gg.tnw
 
 #### pcoa plot ####
 library(ggpubr)
 
 quartz()
-ggarrange(gg.mnw,gg.mse,gg.tnw,nrow=1,common.legend=TRUE,legend="right")
+ggarrange(gg.mnw,gg.mse,gg.tnw,nrow=1,common.legend=TRUE,legend="right",labels="AUTO")
 
 ### carly's method
 df.seq <- as.data.frame(seq.trim)
@@ -723,7 +739,7 @@ plot(bet.tnw)
 adonis(seq.tnw ~ zone, strata=samdf.tnw$site, data=samdf.tnw, permutations=999)
 #sig! 0.001 **
 
-#rarefied
+#### stats - rarefied ####
 dist.seqtab <- vegdist(seq.trim)
 bet.all <- betadisper(dist.seqtab,samdf.rare$zone)
 anova(bet.all)
@@ -739,12 +755,13 @@ seq.mnw <- seq.trim[(row.names(seq.trim) %in% sam.mnw),]
 
 dist.mnw <- vegdist(seq.mnw)
 bet.mnw <- betadisper(dist.mnw,samdf.mnw$zone,bias.adjust = TRUE,type="median")
+bet.mnw
 anova(bet.mnw)
 permutest(bet.mnw, pairwise = FALSE, permutations = 99)
 plot(bet.mnw)
 #not sig
-adonis(seq.mnw ~ zone, strata=samdf.mnw$site, data=samdf.mnw, permutations=999)
-#0.299
+adonis(seq.mnw ~ zone, data=samdf.mnw, permutations=999)
+#0.384
 
 samdf.mse <- subset(samdf.rare,site=="MSE")
 sam.mse <- rownames(samdf.mse)
@@ -756,7 +773,7 @@ anova(bet.mse)
 permutest(bet.mse, pairwise = FALSE, permutations = 99)
 plot(bet.mse)
 #not sig
-adonis(seq.mse ~ zone, strata=samdf.mse$site, data=samdf.mse, permutations=999)
+adonis(seq.mse ~ zone, data=samdf.mse, permutations=999)
 #sig! 0.001 **
 
 samdf.tnw <- subset(samdf.rare,site=="TNW")
@@ -769,7 +786,7 @@ anova(bet.tnw)
 permutest(bet.tnw, pairwise = FALSE, permutations = 99)
 plot(bet.tnw)
 #not sig
-adonis(seq.tnw ~ zone, strata=samdf.tnw$site, data=samdf.tnw, permutations=999)
+adonis(seq.tnw ~ zone, data=samdf.tnw, permutations=999)
 #sig! 0.003 **
 
 #### core v accessory microbiome ####
