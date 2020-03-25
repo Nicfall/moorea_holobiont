@@ -1,0 +1,4 @@
+"","baseMean","log2FoldChange","lfcSE","stat","pvalue","padj","Kingdom","Phylum","Class","Order","Family","Genus","Species"
+"sq30",19.7584533999071,-5.88777877342782,1.53205670782057,-3.8430553799823,0.000121512035640534,0.00777677028099418,"Bacteria","Proteobacteria","Gammaproteobacteria","Pseudomonadales","Pseudomonadaceae","Pseudomonas","Genus_Pseudomonas"
+"sq59",11.7061327259485,24.1148180584211,2.22615859497256,10.8324798210158,2.41524303895139e-27,4.63726663478668e-25,"Bacteria","Kingdom_Bacteria","Kingdom_Bacteria","Kingdom_Bacteria","Kingdom_Bacteria","Kingdom_Bacteria","Kingdom_Bacteria"
+"sq75",7.90792690839576,-5.98271773457668,1.5256836390023,-3.92133570920968,8.80594784176453e-05,0.00777677028099418,"Bacteria","Proteobacteria","Gammaproteobacteria","Betaproteobacteriales","Burkholderiaceae","Acidovorax","Genus_Acidovorax"

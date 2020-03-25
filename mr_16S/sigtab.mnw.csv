@@ -1,0 +1,8 @@
+"","baseMean","log2FoldChange","lfcSE","stat","pvalue","padj","Kingdom","Phylum","Class","Order","Family","Genus","Species"
+"sq30",67.4730651962576,-6.11106140151386,1.49946446410254,-4.07549598394215,4.59163747811229e-05,0.000964243870403581,"Bacteria","Proteobacteria","Gammaproteobacteria","Pseudomonadales","Pseudomonadaceae","Pseudomonas","Genus_Pseudomonas"
+"sq45",6.5323939056133,-22.3256389808041,2.91355629001093,-7.66267638533263,1.82097783206212e-14,4.78006680916306e-13,"Bacteria","Firmicutes","Bacilli","Bacillales","Bacillaceae","Anoxybacillus","Genus_Anoxybacillus"
+"sq50",18.1022195628979,23.3455842443579,2.93914699813636,7.9429794628036,1.97381635941251e-15,6.90835725794379e-14,"Bacteria","Firmicutes","Clostridia","Clostridiales","Family_XI","Peptoniphilus","Genus_Peptoniphilus"
+"sq65",18.7330241905691,23.3738769735101,2.69997414037273,8.65707438600999,4.84026847676807e-18,4.00919405944233e-16,"Bacteria","Firmicutes","Clostridia","Clostridiales","Family_XI","Finegoldia","magna"
+"sq79",13.3082202919024,-23.2907190785993,2.70667259758856,-8.60492661703877,7.63656011322348e-18,4.00919405944233e-16,"Bacteria","Proteobacteria","Gammaproteobacteria","Betaproteobacteriales","Burkholderiaceae","Family_Burkholderiaceae","Family_Burkholderiaceae"
+"sq83",22.6845718105198,-7.87557824936792,2.23609432655458,-3.52202416322158,0.000428265106324022,0.00749463936067039,"Bacteria","Bacteroidetes","Bacteroidia","Class_Bacteroidia","Class_Bacteroidia","Class_Bacteroidia","Class_Bacteroidia"
+"sq126",8.46724956667815,-6.45289685644,2.12896534551464,-3.0310013594327,0.00243744150473479,0.0365616225710219,"Bacteria","Proteobacteria","Gammaproteobacteria","Pseudomonadales","Moraxellaceae","Acinetobacter","Genus_Acinetobacter"

@@ -1,0 +1,5 @@
+"","baseMean","log2FoldChange","lfcSE","stat","pvalue","padj","Kingdom","Phylum","Class","Order","Family","Genus","Species"
+"sq8",99.1617506117915,4.95670832671898,1.26211374323382,3.92730714905203,8.5902250426918e-05,0.00449555110567538,"Bacteria","Proteobacteria","Gammaproteobacteria","Oceanospirillales","Endozoicomonadaceae","Endozoicomonas","Genus_Endozoicomonas"
+"sq19",47.5543352351262,23.3338649704246,2.93333603805418,7.95471935970318,1.7953800599977e-15,2.81874669419639e-13,"Bacteria","Proteobacteria","Gammaproteobacteria","Oceanospirillales","Endozoicomonadaceae","Endozoicomonas","Genus_Endozoicomonas"
+"sq41",5.37841304570858,5.79952715959312,1.35605406882174,4.27676690254119,1.89627173927172e-05,0.0014885733153283,"Bacteria","Proteobacteria","Alphaproteobacteria","Rhizobiales","Rhizobiales_Incertae_Sedis","Phreatobacter","oligotrophus"
+"sq52",22.3467629082413,-7.96456754896426,2.0727753638558,-3.84246536689267,0.000121804606006355,0.00478083078574943,"Bacteria","Tenericutes","Mollicutes","Entomoplasmatales","Order_Entomoplasmatales","Order_Entomoplasmatales","Order_Entomoplasmatales"

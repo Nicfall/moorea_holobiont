@@ -403,16 +403,18 @@ rarecurve(seqtab.rare,step=100,label=FALSE)
 ps.rare <- phyloseq(otu_table(seqtab.rare, taxa_are_rows=FALSE), 
                sample_data(samdf.rare), 
                tax_table(taxa2))
-ps.rare #2253 taxa
+ps.rare #2253 taxa first time through
+#2168 another time
 
 #removing missing taxa - lost after rarefying
 ps.rare <- prune_taxa(taxa_sums(ps.rare) > 0, ps.rare)
 ps.rare #2101 taxa
+#2018 taxa round 2
 
 seqtab.rare <- data.frame(otu_table(ps.rare))
 
 #saving
-write.csv(seqtab.rare, file="mr16s_seqtab.rare_12k.csv")
+write.csv(seqtab.rare, file="mr16s_seqtab.rare_12k_rd2.csv")
 write.csv(samdf.rare, file="mr16s_samdf.rare_12k.csv")
 #re-reading
 samdf.rare <- read.csv("mr16s_samdf.rare_12k.csv",row.names=1)
@@ -427,6 +429,7 @@ plot_richness(ps.rare, x="site", measures=c("Shannon", "Simpson"), color="zone")
 
 df <- data.frame(estimate_richness(ps.rare, split=TRUE, measures=c("Shannon","InvSimpson")))
 df <- data.frame(estimate_richness(ps.clean, split=TRUE, measures=c("Shannon","InvSimpson")))
+df <- data.frame(estimate_richness(ps.rare, split=TRUE, measures=c("Observed")))
 df
 
 df$id <- rownames(df)
@@ -463,6 +466,27 @@ gg.si <- ggplot(df.div, aes(x=zone, y=InvSimpson,color=zone,shape=zone))+
   facet_wrap(~site)
 gg.si
 
+gg.obs <- ggplot(df.div, aes(x=zone, y=Observed,color=zone,shape=zone))+
+  geom_boxplot(outlier.shape=NA)+
+  xlab("Reef zone")+
+  ylab("Shannon diversity")+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  #guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  theme(text=element_text(family="Times"),legend.position="none")+
+  geom_jitter(alpha=0.5)+
+  facet_wrap(~site)
+gg.obs
+
+shapiro.test(df.div$Observed) #nope
+df.div$obs.log <- log(df.div$Observed)
+shapiro.test(df.div$obs.log) #yessss
+
+a.div <- aov(Observed~site*zone,data=df.div)
+summary(a.div)
+TukeyHSD(a.div) #nothing except MSE
+
 shapiro.test(df.div$Shannon)
 hist(df.div$Shannon) #NORMAL
 
@@ -471,6 +495,7 @@ shapiro.test(df.div$InvSimpson) #not normal
 shapiro.test(df.div$si.log) #NORMAL
 
 a.div <- aov(Shannon~site*zone,data=df.div)
+summary(a.div)
 TukeyHSD(a.div) #nothing
 
 a.div <- aov(InvSimpson~site*zone,data=df.div)
@@ -481,8 +506,11 @@ mse <- subset(df.div,site=="MSE")
 tah <- subset(df.div,site=="TNW")
 
 summary(aov(Shannon~zone,data=mnw)) #0.439
+wilcox.test(Shannon~zone,data=mnw) #nope
 summary(aov(Shannon~zone,data=mse)) #0.1
+wilcox.test(Shannon~zone,data=mse) #so close - 0.05022
 summary(aov(Shannon~zone,data=tah)) #0.295
+wilcox.test(Shannon~zone,data=tah) #nope
 
 summary(aov(si.log~zone,data=mnw)) #0.67
 summary(aov(si.log~zone,data=mse)) #0.157
@@ -492,7 +520,8 @@ summary(aov(si.log~zone,data=tah)) #0.238
 library(MCMC.OTU)
 
 seq.formcmc <- read.csv("seqtab.cleaned_formcmc.csv")
-seq.formcmc <- read.csv("mr16s_seqtab.rare_12k_formcmc.csv")
+#seq.formcmc <- read.csv("mr16s_seqtab.rare_12k_formcmc.csv")
+seq.formcmc <- read.csv("mr16s_seqtab.rare_12k_rd2_formcmc.csv")
 
 #regular
 seq.trim <- purgeOutliers(seq.formcmc,count.columns=3:2170,sampleZcut=-2.5,otu.cut=0.0001,zero.cut=0.02)
@@ -503,15 +532,18 @@ seq.trim <- purgeOutliers(seq.formcmc,count.columns=3:2170,sampleZcut=-2.5,otu.c
 row.names.remove <- c("B5","F9")
 samdf.trim <- samdf[!(row.names(samdf) %in% row.names.remove), ]
 #rarefied
-seq.trim <- purgeOutliers(seq.formcmc,count.columns=3:2103,sampleZcut=-2.5,otu.cut=0.0001,zero.cut=0.02)
+seq.trim <- purgeOutliers(seq.formcmc,count.columns=3:2020,sampleZcut=-2.5,otu.cut=0.0001,zero.cut=0.02)
 #no bad samples
-#223 ASVs passing cutoffs
-#209 show up in 2% of samples
+#223 ASVs passing cutoffs - rd1 
+#209 show up in 2% of samples - rd1
+#221 ASVs passing cutoffs - rd2
+#207 show up in 2% of samples - rd2
 
 #rename rows
 rownames(seq.trim) <- seq.trim$sample
 #remove sample info
 seq.trim <- seq.trim[,3:211] #rarefied
+seq.trim <- seq.trim[,3:209] #rarefied rd2
 seq.trim <- seq.trim[,3:197] #regular
 
 write.csv(seq.trim,file="seq.trim.csv")
@@ -519,6 +551,9 @@ seq.trim <- read.csv("seq.trim.csv",row.names=1)
 
 write.csv(seq.trim,file="seq.rare12k.trim.csv")
 seq.trim <- read.csv("seq.rare12k.trim.csv",row.names=1)
+
+write.csv(seq.trim,file="seq.rare12k.trim_rd2.csv")
+seq.trim <- read.csv("seq.rare12k.trim_rd2.csv",row.names=1)
 
 #remake phyloseq objects
 ps.trim <- phyloseq(otu_table(seq.trim, taxa_are_rows=FALSE), 
@@ -529,62 +564,9 @@ ps.trim #195 taxa
 ps.rare.trim <- phyloseq(otu_table(seq.trim, taxa_are_rows=FALSE), 
                sample_data(samdf.rare), 
                tax_table(taxa2))
-ps.rare.trim #209 taxa
+ps.rare.trim #207 taxa rd2
 
-#### rename ASVs ####
-library(rlang)
-library(stringr)
-
-tax <- as.data.frame(ps.rare.trim@tax_table@.Data)
-
-tax.clean <- data.frame(row.names = row.names(tax),
-                        Kingdom = str_replace(tax[,1], "D_0__",""),
-                        Phylum = str_replace(tax[,2], "D_1__",""),
-                        Class = str_replace(tax[,3], "D_2__",""),
-                        Order = str_replace(tax[,4], "D_3__",""),
-                        Family = str_replace(tax[,5], "D_4__",""),
-                        Genus = str_replace(tax[,6], "D_5__",""),
-                        Species = str_replace(tax[,7], "D_6__",""),
-                        stringsAsFactors = FALSE)
-tax.clean[is.na(tax.clean)] <- ""
-
-for (i in 1:7){ tax.clean[,i] <- as.character(tax.clean[,i])}
-####### Fill holes in the tax table
-tax.clean[is.na(tax.clean)] <- ""
-for (i in 1:nrow(tax.clean)){
-  if (tax.clean[i,2] == ""){
-    kingdom <- paste("Kingdom_", tax.clean[i,1], sep = "")
-    tax.clean[i, 2:7] <- kingdom
-  } else if (tax.clean[i,3] == ""){
-    phylum <- paste("Phylum_", tax.clean[i,2], sep = "")
-    tax.clean[i, 3:7] <- phylum
-  } else if (tax.clean[i,4] == ""){
-    class <- paste("Class_", tax.clean[i,3], sep = "")
-    tax.clean[i, 4:7] <- class
-  } else if (tax.clean[i,5] == ""){
-    order <- paste("Order_", tax.clean[i,4], sep = "")
-    tax.clean[i, 5:7] <- order
-  } else if (tax.clean[i,6] == ""){
-    family <- paste("Family_", tax.clean[i,5], sep = "")
-    tax.clean[i, 6:7] <- family
-  } else if (tax.clean[i,7] == ""){
-    tax.clean$Species[i] <- paste("Genus",tax.clean$Genus[i], sep = "_")
-  }
-}
-
-tax_table(ps.rare.trim) <- as.matrix(tax.clean)
-
-ps_glom <- tax_glom(ps.rare.trim, "Family")
-ps0 <- transform_sample_counts(ps_glom, function(x) x / sum(x))
-plot_bar(ps0, x="id", fill="Family")+
-  theme(legend.position="none")
-
-ps1 <- merge_samples(ps0, "site_zone")
-ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
-plot_bar(ps2, x="site_zone", fill="Family")+
-  theme(legend.position="none")
-
-#### plots ####
+#### pcoa plots ####
 library(stats)
 library(MCMC.OTU)
 
@@ -597,7 +579,7 @@ plot_ordination(ps.rare.trim, ord,color="zone", shape="zone")+
   stat_ellipse()
 
 #now by site
-ps.mnw <- subset_samples(ps.trim,site=="MNW")
+ps.mnw <- subset_samples(ps.rare.trim,site=="MNW")
 ord.mnw <- ordinate(ps.mnw, "PCoA", "bray")
 gg.mnw <- plot_ordination(ps.mnw, ord.mnw,color="zone", shape="zone")+
   geom_point(size=2)+
@@ -609,8 +591,8 @@ gg.mnw <- plot_ordination(ps.mnw, ord.mnw,color="zone", shape="zone")+
   ggtitle("Moorea NW")+
   #xlab("Axis 1 (33.2%)")+#rarefied
   #ylab("Axis 2 (22.5%)")+#rarefied
-  xlab("Axis 1 (26.2%)")+#non-rarefied
-  ylab("Axis 2 (21.3%)")+#non-rarefied
+  #xlab("Axis 1 (26.2%)")+#non-rarefied
+  #ylab("Axis 2 (21.3%)")+#non-rarefied
   theme(axis.text=element_text(size=10))
 gg.mnw
 
@@ -789,6 +771,59 @@ plot(bet.tnw)
 adonis(seq.tnw ~ zone, data=samdf.tnw, permutations=999)
 #sig! 0.003 **
 
+#### rename ASVs ####
+library(rlang)
+library(stringr)
+
+tax <- as.data.frame(ps.rare.trim@tax_table@.Data)
+
+tax.clean <- data.frame(row.names = row.names(tax),
+                        Kingdom = str_replace(tax[,1], "D_0__",""),
+                        Phylum = str_replace(tax[,2], "D_1__",""),
+                        Class = str_replace(tax[,3], "D_2__",""),
+                        Order = str_replace(tax[,4], "D_3__",""),
+                        Family = str_replace(tax[,5], "D_4__",""),
+                        Genus = str_replace(tax[,6], "D_5__",""),
+                        Species = str_replace(tax[,7], "D_6__",""),
+                        stringsAsFactors = FALSE)
+tax.clean[is.na(tax.clean)] <- ""
+
+for (i in 1:7){ tax.clean[,i] <- as.character(tax.clean[,i])}
+####### Fill holes in the tax table
+tax.clean[is.na(tax.clean)] <- ""
+for (i in 1:nrow(tax.clean)){
+  if (tax.clean[i,2] == ""){
+    kingdom <- paste("Kingdom_", tax.clean[i,1], sep = "")
+    tax.clean[i, 2:7] <- kingdom
+  } else if (tax.clean[i,3] == ""){
+    phylum <- paste("Phylum_", tax.clean[i,2], sep = "")
+    tax.clean[i, 3:7] <- phylum
+  } else if (tax.clean[i,4] == ""){
+    class <- paste("Class_", tax.clean[i,3], sep = "")
+    tax.clean[i, 4:7] <- class
+  } else if (tax.clean[i,5] == ""){
+    order <- paste("Order_", tax.clean[i,4], sep = "")
+    tax.clean[i, 5:7] <- order
+  } else if (tax.clean[i,6] == ""){
+    family <- paste("Family_", tax.clean[i,5], sep = "")
+    tax.clean[i, 6:7] <- family
+  } else if (tax.clean[i,7] == ""){
+    tax.clean$Species[i] <- paste("Genus",tax.clean$Genus[i], sep = "_")
+  }
+}
+
+tax_table(ps.rare.trim) <- as.matrix(tax.clean)
+
+ps_glom <- tax_glom(ps.rare.trim, "Family")
+ps0 <- transform_sample_counts(ps_glom, function(x) x / sum(x))
+plot_bar(ps0, x="id", fill="Family")+
+  theme(legend.position="none")
+
+ps1 <- merge_samples(ps0, "site_zone")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+plot_bar(ps2, x="site_zone", fill="Family")+
+  theme(legend.position="none")
+
 #### core v accessory microbiome ####
 #BiocManager::install("microbiome")
 #remotes::install_github("r-lib/rlang")
@@ -809,7 +844,6 @@ plot_bar(ps2, fill="Family")+
 
 library(RColorBrewer)
 display.brewer.all(colorblindFriendly = TRUE)
-
 
 #### Bar-plots ####
 ps_glom <- tax_glom(ps.rare.trim, "Family")
@@ -888,8 +922,19 @@ plot_bar(indic.out,x="site_zone",fill="Family")+
 #### DESEQ to find differentially abundant ASVs ####
 library(DESeq2)
 
-#ps.mnw = subset_samples(ps.rare.trim, site=="MNW")
-ps.mnw = subset_samples(ps.trim, site=="MNW")
+ds.all = phyloseq_to_deseq2(ps.rare.trim, ~ zone)
+dds.all <- estimateSizeFactors(ds.all,type="poscounts")
+stat.all = DESeq(dds.all, test="Wald", fitType="parametric")
+res = results(stat.all, cooksCutoff = FALSE)
+alpha = 0.05
+sigtab.all = res[which(res$padj < alpha), ]
+sigtab.all = cbind(as(sigtab.all, "data.frame"), as(tax_table(ps.rare.trim)[rownames(sigtab.all), ], "matrix"))
+sigtab.all
+dim(sigtab.all) #10!  
+write.csv(sigtab.all,"sigtab.all_justzone.csv")
+
+ps.mnw = subset_samples(ps.rare.trim, site=="MNW")
+#ps.mnw = subset_samples(ps.trim, site=="MNW")
 #ps.mnw.0 <- prune_taxa(taxa_sums(ps.mnw)>0,ps.mnw) #remove samples with 0 total
 
 ds.mnw = phyloseq_to_deseq2(ps.mnw, ~ zone)
@@ -921,8 +966,8 @@ plot_bar(ps.mnw, x="zone", fill="class")+
   ggtitle("Moorea NW")+
   facet_wrap(~class)
 
-#ps.mse = subset_samples(ps.rare.trim, site=="MSE")
-ps.mse = subset_samples(ps.trim, site=="MSE")
+ps.mse = subset_samples(ps.rare.trim, site=="MSE")
+#ps.mse = subset_samples(ps.trim, site=="MSE")
 #ps.mse.0 <- prune_taxa(taxa_sums(ps.mse)>0,ps.mse) #remove samples with 0 total
 
 ds.mse = phyloseq_to_deseq2(ps.mse, ~ zone)
@@ -954,8 +999,8 @@ plot_bar(ps.mse, x="zone", fill="class")+
   ggtitle("Moorea SE")+
   facet_wrap(~class)
 
-#ps.t = subset_samples(ps.rare.trim, site=="TNW")
-ps.t = subset_samples(ps.trim, site=="TNW")
+ps.t = subset_samples(ps.rare.trim, site=="TNW")
+#ps.t = subset_samples(ps.trim, site=="TNW")
 ds.t = phyloseq_to_deseq2(ps.t, ~ zone)
 dds.t <- estimateSizeFactors(ds.t,type="poscounts")
 stat.t = DESeq(dds.t, test="Wald", fitType="parametric")
