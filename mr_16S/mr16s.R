@@ -858,7 +858,7 @@ plot_bar(ps2, fill="Family")+
 totalsums <- colSums(seqtab.rare)
 summary(totalsums)
 
-#### indicspecies ####
+#### indicspecies by all sites combined ####
 library(indicspecies)
 
 #normal
@@ -909,7 +909,8 @@ taxa_in <- sqs_in$sqs
 allTaxa <- taxa_names(ps.rare.trim)
 allTaxa <- allTaxa[(allTaxa %in% taxa_in)]
 indic.in <- prune_taxa(allTaxa, ps.rare.trim)
-plot_bar(indic.in,x="site_zone",fill="Family")+
+indic.in.rel <- transform_sample_counts(indic.in, function(x) x / sum(x))
+plot_bar(indic.in.rel,x="site_zone",fill="Family")+
   facet_wrap(~Family,scales="free")
 
 taxa_out <- sqs_out$sqs
@@ -918,6 +919,69 @@ allTaxa <- allTaxa[(allTaxa %in% taxa_out)]
 indic.out <- prune_taxa(allTaxa, ps.rare.trim)
 plot_bar(indic.out,x="site_zone",fill="Family")+
   facet_wrap(~Family,scales="free")
+
+#### indicspecies by site ####
+library(indicspecies)
+
+ps.mnw = subset_samples(ps.rare.trim, site=="MNW")
+samdf.mnw <- subset(samdf.rare,site=="MNW")
+mnw <- c(row.names(samdf.mnw))
+seq.trim.mnw <- seq.trim[row.names(seq.trim) %in% mnw, ]
+
+#rarefied - done 3 times
+indval_rare_1 = multipatt(seq.trim.mnw, samdf.mnw$zone, control = how(nperm=999))
+summary(indval_rare_1) #6 for in, 5 for off
+
+#plotting abundances
+sqs1 <- data.frame(indval_rare_1[["sign"]])
+sqs_sig1_mnw <- subset(sqs1,p.value < 0.05)
+sqs_sig1_mnw$sqs <- rownames(sqs_sig1)
+
+#saving
+write.csv(sqs_sig1_mnw,"sqs_mnw.csv")
+
+#plotting
+goodtaxa <- sqs_sig1_mnw$sqs
+allTaxa <- taxa_names(ps.mnw)
+allTaxa <- allTaxa[(allTaxa %in% goodtaxa)]
+indic.mnw <- prune_taxa(allTaxa, ps.mnw)
+indic.mnw.rel <- transform_sample_counts(indic.mnw, function(x) x / sum(x))
+plot_bar(indic.mnw.rel,x="zone",fill="Genus")+
+  facet_wrap(~Genus,scales="free")
+
+#now by more specific results
+sqs_mnwi <- subset(sqs_sig1_mnw,index==1)
+sqs_mnwo <- subset(sqs_sig1_mnw,index==2)
+
+taxa_mnwi <- sqs_mnwi$sqs
+allTaxa <- taxa_names(ps.mnw)
+allTaxa <- allTaxa[(allTaxa %in% taxa_mnwi)]
+indic.mnwi <- prune_taxa(allTaxa, ps.mnw)
+indic.mnwi.rel <- transform_sample_counts(indic.mnwi, function(x) x / sum(x))
+plot_bar(indic.mnwi.rel,x="zone",fill="Genus")+
+  facet_wrap(~Genus,scales="free")
+
+#### bubble plot ####
+melt.mnw <- psmelt(indic.mnwi)
+melt.mnw$Abundance[is.na(melt.mnw$Abundance)] <- 0
+#melt.mnw.sum <- summarySE(melt.mnw,measurevar="Abundance",groupvars = c("OTU","zone"))
+
+library(dplyr)
+x_new = melt.mnw %>% group_by(OTU,zone) %>% summarise(x = sum(Abundance))
+
+ggplot(x_new, aes(x = zone, y = OTU)) + 
+  geom_point(aes(size = x, fill = OTU), alpha = 0.75, shape = 21) #+ 
+  # scale_size_continuous(limits = c(0.000001, 100), range = c(1,17), breaks = c(1,10,50,75)) + 
+  # labs( x= "", y = "", size = "Relative Abundance (%)", fill = "")  + 
+  # theme(legend.key=element_blank(), 
+  #       axis.text.x = element_text(colour = "black", size = 12, face = "bold", angle = 90, vjust = 0.3, hjust = 1), 
+  #       axis.text.y = element_text(colour = "black", face = "bold", size = 11), 
+  #       legend.text = element_text(size = 10, face ="bold", colour ="black"), 
+  #       legend.title = element_text(size = 12, face = "bold"), 
+  #       panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2), 
+  #       legend.position = "right") +  
+  # scale_fill_manual(values = colours, guide = FALSE) + 
+  # scale_y_discrete(limits = rev(levels(pcm$variable))) 
 
 #### DESEQ to find differentially abundant ASVs ####
 library(DESeq2)
