@@ -418,7 +418,7 @@ write.csv(seqtab.rare, file="mr16s_seqtab.rare_12k_rd2.csv")
 write.csv(samdf.rare, file="mr16s_samdf.rare_12k.csv")
 #re-reading
 samdf.rare <- read.csv("mr16s_samdf.rare_12k.csv",row.names=1)
-seqtab.rare <- read.csv("mr16s_seqtab.rare_12k.csv",row.names=1)
+seqtab.rare <- read.csv("mr16s_seqtab.rare_12k_rd2.csv",row.names=1)
 
 #### alpha diversity ####
 #Visualize alpha-diversity - ***Should be done on raw, untrimmed dataset***
@@ -542,15 +542,12 @@ seq.trim <- purgeOutliers(seq.formcmc,count.columns=3:2020,sampleZcut=-2.5,otu.c
 #rename rows
 rownames(seq.trim) <- seq.trim$sample
 #remove sample info
-seq.trim <- seq.trim[,3:211] #rarefied
+#seq.trim <- seq.trim[,3:211] #rarefied
 seq.trim <- seq.trim[,3:209] #rarefied rd2
 seq.trim <- seq.trim[,3:197] #regular
 
 write.csv(seq.trim,file="seq.trim.csv")
 seq.trim <- read.csv("seq.trim.csv",row.names=1)
-
-write.csv(seq.trim,file="seq.rare12k.trim.csv")
-seq.trim <- read.csv("seq.rare12k.trim.csv",row.names=1)
 
 write.csv(seq.trim,file="seq.rare12k.trim_rd2.csv")
 seq.trim <- read.csv("seq.rare12k.trim_rd2.csv",row.names=1)
@@ -570,16 +567,22 @@ ps.rare.trim #207 taxa rd2
 library(stats)
 library(MCMC.OTU)
 
-ord <- ordinate(ps.trim, "PCoA", "bray")
-plot_ordination(ps.trim, ord,color="zone", shape="zone")+
+#transform to relative abundance
+ps.trim.rel <- transform_sample_counts(ps.trim, function(x) x / sum(x))
+ord <- ordinate(ps.trim.rel, "PCoA", "bray")
+plot_ordination(ps.trim.rel, ord,color="site", shape="site")+
   stat_ellipse()
+
+#saving
+seq.trim.rel <- data.frame(otu_table(ps.trim.rel))
 
 ord <- ordinate(ps.rare.trim, "PCoA", "bray")
 plot_ordination(ps.rare.trim, ord,color="zone", shape="zone")+
   stat_ellipse()
 
 #now by site
-ps.mnw <- subset_samples(ps.rare.trim,site=="MNW")
+ps.mnw <- subset_samples(ps.trim.rel,site=="MNW")
+#ps.mnw <- subset_samples(ps.rare.trim,site=="MNW")
 ord.mnw <- ordinate(ps.mnw, "PCoA", "bray")
 gg.mnw <- plot_ordination(ps.mnw, ord.mnw,color="zone", shape="zone")+
   geom_point(size=2)+
@@ -596,7 +599,8 @@ gg.mnw <- plot_ordination(ps.mnw, ord.mnw,color="zone", shape="zone")+
   theme(axis.text=element_text(size=10))
 gg.mnw
 
-ps.mse <- subset_samples(ps.trim,site=="MSE")
+ps.mse <- subset_samples(ps.trim.rel,site=="MSE")
+#ps.mse <- subset_samples(ps.trim,site=="MSE")
 ord.mse <- ordinate(ps.mse, "PCoA", "bray")
 gg.mse <- plot_ordination(ps.mse, ord.mse,color="zone", shape="zone")+
   geom_point(size=2)+
@@ -614,7 +618,8 @@ gg.mse <- plot_ordination(ps.mse, ord.mse,color="zone", shape="zone")+
   theme(axis.text=element_text(size=10))
 gg.mse
 
-ps.tnw <- subset_samples(ps.trim,site=="TNW")
+ps.tnw <- subset_samples(ps.trim.rel,site=="TNW")
+#ps.tnw <- subset_samples(ps.trim,site=="TNW")
 ord.tnw <- ordinate(ps.tnw, "PCoA", "bray")
 gg.tnw <- plot_ordination(ps.tnw, ord.tnw,color="zone", shape="zone")+
   geom_point(size=2)+
@@ -673,18 +678,20 @@ library(vegan)
 #https://thebiobucket.blogspot.com/2011/04/assumptions-for-permanova-with-adonis.html#more
 
 #not rarefied
+#rel abundance
+dist.seqtab <- vegdist(seq.trim.rel)
 dist.seqtab <- vegdist(seq.trim)
 bet.all <- betadisper(dist.seqtab,samdf.trim$zone)
 anova(bet.all)
 #not sig
 plot(bet.all)
-adonis(seq.trim ~ zone, strata=samdf.trim$site, data=samdf.trim, permutations=999)
+adonis(seq.trim.rel ~ zone, strata=samdf.trim$site, data=samdf.trim, permutations=999)
 #not sig
 
 #by site
 samdf.mnw <- subset(samdf.trim,site=="MNW")
 sam.mnw <- rownames(samdf.mnw)
-seq.mnw <- seq.trim[(row.names(seq.trim) %in% sam.mnw),]
+seq.mnw <- seq.trim.rel[(row.names(seq.trim.rel) %in% sam.mnw),]
 
 dist.mnw <- vegdist(seq.mnw)
 bet.mnw <- betadisper(dist.mnw,samdf.mnw$zone,bias.adjust = TRUE,type="median")
@@ -928,7 +935,7 @@ samdf.mnw <- subset(samdf.rare,site=="MNW")
 mnw <- c(row.names(samdf.mnw))
 seq.trim.mnw <- seq.trim[row.names(seq.trim) %in% mnw, ]
 
-#rarefied - done 3 times
+#rarefied
 indval_rare_1 = multipatt(seq.trim.mnw, samdf.mnw$zone, control = how(nperm=999))
 summary(indval_rare_1) #6 for in, 5 for off
 
@@ -938,20 +945,20 @@ sqs_sig1_mnw <- subset(sqs1,p.value < 0.05)
 sqs_sig1_mnw$sqs <- rownames(sqs_sig1)
 
 #saving
-write.csv(sqs_sig1_mnw,"sqs_mnw.csv")
+#write.csv(sqs_sig1_mnw,"sqs_mnw.csv")
+sqs_sig1_mnw <- read.csv("sqs_mnw.csv",row.names=1)
 
-#plotting
-goodtaxa <- sqs_sig1_mnw$sqs
-allTaxa <- taxa_names(ps.mnw)
+goodtaxa <- sqs.mse$sqs
+allTaxa <- taxa_names(ps.mse)
 allTaxa <- allTaxa[(allTaxa %in% goodtaxa)]
-indic.mnw <- prune_taxa(allTaxa, ps.mnw)
-indic.mnw.rel <- transform_sample_counts(indic.mnw, function(x) x / sum(x))
-plot_bar(indic.mnw.rel,x="zone",fill="Genus")+
+indic.mse <- prune_taxa(allTaxa, ps.mse)
+indic.mse.rel <- transform_sample_counts(indic.mse, function(x) x / sum(x))
+plot_bar(indic.mse.rel,x="zone",fill="Genus")+
   facet_wrap(~Genus,scales="free")
 
 #now by more specific results
-sqs_mnwi <- subset(sqs_sig1_mnw,index==1)
-sqs_mnwo <- subset(sqs_sig1_mnw,index==2)
+sqs_mnwi <- subset(sqs.mnw,index==1)
+sqs_mnwo <- subset(sqs.mnw,index==2)
 
 taxa_mnwi <- sqs_mnwi$sqs
 allTaxa <- taxa_names(ps.mnw)
@@ -961,27 +968,141 @@ indic.mnwi.rel <- transform_sample_counts(indic.mnwi, function(x) x / sum(x))
 plot_bar(indic.mnwi.rel,x="zone",fill="Genus")+
   facet_wrap(~Genus,scales="free")
 
+taxa_mnwo <- sqs_mnwo$sqs
+allTaxa <- taxa_names(ps.mnw)
+allTaxa <- allTaxa[(allTaxa %in% taxa_mnwo)]
+indic.mnwo <- prune_taxa(allTaxa, ps.mnw)
+indic.mnwo.rel <- transform_sample_counts(indic.mnwo, function(x) x / sum(x))
+plot_bar(indic.mnwo.rel,x="zone",fill="Genus")+
+  facet_wrap(~Genus,scales="free")
+
+#MSE
+ps.mse = subset_samples(ps.rare.trim, site=="MSE")
+samdf.mse <- subset(samdf.rare,site=="MSE")
+mse <- c(row.names(samdf.mse))
+seq.trim.mse <- seq.trim[row.names(seq.trim) %in% mse, ]
+#rarefied
+indval.mse = multipatt(seq.trim.mse, samdf.mse$zone, control = how(nperm=999))
+summary(indval.mse) #3 for in, 17 for out
+
+#plotting abundances
+sqs.mse <- data.frame(indval.mse[["sign"]])
+sqs.mse <- subset(sqs.mse,p.value < 0.05)
+sqs.mse$sqs <- rownames(sqs.mse)
+#saving
+write.csv(sqs.mse,"sqs_mse.csv")
+sqs.mse <- read.csv("sqs_mse.csv",row.names=1)
+
+#plotting
+goodtaxa <- sqs.mse$sqs
+allTaxa <- taxa_names(ps.mse)
+allTaxa <- allTaxa[(allTaxa %in% goodtaxa)]
+indic.mse <- prune_taxa(allTaxa, ps.mse)
+indic.mse.rel <- transform_sample_counts(indic.mse, function(x) x / sum(x))
+plot_bar(indic.mse.rel,x="zone",fill="Genus")+
+  facet_wrap(~Genus,scales="free")
+
+#now by more specific results
+sqs_msei <- subset(sqs.mse,index==1)
+sqs_mseo <- subset(sqs.mse,index==2)
+
+#TAHITI NW
+ps.tnw = subset_samples(ps.rare.trim, site=="TNW")
+samdf.tnw <- subset(samdf.rare,site=="TNW")
+tnw <- c(row.names(samdf.tnw))
+seq.trim.tnw <- seq.trim[row.names(seq.trim) %in% tnw, ]
+#rarefied
+indval.tnw = multipatt(seq.trim.tnw, samdf.tnw$zone, control = how(nperm=999))
+summary(indval.tnw) #3 for in, 17 for out
+
+#plotting abundances
+sqs.tnw <- data.frame(indval.tnw[["sign"]])
+sqs.tnw <- subset(sqs.tnw,p.value < 0.05)
+sqs.tnw$sqs <- rownames(sqs.tnw)
+#saving
+write.csv(sqs.tnw,"sqs_tnw.csv")
+sqs.tnw <- read.csv("sqs_tnw.csv",row.names=1)
+
+#plotting
+goodtaxa <- sqs.tnw$sqs
+allTaxa <- taxa_names(ps.tnw)
+allTaxa <- allTaxa[(allTaxa %in% goodtaxa)]
+indic.tnw <- prune_taxa(allTaxa, ps.tnw)
+indic.tnw.rel <- transform_sample_counts(indic.tnw, function(x) x / sum(x))
+plot_bar(indic.tnw.rel,x="zone",fill="Genus")+
+  facet_wrap(~Genus,scales="free")
+
+#now by more specific results
+sqs_tnwi <- subset(sqs.tnw,index==1)
+sqs_tnwo <- subset(sqs.tnw,index==2)
+
 #### bubble plot ####
-melt.mnw <- psmelt(indic.mnwi)
-melt.mnw$Abundance[is.na(melt.mnw$Abundance)] <- 0
-#melt.mnw.sum <- summarySE(melt.mnw,measurevar="Abundance",groupvars = c("OTU","zone"))
-
 library(dplyr)
-x_new = melt.mnw %>% group_by(OTU,zone) %>% summarise(x = sum(Abundance))
 
-ggplot(x_new, aes(x = zone, y = OTU)) + 
-  geom_point(aes(size = x, fill = OTU), alpha = 0.75, shape = 21) #+ 
-  # scale_size_continuous(limits = c(0.000001, 100), range = c(1,17), breaks = c(1,10,50,75)) + 
-  # labs( x= "", y = "", size = "Relative Abundance (%)", fill = "")  + 
-  # theme(legend.key=element_blank(), 
-  #       axis.text.x = element_text(colour = "black", size = 12, face = "bold", angle = 90, vjust = 0.3, hjust = 1), 
-  #       axis.text.y = element_text(colour = "black", face = "bold", size = 11), 
-  #       legend.text = element_text(size = 10, face ="bold", colour ="black"), 
-  #       legend.title = element_text(size = 12, face = "bold"), 
-  #       panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2), 
-  #       legend.position = "right") +  
-  # scale_fill_manual(values = colours, guide = FALSE) + 
-  # scale_y_discrete(limits = rev(levels(pcm$variable))) 
+#MOOREA NW
+melt.mnw <- psmelt(indic.mnw.rel)
+melt.mnw$Abundance[is.na(melt.mnw$Abundance)] <- 0
+melt.mnw.sum <- summarySE(melt.mnw,measurevar="Abundance",groupvars = c("OTU","Genus","zone"))
+
+melt.mnw.sum$bool_col <- melt.mnw.sum$OTU %in% sqs_mnwi$sqs
+melt.mnw.sum$indic_res <- ifelse(melt.mnw.sum$bool_col == T, "indic_in", "indic_out")
+
+bub.mnw <- ggplot(melt.mnw.sum, aes(x = zone, y = OTU)) + 
+  geom_point(aes(size = Abundance, fill = OTU), alpha = 0.75, shape = 21)+
+  facet_grid(indic_res~.,scales="free",space="free")+
+  theme_cowplot()
+
+bub.mnw
+
+#MOOREA SE
+melt.mse <- psmelt(indic.mse.rel)
+melt.mse$Abundance[is.na(melt.mse$Abundance)] <- 0
+melt.mse.sum <- summarySE(melt.mse,measurevar="Abundance",groupvars = c("OTU","zone"))
+
+melt.mse.sum$bool_col <- melt.mse.sum$OTU %in% sqs_msei$sqs
+melt.mse.sum$indic_res <- ifelse(melt.mse.sum$bool_col == T, "indic_in", "indic_out")
+
+bub.mse <- ggplot(melt.mse.sum, aes(x = zone, y = OTU)) + 
+  geom_point(aes(size = Abundance, fill = OTU), alpha = 0.75, shape = 21)+
+  facet_grid(indic_res~.,scales="free",space="free")+
+  theme_cowplot()
+
+#TAHITI NW
+melt.tnw <- psmelt(indic.tnw.rel)
+melt.tnw$Abundance[is.na(melt.tnw$Abundance)] <- 0
+melt.tnw.sum <- summarySE(melt.tnw,measurevar="Abundance",groupvars = c("OTU","zone"))
+
+melt.tnw.sum$bool_col <- melt.tnw.sum$OTU %in% sqs_tnwi$sqs
+melt.tnw.sum$indic_res <- ifelse(melt.tnw.sum$bool_col == T, "indic_in", "indic_out")
+
+bub.tnw <- ggplot(melt.tnw.sum, aes(x = zone, y = OTU)) + 
+  geom_point(aes(size = Abundance, fill = OTU), alpha = 0.75, shape = 21)+
+  facet_grid(indic_res~.,scales="free",space="free")+
+  theme_cowplot()
+bub.tnw
+
+#3 panel plot
+ggarrange(bub.mnw,bub.mse,bub.tnw,nrow=1)
+
+#trying with all together
+all.sqs <- rbind(sqs_mnwi,sqs_mnwo,sqs_msei,sqs_mseo,sqs_tnwi,sqs_tnwo)
+goodtaxa <- all.sqs$sqs
+allTaxa <- taxa_names(ps.rare.trim)
+allTaxa <- allTaxa[(allTaxa %in% goodtaxa)]
+indic.all <- prune_taxa(allTaxa, ps.rare.trim)
+indic.all.rel <- transform_sample_counts(indic.all, function(x) x / sum(x))
+
+melt.all <- psmelt(indic.all.rel)
+melt.all$Abundance[is.na(melt.all$Abundance)] <- 0
+melt.all.sum <- summarySE(melt.all,measurevar="Abundance",groupvars = c("OTU","zone","site"))
+
+#melt.tnw.sum$bool_col <- melt.tnw.sum$OTU %in% sqs_tnwi$sqs
+#melt.tnw.sum$indic_res <- ifelse(melt.tnw.sum$bool_col == T, "indic_in", "indic_out")
+
+melt.all.sum$OTU <- factor(melt.all.sum$OTU, levels=row.names(all.sqs))
+ggplot(melt.all.sum, aes(x = zone, y = OTU)) + 
+  geom_point(aes(size = Abundance, fill = OTU), alpha = 0.75, shape = 21)+
+  facet_wrap(~site)
 
 #### DESEQ to find differentially abundant ASVs ####
 library(DESeq2)
