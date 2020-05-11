@@ -304,7 +304,7 @@ write.csv(seqtab.nochim, file="mr16s_seqtab.nochim.csv")
 write.csv(seqtab.nochim, file="mr16s_seqtab.nochim_renamed.csv")
 
 #### Read in previously saved datafiles ####
-setwd("~/moorea_holobiont/mr_16S/")
+setwd("~/moorea_holobiont/mr_16S")
 seqtab.nochim <- readRDS("mr16s_seqtab.nochim.rds")
 taxa <- readRDS("mr16s_taxa.rds")
 taxa.plus <- readRDS("mr16s_taxaplus.rds")
@@ -1379,8 +1379,6 @@ bub.genus.tnw
 seq.glom.genus.pa <- seq.glom.genus
 seq.glom.genus.pa[seq.glom.genus.pa>0] <-1
 
-
-
 #### DESEQ to find differentially abundant ASVs ####
 library(DESeq2)
 
@@ -1397,9 +1395,9 @@ write.csv(sigtab.all,"sigtab.all_justzone.csv")
 
 ps.mnw = subset_samples(ps.rare.trim, site=="MNW")
 #ps.mnw = subset_samples(ps.trim, site=="MNW")
-#ps.mnw.0 <- prune_taxa(taxa_sums(ps.mnw)>0,ps.mnw) #remove samples with 0 total
+ps.mnw.0 <- prune_taxa(taxa_sums(ps.mnw)>0,ps.mnw) #remove samples with 0 total
 
-ds.mnw = phyloseq_to_deseq2(ps.mnw, ~ zone)
+ds.mnw = phyloseq_to_deseq2(ps.mnw.0, ~ zone)
 dds.mnw <- estimateSizeFactors(ds.mnw,type="poscounts")
 stat.mnw = DESeq(dds.mnw, test="Wald", fitType="parametric")
 
@@ -1410,8 +1408,7 @@ sigtab.mnw = cbind(as(sigtab.mnw, "data.frame"), as(tax_table(ps.mnw)[rownames(s
 sigtab.mnw
 dim(sigtab.mnw)
 write.csv(sigtab.mnw,"sigtab.mnw.csv")
-#6 for MNW after rarefying, removing low count samples & taxa
-#14 without rarefying
+#7 for MNW after rarefying, removing low count samples & taxa, rd2 based
 
 goodtaxa <- c(row.names(sigtab.mnw))
 allTaxa = taxa_names(ps.rare)
@@ -1430,9 +1427,9 @@ plot_bar(ps.mnw, x="zone", fill="class")+
 
 ps.mse = subset_samples(ps.rare.trim, site=="MSE")
 #ps.mse = subset_samples(ps.trim, site=="MSE")
-#ps.mse.0 <- prune_taxa(taxa_sums(ps.mse)>0,ps.mse) #remove samples with 0 total
+ps.mse.0 <- prune_taxa(taxa_sums(ps.mse)>0,ps.mse) #remove samples with 0 total
 
-ds.mse = phyloseq_to_deseq2(ps.mse, ~ zone)
+ds.mse = phyloseq_to_deseq2(ps.mse.0, ~ zone)
 dds.mse <- estimateSizeFactors(ds.mse,type="poscounts")
 stat.mse = DESeq(dds.mse, test="Wald", fitType="parametric")
 
@@ -1461,97 +1458,64 @@ plot_bar(ps.mse, x="zone", fill="class")+
   ggtitle("Moorea SE")+
   facet_wrap(~class)
 
-ps.t = subset_samples(ps.rare.trim, site=="TNW")
+ps.tnw = subset_samples(ps.rare.trim, site=="TNW")
 #ps.t = subset_samples(ps.trim, site=="TNW")
-ds.t = phyloseq_to_deseq2(ps.t, ~ zone)
-dds.t <- estimateSizeFactors(ds.t,type="poscounts")
-stat.t = DESeq(dds.t, test="Wald", fitType="parametric")
+ps.tnw.0 <- prune_taxa(taxa_sums(ps.tnw)>0,ps.tnw) #remove taxa with 0 total
 
-res = results(stat.t, cooksCutoff = FALSE)
+ds.tnw = phyloseq_to_deseq2(ps.tnw.0, ~ zone)
+dds.tnw <- estimateSizeFactors(ds.tnw,type="poscounts")
+stat.tnw = DESeq(dds.tnw, test="Wald", fitType="parametric")
+
+res = results(stat.tnw, cooksCutoff = FALSE)
 alpha = 0.05
-sigtab.t = res[which(res$padj < alpha), ]
-sigtab.t = cbind(as(sigtab.t, "data.frame"), as(tax_table(ps.t)[rownames(sigtab.t), ], "matrix"))
-dim(sigtab.t)
-sigtab.t
-#7 for TNW
-#8 without rarefying
-write.csv(sigtab.t,"sigtab.tah.csv")
+sigtab.tnw = res[which(res$padj < alpha), ]
+sigtab.tnw = cbind(as(sigtab.tnw, "data.frame"), as(tax_table(ps.tnw)[rownames(sigtab.tnw), ], "matrix"))
+dim(sigtab.tnw)
+sigtab.tnw
+#9 for TNW
+write.csv(sigtab.tnw,"sigtab.tah.csv")
 
-tax_table(ps.rare)
-#visualizing deseq results - can't do with no results
+#how many are shared?
+merge(sigtab.mnw,sigtab.mse,by=0) #none
+merge(sigtab.mse,sigtab.tnw,by=0) #just 41
+merge(sigtab.mnw,sigtab.tnw,by=0) #none
+
 theme_set(theme_cowplot())
 #scale_fill_discrete <- function(palname = "Set1", ...) {
 #  scale_fill_brewer(palette = palname, ...)
 #}
-# Phylum order
+# Phylum orderc
 #x = tapply(sigtab.mnw$log2FoldChange, sigtab.mnw$phylum, function(x) max(x))
 #x = sort(x, TRUE)
 #sigtab.mnw$Phylum = factor(as.character(sigtab.mnw$phylum), levels=names(x))
 # class 
 
-x = tapply(sigtab.mnw$log2FoldChange, sigtab.mnw$class, function(x) max(x))
-x = sort(x, TRUE)
-sigtab.mnw$class = factor(as.character(sigtab.mnw$class), levels=names(x))
-quartz()
+#not sure if I need any of this?
+# x = tapply(sigtab.mnw$log2FoldChange, sigtab.mnw$Genus, function(x) max(x))
+# x = sort(x, TRUE)
+# sigtab.mnw$Genus = factor(as.character(sigtab.mnw$Genus), levels=names(x))
+# quartz()
 
-sigtab.mnw$family <- sub("Xanthobacteraceae","Xanthobacteraceae         ",sigtab.mnw$family)
-#gg.mnw <- ggplot(sigtab.mnw, aes(x=class, y=log2FoldChange,color=class)) + 
-geom_point(size=6) +
-  theme(axis.text.x = element_text(angle=-45,hjust = 0, vjust=0.5),legend.position="none")+
-  xlab("Class")+
-  ylab("Log2 fold change")+
-  ggtitle("Moorea NW")#+
-gg.mnw <- ggplot(sigtab.mnw, aes(x=family, y=log2FoldChange,color=family)) + 
-  geom_point(size=6) +
-  theme(axis.text.x = element_text(angle=-90,hjust = 0, vjust=0.5), text=element_text(family="Gill Sans MT"),legend.position="none")+
-  xlab("Family")+
-  ylab("Log2 fold change")+
-  ggtitle("Moorea NW")#+
-#  scale_color_manual(name="Reef zone",aesthetics = "color",values=c("#ED7953FF","#8405A7FF"),labels=c("Backreef","Forereef"))
-gg.mnw
+sigtab.mnw$site <- c(rep("Moorea NW",7))
+sigtab.mse$site <- c(rep("Moorea SE",4))
+sigtab.tnw$site <- c(rep("Tahiti NW",9))
 
-x = tapply(sigtab.mse$log2FoldChange, sigtab.mse$class, function(x) max(x))
-x = sort(x, TRUE)
-sigtab.mse$class = factor(as.character(sigtab.mse$class), levels=names(x))
+sigtab.toplot <- rbind(sigtab.mnw,sigtab.tnw,sigtab.mse)
 
-gg.mse <- ggplot(sigtab.mse, aes(x=class, y=log2FoldChange,color=class)) + 
-  geom_point(size=6) +
-  theme(axis.text.x = element_text(angle=-45,hjust = 0, vjust=0.5),legend.position="none")+
-  xlab("Class")+
-  ggtitle("Moorea SE")+
-  ylab("Log2 fold change")
-gg.mse <- ggplot(sigtab.mse, aes(x=family, y=log2FoldChange,color=family)) + 
-  geom_point(size=6) +
-  theme(axis.text.x = element_text(angle=-90,hjust = 0, vjust=0.5),text=element_text(family="Gill Sans MT"),legend.position="none")+
-  xlab("Family")+
-  ggtitle("Moorea SE")+
-  ylab("Log2 fold change")
-gg.mse
-
-x = tapply(sigtab.t$log2FoldChange, sigtab.t$class, function(x) max(x))
-x = sort(x, TRUE)
-sigtab.t$class = factor(as.character(sigtab.t$class), levels=names(x))
-
-sub()
-
-gg.t <- ggplot(sigtab.t, aes(x=class, y=log2FoldChange,color=class)) + 
-  geom_point(size=6) +
-  theme(axis.text.x = element_text(angle=-45,hjust = 0, vjust=0.5),legend.position="none")+
-  xlab("Class")+
-  ggtitle("Tahiti NW")+
-  ylab("Log2 fold change")
-gg.t <- ggplot(sigtab.t, aes(x=family, y=log2FoldChange,color=family)) + 
-  geom_point(size=6) +
-  theme(axis.text.x = element_text(angle=-90,hjust = 0, vjust=0.5),text=element_text(family="Gill Sans MT"),legend.position="none")+
-  xlab("Family")+
-  ggtitle("Tahiti NW")+
-  ylab("Log2 fold change")
-gg.t
+deseq.genera <- c(levels(sigtab.toplot$Genus))
+sigtab.toplot$Genus <- factor(sigtab.toplot$Genus,levels=c("Finegoldia","Peptoniphilus","Pseudomonas","Acinetobacter","Class_Bacteroidia","Anoxybacillus","Order_Entomoplasmatales","Endozoicomonas","Phreatobacter","Acidovorax","Kingdom_Bacteria","Lacibacter","Methylobacterium","Ralstonia","Family_Burkholderiaceae"))
 
 quartz()
-library(ggpubr)
-ggarrange(gg.mnw,gg.mse,gg.t,nrow=1)
+ggplot(sigtab.toplot,aes(x=Genus,y=log2FoldChange,color=Genus))+
+  geom_point(size=6)+
+  facet_grid(site~.)+
+  theme_bw()+
+  theme(legend.position = "none",axis.text.x=element_text(hjust=1,angle=45),text=element_text(size=14))+
+  ylim(-25,25)+
+  ylab('Log2 fold change')+
+  geom_hline(yintercept=0,linetype="dashed")
 
+#### outdated maybe ####
 goodtaxa = c("sq4","sq16","sq26")
 allTaxa = taxa_names(ps.rare)
 allTaxa <- allTaxa[(allTaxa %in% goodtaxa)]
