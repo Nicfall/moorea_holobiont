@@ -8,9 +8,16 @@ ids.rare.trim <- rownames(taxa.rare.trim)
 
 seq.rare.trim.matrix <- as.matrix(seq.rare.trim)
 
+#fasta file
 library(dada2)
 path='~/moorea_holobiont/mr16s_fxn/mr16s.rare.trim.fasta'
 uniquesToFasta(seq.rare.trim.matrix, path, ids = ids.rare.trim, mode = "w", width = 20000)
+
+#csv file
+seq.rare.trim <- read.csv("~/moorea_holobiont/mr_16S/seq.rare12k.trim_rd2.csv",row.names=1)
+seq.rare.trim.t <- t(seq.rare.trim)
+write.csv(seq.rare.trim.t,file="seq.rare.trim.t_forpiphillin.csv")
+#manually renamed the 'X' as 'sqs'
 
 ### deseq + kegg? ####
 #resources to go back to:
