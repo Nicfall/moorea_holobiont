@@ -596,8 +596,34 @@ plot_ordination(ps.trim.rel, ord,color="site", shape="site")+
 seq.trim.rel <- data.frame(otu_table(ps.trim.rel))
 
 ord <- ordinate(ps.rare.trim, "PCoA", "bray")
-plot_ordination(ps.rare.trim, ord,color="zone", shape="zone")+
-  stat_ellipse()
+quartz()
+gg.pcoa.site.rare <- plot_ordination(ps.rare.trim, ord,color="site", shape="site")+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_color_manual(name="Site",values=c("darkslategray3","darkslategray4","#000004"))+
+  scale_shape_manual(name="Site",values=c(8,4,9))+
+  xlab("Axis 1 (32.3%)")+
+  ylab("Axis 2 (20.1%)")+
+  annotate(geom="text", x=0.35, y=0.65, label="p < 0.01**",size=4)+
+  ggtitle("Rarefied")
+
+ord.rel <- ordinate(ps.trim.rel, "PCoA", "bray")
+gg.pcoa.site <- plot_ordination(ps.trim.rel, ord.rel,color="site", shape="site")+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_color_manual(name="Site",values=c("darkslategray3","darkslategray4","#000004"))+
+  scale_shape_manual(name="Site",values=c(8,4,9))+
+  xlab("Axis 1 (32.4%)")+
+  ylab("Axis 2 (21%)")+
+  annotate(geom="text", x=0.35, y=0.65, label="p < 0.01**",size=4)+
+  ggtitle("Relative abundance")
+gg.pcoa.site
+
+quartz()
+ggarrange(gg.pcoa.site.rare,gg.pcoa.site,labels="AUTO",common.legend=TRUE,legend="right")
+
+#other color options
+#scale_color_manual(name="Site",values=c("darkturquoise","darkslategray4","#000004"))+
 
 #now by site
 ps.mnw <- subset_samples(ps.trim.rel,site=="MNW")
@@ -697,15 +723,40 @@ library(vegan)
 #https://thebiobucket.blogspot.com/2011/04/assumptions-for-permanova-with-adonis.html#more
 
 #not rarefied
-#rel abundance
+#rel abundance or not
+ps.trim.rel <- transform_sample_counts(ps.trim, function(x) x / sum(x))
+seq.trim.rel <- data.frame(otu_table(ps.trim.rel))
+
 dist.seqtab <- vegdist(seq.trim.rel)
 dist.seqtab <- vegdist(seq.trim)
 bet.all <- betadisper(dist.seqtab,samdf.trim$zone)
+bet.all <- betadisper(dist.seqtab,samdf.trim$site)
 anova(bet.all)
-#not sig
+#not sig - rel or not
 plot(bet.all)
+adonis(seq.trim ~ site, data=samdf.trim, permutations=999)
+adonis(seq.trim ~ site*zone, data=samdf.trim, permutations=999)
+adonis(seq.trim ~ zone, strata=samdf.trim$site,data=samdf.trim, permutations=999)
 adonis(seq.trim.rel ~ zone, strata=samdf.trim$site, data=samdf.trim, permutations=999)
-#not sig
+adonis(seq.trim.rel ~ site*zone, data=samdf.trim, permutations=999)
+adonis(seq.trim.rel ~ site, data=samdf.trim, permutations=999)
+
+#site pairs
+samdf.mnw.tnw <- subset(samdf.trim,site==c("MNW","TNW"))
+sams.mnw.tnw <- c(rownames(samdf.mnw.tnw))
+seq.mnw.tnw <- seq.trim.rel[(row.names(seq.trim.rel) %in% sams.mnw.tnw),]
+adonis(seq.mnw.tnw ~ site*zone, data=samdf.mnw.tnw, permutations=999)
+#MNW & TNW not different
+samdf.mse.tnw <- subset(samdf.trim,site==c("MSE","TNW"))
+sams.mse.tnw <- c(rownames(samdf.mse.tnw))
+seq.mse.tnw <- seq.trim.rel[(row.names(seq.trim.rel) %in% sams.mse.tnw),]
+adonis(seq.mse.tnw ~ site, data=samdf.mse.tnw, permutations=999)
+#TNW & MSE not sig different
+samdf.mnw.mse <- subset(samdf.trim,site==c("MNW","MSE"))
+sams.mnw.mse <- c(rownames(samdf.mnw.mse))
+seq.mnw.mse <- seq.trim.rel[(row.names(seq.trim.rel) %in% sams.mnw.mse),]
+adonis(seq.mnw.mse ~ site, data=samdf.mnw.mse, permutations=999)
+#MSE & MNW not sig different
 
 #by site
 samdf.mnw <- subset(samdf.trim,site=="MNW")
@@ -748,6 +799,32 @@ adonis(seq.tnw ~ zone, strata=samdf.tnw$site, data=samdf.tnw, permutations=999)
 #sig! 0.001 **
 
 #### stats - rarefied ####
+library(vegan)
+#by site
+dist.seqtab <- vegdist(seq.trim)
+bet.all <- betadisper(dist.seqtab,samdf.rare$site)
+anova(bet.all) #not sig 
+plot(bet.all)
+adonis(seq.trim ~ site, data=samdf.rare, permutations=999)
+
+#site pairs
+samdf.mnw.tnw <- subset(samdf.rare,site==c("MNW","TNW"))
+sams.mnw.tnw <- c(rownames(samdf.mnw.tnw))
+seq.mnw.tnw <- seq.trim[(row.names(seq.trim) %in% sams.mnw.tnw),]
+adonis(seq.mnw.tnw ~ site*zone, data=samdf.mnw.tnw, permutations=999)
+#MNW & TNW not different
+samdf.mse.tnw <- subset(samdf.rare,site==c("MSE","TNW"))
+sams.mse.tnw <- c(rownames(samdf.mse.tnw))
+seq.mse.tnw <- seq.trim[(row.names(seq.trim) %in% sams.mse.tnw),]
+adonis(seq.mse.tnw ~ site, data=samdf.mse.tnw, permutations=999)
+#TNW & MSE sig different
+samdf.mnw.mse <- subset(samdf.rare,site==c("MNW","MSE"))
+sams.mnw.mse <- c(rownames(samdf.mnw.mse))
+seq.mnw.mse <- seq.trim[(row.names(seq.trim) %in% sams.mnw.mse),]
+adonis(seq.mnw.mse ~ site*zone, data=samdf.mnw.mse, permutations=999)
+#MSE & MNW not different
+
+#by zone
 dist.seqtab <- vegdist(seq.trim)
 bet.all <- betadisper(dist.seqtab,samdf.rare$zone)
 anova(bet.all)

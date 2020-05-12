@@ -1,3 +1,17 @@
+#piphillin requires a .csv file of the counts + a .fasta of the sequences:
+seq.rare.trim <- read.csv("~/moorea_holobiont/mr_16S/seq.rare12k.trim_rd2.csv",row.names=1)
+sqs.rare.trim <- colnames(seq.rare.trim)
+taxa.rare.trim <- data.frame(taxa2[(rownames(taxa2) %in% sqs.rare.trim),])
+colnames(seq.rare.trim) == rownames(taxa.rare.trim) #double check
+colnames(seq.rare.trim) <- taxa.rare.trim$V8
+ids.rare.trim <- rownames(taxa.rare.trim)
+
+seq.rare.trim.matrix <- as.matrix(seq.rare.trim)
+
+library(dada2)
+path='~/moorea_holobiont/mr16s_fxn/mr16s.rare.trim.fasta'
+uniquesToFasta(seq.rare.trim.matrix, path, ids = ids.rare.trim, mode = "w", width = 20000)
+
 ### deseq + kegg? ####
 #resources to go back to:
 #deseq stuffs
@@ -18,7 +32,6 @@ countData <- read.table("ko_pathway_abund_table_unnorm copy.txt",row.names=1,hea
 
 # Filter data where you only have 0 or 1 read count across all samples.
 countData2 = countData[rowSums(countData)>1, ]
-head(countData2)
 
 countData_rounded <- floor(countData2)
 
@@ -66,7 +79,6 @@ summary(res.mnw) #nothing lol
 #MOOREA SE
 col.mse <- subset(colData,site=="MSE")
 id.mse <- row.names(col.mse)
-id.mse
 
 count.mse <- countData_rounded[,colnames(countData_rounded) %in% id.mse]
 count.mse2 = count.mse[rowSums(count.mse)>1, ] #some
@@ -81,7 +93,7 @@ dds.mse
 
 res.mse = results(dds.mse, contrast=c("zone","in", "out"))
 res.mse = res.mse[order(res.mse$pvalue),]
-summary(res.mse) #things!
+summary(res.mse) #36 up, 44 down, 90 with low counts
 
 #Tahiti NW
 col.tnw <- subset(colData,site=="TNW")
