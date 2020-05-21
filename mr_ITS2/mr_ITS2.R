@@ -444,7 +444,7 @@ rarecurve(seqtab.no87,step=100,label=FALSE) #before trimming
 #write.csv(seq.rare,"~/moorea_holobiont/mr_ITS2/seqtab.rare_1994.csv")
 write.csv(seq.rare,"~/moorea_holobiont/mr_ITS2/seqtab.rare_1994_rd2.csv")
 #read back in
-seq.rare <- read.csv("~/moorea_holobiont/mr_ITS2/seqtab.rare_1994.csv",row.names=1,header=TRUE)
+seq.rare <- read.csv("~/moorea_holobiont/mr_ITS2/seqtab.rare_1994_rd2.csv",row.names=1,header=TRUE)
 
 #phyloseq object
 ps.rare <- phyloseq(otu_table(seq.rare, taxa_are_rows=FALSE), 
@@ -476,7 +476,7 @@ df.div
 
 df.div$Sample <- rownames(df.div)
 df.div$Sample <- gsub("X","",df.div$Sample)
-df.div <- merge(df.div,samdf.no87,by="Sample") #add sample data
+df.div <- merge(df.div,samdf,by="Sample") #add sample data
 
 #write.csv(df.div,file="~/moorea_holobiont/mr_ITS2/mrits_div_lulu.rare.csv") #saving
 #df.div <- read.csv("~/Desktop/mrits/mrits_diversity.csv") #reading back in 
@@ -497,7 +497,8 @@ gg.sh <- ggplot(df.div, aes(x=zone, y=Shannon,color=zone,shape=zone))+
   #guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
   theme(legend.position="none")+
   geom_jitter(alpha=0.5)+
-  facet_wrap(~site)
+  facet_wrap(~site)+
+  ylim(-0.01, 1.7)
 gg.sh
 
 gg.si <- ggplot(df.div, aes(x=zone, y=InvSimpson,color=zone,shape=zone))+
@@ -510,7 +511,8 @@ gg.si <- ggplot(df.div, aes(x=zone, y=InvSimpson,color=zone,shape=zone))+
   #guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
   theme(legend.position="none")+
   geom_jitter(alpha=0.5)+
-  facet_wrap(~site)
+  facet_wrap(~site)+
+  ylim(1,4.4)
 gg.si
 
 gg.ob <- ggplot(df.div, aes(x=zone, y=Observed,color=zone,shape=zone))+
@@ -547,6 +549,7 @@ wilcox.test(InvSimpson~zone,data=mnw)
 wilcox.test(Observed~zone,data=mnw)
 #no
 
+summary(aov(Shannon~zone,data=mse))
 wilcox.test(Shannon~zone,data=mse)
 #p = 0.0031 ** rare
 wilcox.test(InvSimpson~zone,data=mse)
@@ -603,31 +606,45 @@ library(MCMC.OTU)
 #added a column with a blank name in the beginning, with 1-95 in the column, mcmc.otu likes this
 #also removed the X from the beginning of sample names
 lulu.rare.mcmc <- read.csv("~/moorea_holobiont/mr_ITS2/seqtab.rare_1994_rd2_mcmc.csv",header=TRUE)
-lulu.mcmc <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_output_mcmc.csv",header=TRUE)
 #& reading back in things
 
-goods <- purgeOutliers(lulu.rare.mcmc,count.columns=3:21,otu.cut=0.001,zero.cut=0.02)
+goods <- purgeOutliers(lulu.rare.mcmc,count.columns=3:21,otu.cut=0.001,zero.cut=0.02) #rare
 #otu.cut = 0.1% of reads represented by ASV 
 #zero.cut = present in more than 1 sample (2% of samples)
 colnames(goods)
 #sq 1, 2, 3, 6, 7, 12, 18, 24, 32 with min 99% matching in lulu
 
-#### Bar plot - clustered, trimmed ####
+#not rare
+lulu.mcmc <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_output_mcmc.csv",header=TRUE)
+goods <- purgeOutliers(lulu.mcmc,count.columns=3:21,otu.cut=0.001,zero.cut=0.02) #not rare
+#otu.cut = 0.1% of reads represented by ASV 
+#zero.cut = present in more than 1 sample (2% of samples)
+colnames(goods)
+#sq 1, 2, 3, 6, 7, 12, 18, 24, 32 with min 99% matching in lulu
+
 rownames(goods) <- goods$sample
 counts <- goods[,3:11]
 
-#mcmc.otu removed 3 undersequenced samples: "513" "530" "76"
-#remove <- c("513","530","76")
-#samdf.mcmc <- samdf.no87[!row.names(samdf.no87)%in%remove,]
+#mcmc.otu removed 3 undersequenced samples: "513" "530" "76", "87" bad to begin with
+remove <- c("513","530","76","87")
+samdf.mcmc <- samdf[!row.names(samdf)%in%remove,]
 
 #write.csv(samdf.mcmc,"~/Desktop/mr_samples.csv")
+write.csv(counts,file="seqtab_lulu.trimmed.csv")
 write.csv(counts,file="seqtab_lulu.rare.trimmed.csv")
+counts <- read.csv("seqtab_lulu.rare.trimmed.csv",row.names=1,header=TRUE)
+
+ps.mcmc <- phyloseq(otu_table(counts, taxa_are_rows=FALSE), 
+                         sample_data(samdf.mcmc), 
+                         tax_table(taxa2))
+ps.mcmc
 
 ps.rare.mcmc <- phyloseq(otu_table(counts, taxa_are_rows=FALSE), 
                     sample_data(samdf), 
                     tax_table(taxa2))
 ps.rare.mcmc
 
+#### Bar plot - clustered, trimmed ####
 #bar plot
 ps_glom <- tax_glom(ps.rare.mcmc, "Class")
 ps1 <- merge_samples(ps_glom, "site_zone")
@@ -714,9 +731,6 @@ quartz()
 ggarrange(gg.bp,
           ggarrange(gg.sh,gg.si,ncol=2,labels=c("(b)","(c)"),common.legend=T,legend="none"),nrow=2,labels="(a)")
 
-#new & improved:
-ggarrange(gg.bp,gg.sh,gg.si,ncol=1,nrow=2,labels=c("A.","B."))
-
 #getting raw average relative abundances
 ps.rel <- transform_sample_counts(ps_no87, function(x) x / sum(x))
 plot_bar(ps.rel,fill="Class")
@@ -749,101 +763,6 @@ all.otu <- ps2@otu_table
 all.otu2 <- as.data.frame(all.otu)
 mean(all.otu2$sq1)
 
-#### Pcoa - raw data ####
-
-library(vegan)
-#install.packages("ggforce")
-#library(ggforce)
-#not sure if I need this one^
-library(ggpubr)
-library(cowplot)
-
-# creating a log-transfromed normalized dataset for PCoA:
-df.seq <- as.data.frame(seqtab.no87)
-all.log=logLin(data=df.seq)
-
-# computing Manhattan distances (sum of all log-fold-changes) and performing PCoA:
-all.dist=vegdist(all.log,method="bray")
-all.pcoa=pcoa(all.dist)
-#32.7%, 23.2%
-
-# plotting:
-scores=all.pcoa$vectors[,1:2]
-scorez <- as.data.frame(scores)
-scorez$Sample <- rownames(scorez)
-pcoa.all <- merge(scorez,samdf.no87)
-
-levels(pcoa.all$site) <- c("Moorea NW","Moorea SE","Tahiti NW")
-ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
-  geom_point()+
-  xlab('Axis 1 (32.7%)')+
-  ylab('Axis 2 (23.2%)')+
-  stat_ellipse()+
-  facet_wrap(~site)+
-  theme_cowplot()+
-  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
-  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
-  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
-  
-#now by site - unnecessary actually thanks to facet_wrap
-pcoa.mnw <- subset(pcoa.all,site=="MNW")
-gg.mnw <- ggplot(pcoa.mnw,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
-  geom_point()+
-  stat_ellipse()+
-  theme_cowplot()+
-  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
-  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
-  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
-  xlab("Axis 1 ()")
-gg.mnw
-
-pcoa.mse <- subset(pcoa.all,site=="MSE")
-gg.mse <- ggplot(pcoa.mse,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
-  geom_point()+
-  stat_ellipse()+
-  theme_cowplot()+
-  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
-  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
-  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
-gg.mse
-
-pcoa.tah <- subset(pcoa.all,site=="TNW")
-gg.tah <- ggplot(pcoa.tah,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
-  geom_point()+
-  stat_ellipse()+
-  theme_cowplot()+
-  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
-  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
-  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
-gg.tah
-
-quartz()
-ggarrange(gg.mnw,gg.mse,gg.tah,nrow=1,common.legend=TRUE,legend="right")
-
-#relative abundance instead of absolute abundance
-t.relabun <- scale(t(seqtab.no87), center=F, scale=colSums(t(seqtab.no87)))
-relabun <- t(t.relabun)
-all.dist=vegdist(relabun,method="manhattan")
-all.pcoa=pcoa(all.dist)
-
-scores=all.pcoa$vectors[,1:2]
-scorez <- as.data.frame(scores)
-scorez$Sample <- rownames(scorez)
-pcoa.all <- merge(scorez,samdf.no87,by="Sample")
-
-ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=site,shape=zone))+
-  geom_point()+
-  stat_ellipse()
-
-#alt method
-ps.rel <- transform_sample_counts(ps_no87, function(OTU) OTU/sum(OTU))
-iDist <- distance(ps.rel, method="bray")
-iMDS  <- ordinate(ps.rel, "MDS", distance=iDist)
-plot_ordination(ps.rel, iMDS, color="site")+
-  stat_ellipse()
-
-
-
 ps.rel <- transform_sample_counts(ps.mcmc, function(x) x / sum(x))
 plot_bar(ps.rel,fill="Class")
 ps.glom <- tax_glom(ps.rel, "Class")
@@ -864,81 +783,128 @@ library(cowplot)
 #library(ggforce)
 #not sure if I need this one^
 
-# creating a log-transfromed normalized dataset for PCoA:
-df.seq <- as.data.frame(counts)
-all.log=logLin(data=df.seq)
+#all
+plot_ordination(ps.rare.mcmc, ordinate(ps.rare.mcmc, "PCoA"), color = "site") + geom_point(size = 5)
 
-# computing Manhattan distances (sum of all log-fold-changes) and performing PCoA:
-all.dist=vegdist(all.log,method="manhattan")
-all.pcoa=pcoa(all.dist)
-
-# plotting:
-scores=all.pcoa$vectors[,1:2]
-scorez <- as.data.frame(scores)
-scorez$Sample <- rownames(scorez)
-pcoa.all <- merge(scorez,samdf.mcmc)
-
-ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
-  geom_point()+
-  stat_ellipse()+
-  facet_wrap(~site)
-
-#now by site
-pcoa.mnw <- subset(pcoa.all,site=="MNW")
-gg.mnw <- ggplot(pcoa.mnw,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
-  geom_point()+
+#by site
+ps.mnw <- subset_samples(ps.rare.mcmc,site=="MNW")
+#ps.mnw <- subset_samples(ps.trim,site=="mnw")
+ord.mnw <- ordinate(ps.mnw, "PCoA", "bray")
+gg.mnw <- plot_ordination(ps.mnw, ord.mnw,color="zone", shape="zone")+
+  geom_point(size=2)+
   stat_ellipse()+
   theme_cowplot()+
-  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
-  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  scale_shape_manual(values=c(16,15),labels=c("BR","FR"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("BR","FR"))+
   guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
-  xlab("Axis 1 ()")
+  ggtitle("Mo'orea NW")+
+  #annotate(geom="text", x=0.7, y=0.2, label="p < 0.01**",size=4)+ #rarefied
+  #annotate(geom="text", x=-0.25, y=0.6, label="p < 0.01**",size=4)+ #not rarefied
+  xlab("Axis 1 (69.4%)")+ #rarefied
+  ylab("Axis 2 (25.6%)")+ #rarefied
+  #xlab("Axis 1 (34.3%)")+#non-rarefied
+  #ylab("Axis 2 (26.5%)")+#non-rarefied
+  theme(axis.text=element_text(size=10))
 gg.mnw
 
-pcoa.mse <- subset(pcoa.all,site=="MSE")
-gg.mse <- ggplot(pcoa.mse,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
-  geom_point()+
+ps.mse <- subset_samples(ps.rare.mcmc,site=="MSE")
+#ps.mse <- subset_samples(ps.trim,site=="mse")
+ord.mse <- ordinate(ps.mse, "PCoA", "bray")
+gg.mse <- plot_ordination(ps.mse, ord.mse,color="zone", shape="zone")+
+  geom_point(size=2)+
   stat_ellipse()+
   theme_cowplot()+
-  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
-  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  scale_shape_manual(values=c(16,15),labels=c("BR","FR"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("BR","FR"))+
   guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
-  xlab("Axis 1 ()")
+  ggtitle("Mo'orea SE")+
+  #annotate(geom="text", x=-0.4, y=0.6, label="p < 0.01**",size=4)+ #rarefied
+  #annotate(geom="text", x=-0.25, y=0.6, label="p < 0.01**",size=4)+ #not rarefied
+  xlab("Axis 1 (89.9%)")+ #rarefied
+  ylab("Axis 2 (8.9%)")+ #rarefied
+  #xlab("Axis 1 (34.3%)")+#non-rarefied
+  #ylab("Axis 2 (26.5%)")+#non-rarefied
+  theme(axis.text=element_text(size=10))
 gg.mse
 
-pcoa.tah <- subset(pcoa.all,site=="TNW")
-gg.tah <- ggplot(pcoa.tah,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
-  geom_point()+
+ps.tnw <- subset_samples(ps.rare.mcmc,site=="TNW")
+#ps.tnw <- subset_samples(ps.trim,site=="TNW")
+ord.tnw <- ordinate(ps.tnw, "PCoA", "bray")
+gg.tnw <- plot_ordination(ps.tnw, ord.tnw,color="zone", shape="zone")+
+  geom_point(size=2)+
   stat_ellipse()+
   theme_cowplot()+
-  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
-  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  scale_shape_manual(values=c(16,15),labels=c("BR","FR"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("BR","FR"))+
   guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
-  xlab("Axis 1 ()")
-gg.tah
+  ggtitle("Tahiti NW")+
+  xlab("Axis 1 (62.9%)")+ #rarefied
+  ylab("Axis 2 (29.6%)")+ #rarefied
+  #xlab("Axis 1 (34.3%)")+#non-rarefied
+  #ylab("Axis 2 (26.5%)")+#non-rarefied
+  theme(axis.text=element_text(size=10))
+gg.tnw
 
-ggarrange(gg.mnw,gg.mse,gg.tah,nrow=1,common.legend=TRUE,legend="right")
+quartz()
+ggarrange(gg.mnw,gg.mse,gg.tnw,nrow=1,common.legend=TRUE,legend='right',labels=c("(a)","(b)","(c)"))
 
-#another method
-plot_ordination(ps.mcmc, ordinate(ps.mcmc, "PCoA"), color = "site") + geom_point(size = 5)
+#### pcoa - rel abundance ####
+ps.mcmc.rel <- transform_sample_counts(ps.mcmc, function(x) x / sum(x))
 
-ps.mnw <- subset_samples(ps.mcmc,site=="MNW")
-gg.mnw <- plot_ordination(ps.mnw, ordinate(ps.mnw, "PCoA"), color = "zone")+ 
-  geom_point()+
-  stat_ellipse(level=0.95)
+#by site
+ps.mnw <- subset_samples(ps.mcmc.rel,site=="MNW")
+#ps.mnw <- subset_samples(ps.trim,site=="mnw")
+ord.mnw <- ordinate(ps.mnw, "PCoA", "bray")
+gg.mnw <- plot_ordination(ps.mnw, ord.mnw,color="zone", shape="zone")+
+  geom_point(size=2)+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("BR","FR"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("BR","FR"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  ggtitle("Mo'orea NW")+
+  xlab("Axis 1 (68.0%)")+#non-rarefied
+  ylab("Axis 2 (26.5%)")+#non-rarefied
+  theme(axis.text=element_text(size=10))
 gg.mnw
 
-ps.mse <- subset_samples(ps.mcmc,site=="MSE")
-gg.mse <- plot_ordination(ps.mse, ordinate(ps.mse, "PCoA"), color = "zone")+ 
-  geom_point()+
-  stat_ellipse(level=0.95)
+ps.mse <- subset_samples(ps.mcmc.rel,site=="MSE")
+ord.mse <- ordinate(ps.mse, "PCoA", "bray")
+gg.mse <- plot_ordination(ps.mse, ord.mse,color="zone", shape="zone")+
+  geom_point(size=2)+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("BR","FR"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("BR","FR"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  ggtitle("Mo'orea SE")+
+  xlab("Axis 1 (87.7%)")+#non-rarefied
+  ylab("Axis 2 (9.7%)")+#non-rarefied
+  theme(axis.text=element_text(size=10))
+gg.mse
 
-ps.tah <- subset_samples(ps.mcmc,site=="TNW")
-gg.tah <- plot_ordination(ps.tah, ordinate(ps.tah, "PCoA"), color = "zone")+ 
-  geom_point()+
-  stat_ellipse(level=0.95)
+ps.tnw <- subset_samples(ps.mcmc.rel,site=="TNW")
+ord.tnw <- ordinate(ps.tnw, "PCoA", "bray")
+gg.tnw <- plot_ordination(ps.tnw, ord.tnw,color="zone", shape="zone")+
+  geom_point(size=2)+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("BR","FR"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("BR","FR"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  ggtitle("Tahiti NW")+
+  xlab("Axis 1 (60.3%)")+#non-rarefied
+  ylab("Axis 2 (31.9%)")+#non-rarefied
+  theme(axis.text=element_text(size=10))
+gg.tnw
 
-ggarrange(gg.mnw,gg.mse,gg.tah,nrow=1,common.legend=TRUE)
+quartz()
+ggarrange(gg.mnw,gg.mse,gg.tnw,nrow=1,common.legend=TRUE,legend='right',labels=c("(a)","(b)","(c)"))
+
+# ps.tah <- subset_samples(ps.mcmc,site=="TNW")
+# gg.tah <- plot_ordination(ps.tah, ordinate(ps.tah, "PCoA"), color = "zone")+ 
+#   geom_point()+
+#   stat_ellipse(level=0.95)
 
 #### Deseq differentially abundant ####
 library(DESeq2)
@@ -989,7 +955,7 @@ library(dplyr)
 
 #transform to relative abundance rather than absolute
 counts$Sample <- rownames(counts)
-newnames <- merge(samdf.mcmc,counts, by="Sample")
+newnames <- merge(samdf,counts, by="Sample")
 
 sq1 <- newnames %>% 
   group_by(site_zone) %>% 
@@ -1163,11 +1129,17 @@ adonis(seqtab.no87 ~ zone, strata=samdf.no87$site, data=samdf.no87, permutations
 adonis(lulu.out ~ zone, strata=samdf.no87$site, data=samdf.no87, permutations=999)
 #p 0.009
 
-#clustered & trimmed 
-dist <- vegdist(counts)
-anova(betadisper(dist,samdf.mcmc$site))
-adonis(counts ~ zone, strata=samdf.mcmc$site, data=samdf.mcmc, permutations=999)
-#0.05 .
+samdf.rare <- data.frame(sample_data(ps.rare))
+#clustered, trimmed, rarefied
+rownames(samdf.rare) == rownames(counts) #good
+
+dist.rare <- vegdist(counts)
+bet <- betadisper(dist.rare,samdf.rare$site)
+anova(bet)
+permutest(bet, pairwise = FALSE, permutations = 99)
+plot(bet)
+adonis(counts ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=999)
+#0.061 .
 
 #relative abundance, does this by columns so must transform
 t.relabun <- scale(t(counts), center=F, scale=colSums(t(counts)))
@@ -1194,20 +1166,22 @@ adonis(seq.rare ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=99
 
 #Moorea NW
 mnw.rare <- subset(samdf.rare,site=="MNW")
-mnw.seq <- seq.rare[(rownames(seq.rare) %in% mnw.rare$Sample),]
+mnw.seq <- counts[(rownames(counts) %in% mnw.rare$Sample),]
 
 dist.mnw <- vegdist(mnw.seq)
 bet.mnw <- betadisper(dist.mnw,mnw.rare$zone)
-anova(bet.mnw)
+anova(bet.mnw) #not sig
 permutest(bet.mnw, pairwise = FALSE, permutations = 99)
 plot(bet.mnw) #not sig
-
 adonis(mnw.seq ~ zone, data=mnw.rare, permutations=999)
-#0.044 *
+# Df SumsOfSqs  MeanSqs F.Model      R2 Pr(>F)  
+# zone       1   0.11117 0.111170  2.3662 0.08646  0.023 *
+#   Residuals 25   1.17458 0.046983         0.91354         
+# Total     26   1.28575                  1.00000         
 
 #Moorea SE
 mse.rare <- subset(samdf.rare,site=="MSE")
-mse.seq <- seq.rare[(rownames(seq.rare) %in% mse.rare$Sample),]
+mse.seq <- counts[(rownames(counts) %in% mse.rare$Sample),]
 
 dist.mse <- vegdist(mse.seq)
 bet.mse <- betadisper(dist.mse,mse.rare$zone)
@@ -1216,11 +1190,14 @@ permutest(bet.mse, pairwise = FALSE, permutations = 99)
 plot(bet.mse) #not sig
 
 adonis(mse.seq ~ zone, data=mse.rare, permutations=999)
-#0.015 *
+# Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)  
+# zone       1   0.04445 0.04445  6.0477 0.17256  0.015 *
+#   Residuals 29   0.21315 0.00735         0.82744         
+# Total     30   0.25760                 1.00000         
 
 #Tahiti
 tnw.rare <- subset(samdf.rare,site=="TNW")
-tnw.seq <- seq.rare[(rownames(seq.rare) %in% tnw.rare$Sample),]
+tnw.seq <- counts[(rownames(counts) %in% tnw.rare$Sample),]
 
 dist.tnw <- vegdist(tnw.seq)
 bet.tnw <- betadisper(dist.tnw,tnw.rare$zone)
@@ -1228,8 +1205,11 @@ anova(bet.tnw)
 permutest(bet.tnw, pairwise = FALSE, permutations = 99)
 plot(bet.tnw) #sig
 
-adonis(tnw.seq ~ zone, data=tnw.rare, permutations=999)
-#0.044 *
+adonis(tnw.seq ~ zone, data=tnw.rare, permutations=99)
+# Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)  
+# zone       1   0.22079 0.22079  2.7127 0.09789   0.05 *
+#   Residuals 25   2.03476 0.08139         0.90211         
+# Total     26   2.25554                 1.00000               
 
 #log-normalized
 df.seq <- as.data.frame(seqtab.no87)
@@ -1444,8 +1424,154 @@ smm1=OTUsummary(mm,gss,otus=sigs)
 # table of log10-fold changes and p-values: this one goes into supplementary info in the paper
 smmA$otuWise[sigs]
 
+#### archive ####
 
+#### Pcoa - raw data ####
 
+library(vegan)
+#install.packages("ggforce")
+#library(ggforce)
+#not sure if I need this one^
+library(ggpubr)
+library(cowplot)
 
+# creating a log-transfromed normalized dataset for PCoA:
+df.seq <- as.data.frame(seqtab.no87)
+all.log=logLin(data=df.seq)
+
+# computing Manhattan distances (sum of all log-fold-changes) and performing PCoA:
+all.dist=vegdist(all.log,method="bray")
+all.pcoa=pcoa(all.dist)
+#32.7%, 23.2%
+
+# plotting:
+scores=all.pcoa$vectors[,1:2]
+scorez <- as.data.frame(scores)
+scorez$Sample <- rownames(scorez)
+pcoa.all <- merge(scorez,samdf.no87)
+
+levels(pcoa.all$site) <- c("Moorea NW","Moorea SE","Tahiti NW")
+ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  xlab('Axis 1 (32.7%)')+
+  ylab('Axis 2 (23.2%)')+
+  stat_ellipse()+
+  facet_wrap(~site)+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
+
+#now by site - unnecessary actually thanks to facet_wrap
+pcoa.mnw <- subset(pcoa.all,site=="MNW")
+gg.mnw <- ggplot(pcoa.mnw,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  xlab("Axis 1 ()")
+gg.mnw
+
+pcoa.mse <- subset(pcoa.all,site=="MSE")
+gg.mse <- ggplot(pcoa.mse,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
+gg.mse
+
+pcoa.tah <- subset(pcoa.all,site=="TNW")
+gg.tah <- ggplot(pcoa.tah,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
+gg.tah
+
+quartz()
+ggarrange(gg.mnw,gg.mse,gg.tah,nrow=1,common.legend=TRUE,legend="right")
+
+#relative abundance instead of absolute abundance
+t.relabun <- scale(t(seqtab.no87), center=F, scale=colSums(t(seqtab.no87)))
+relabun <- t(t.relabun)
+all.dist=vegdist(relabun,method="manhattan")
+all.pcoa=pcoa(all.dist)
+
+scores=all.pcoa$vectors[,1:2]
+scorez <- as.data.frame(scores)
+scorez$Sample <- rownames(scorez)
+pcoa.all <- merge(scorez,samdf.no87,by="Sample")
+
+ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=site,shape=zone))+
+  geom_point()+
+  stat_ellipse()
+
+#alt method
+ps.rel <- transform_sample_counts(ps_no87, function(OTU) OTU/sum(OTU))
+iDist <- distance(ps.rel, method="bray")
+iMDS  <- ordinate(ps.rel, "MDS", distance=iDist)
+plot_ordination(ps.rel, iMDS, color="site")+
+  stat_ellipse()
+
+# creating a log-transfromed normalized dataset for PCoA:
+df.seq <- as.data.frame(counts)
+all.log=logLin(data=df.seq)
+
+# computing Manhattan distances (sum of all log-fold-changes) and performing PCoA:
+all.dist=vegdist(all.log,method="manhattan")
+all.pcoa=pcoa(all.dist)
+
+# plotting:
+scores=all.pcoa$vectors[,1:2]
+scorez <- as.data.frame(scores)
+scorez$Sample <- rownames(scorez)
+pcoa.all <- merge(scorez,samdf.mcmc)
+
+ggplot(pcoa.all,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  facet_wrap(~site)
+
+#now by site
+pcoa.mnw <- subset(pcoa.all,site=="MNW")
+gg.mnw <- ggplot(pcoa.mnw,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  xlab("Axis 1 ()")
+gg.mnw
+
+pcoa.mse <- subset(pcoa.all,site=="MSE")
+gg.mse <- ggplot(pcoa.mse,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  xlab("Axis 1 ()")
+gg.mse
+
+pcoa.tah <- subset(pcoa.all,site=="TNW")
+gg.tah <- ggplot(pcoa.tah,aes(x=Axis.1,y=Axis.2,color=zone,shape=zone))+
+  geom_point()+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  xlab("Axis 1 ()")
+gg.tah
+
+ggarrange(gg.mnw,gg.mse,gg.tah,nrow=1,common.legend=TRUE,legend="right")
 
 

@@ -291,6 +291,77 @@ mnw.tnw <- merge(mnw.ko.id,tnw.ko.id,by="paths") #7 in common
 mse.tnw <- merge(mse.ko.id,tnw.ko.id,by="paths") #28 in common
 #just realized I need to split by reef zone (pos or neg log change) first
 
+#sorting by pos & neg [back & fore]
+mnwi <- mnw.ko.id[mnw.ko.id$log2FoldChange>0,]
+mnwo <- mnw.ko.id[mnw.ko.id$log2FoldChange<0,]
+
+msei <- mse.ko.id[mse.ko.id$log2FoldChange>0,]
+mseo <- mse.ko.id[mse.ko.id$log2FoldChange<0,]
+
+tnwi <- tnw.ko.id[tnw.ko.id$log2FoldChange>0,]
+tnwo <- tnw.ko.id[tnw.ko.id$log2FoldChange<0,]
+
+mnwi$V4 <- as.character(mnwi$V4)
+mnwo$V4 <- as.character(mnwo$V4)
+msei$V4 <- as.character(msei$V4)
+mseo$V4 <- as.character(mseo$V4)
+tnwi$V4 <- as.character(tnwi$V4)
+tnwo$V4 <- as.character(tnwo$V4)
+
+mnwi_id <- mnwi$V4
+mnwo_id <- mnwo$V4
+msei_id <- msei$V4
+mseo_id <- mseo$V4
+tnwi_id <- tnwi$V4
+tnwo_id <- tnwo$V4
+
+#just by site
+mnw <- mnw.ko.id$V4
+mse <- mse.ko.id$V4
+tnw <- tnw.ko.id$V4
+
+#install.packages("VennDiagram")
+library(VennDiagram)
+
+all_shared = list("mnwi" = mnwi_id, "msei" = msei_id, "tnwi"=tnwi_id)
+prettyvenn=venn.diagram(
+  x = all_shared,
+  filename=NULL,
+  #main="Back reef",
+  #col = "transparent",
+  fill = c("darkslategray3","darkslategray4","#000004"),
+  alpha = 0.5,
+  #label.col = c("darkred", "white", "darkgreen", "white", "white", "white", "blue4"),
+  # cex = 2.5,
+  fontfamily = "sans",
+  cat.fontfamily = "sans",
+  cat.pos=1
+);
+grid.draw(prettyvenn)
+dev.off()
+
+all_shared_off = list("mnwo" = mnwo_id, "mseo" = mseo_id, "tnwo"=tnwo_id)
+prettyvenn_off=venn.diagram(
+  x = all_shared_off,
+  filename=NULL,
+  #main="Fore reef",
+  #col = "transparent",
+  fill = c("darkslategray3","darkslategray4","#000004"),
+  alpha = 0.5,
+  #label.col = c("darkred", "white", "darkgreen", "white", "white", "white", "blue4"),
+  # cex = 2.5,
+  fontfamily = "sans",
+  cat.fontfamily = "sans",
+  cat.pos=1
+);
+
+grid.draw(prettyvenn_off)
+dev.off()
+
+library(gridExtra)
+quartz()
+grid.arrange(gTree(children=prettyvenn), gTree(children=prettyvenn_off),nrow=2)
+
 #venn diagram
 #BiocManager::install()
 #BiocManager::install("limma")
