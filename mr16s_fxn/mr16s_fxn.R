@@ -137,28 +137,22 @@ kegg_name <- function(database=database,query=query){
   return(kegg_result)
 }
 #we'll see if this works
-get_kegg_info <- function(df=df,database=database){
+get_kegg_info <- function(res=res,database=database){
+  df <- data.frame(res)
+  df$paths <- rownames(df)
   paths <- rownames(df)
   df.paths <- data.frame(paths)
-  df.paths$paths <- gsub("ko","",df.paths$paths) #kegg fxn needs just numbers
-  df.paths$paths <- gsub("K","",df.paths$paths) #kegg feature needs just numbers
-  df.paths$paths <- as.character(df.paths$paths)
+  df.paths$paths.noko <- gsub("ko","",df.paths$paths) #kegg fxn needs just numbers
+  df.paths$paths.nok <- gsub("K","",df.paths$paths.noko) #kegg feature needs just numbers
+  df.paths$paths.nok <- as.character(df.paths$paths.nok)
   n <- length(df.paths[,1])
   for (i in 1:n)
   {
-  call <- df.paths[i,1] #first column must be kegg call name
-  df.paths[i,2] <- kegg_name(database=database,query=call)
+    call <- df.paths[i,1] #first column must be kegg call name
+    df.paths[i,4] <- kegg_name(database=database,query=call)
   }
-  return(df.paths)
-}
-#works
-get_kegg_info <- function(df=df,n=n,database=database){
-  for (i in 1:n)
-  {
-    call <- df[i,1] #first column must be kegg call name
-    df[i,2] <- kegg_name(database=database,query=call)
-  }
-  return(df)
+  df.out <- merge(df,df.paths,by="paths")
+  return(df.out)
 }
 
 #setting up data frames for calling the ko pathway names
@@ -197,10 +191,14 @@ merge(mse.paths.id,tnw.paths.id) #yesssssss
 
 #### just 'features' ####
 #count data
+library(DESeq2)
+setwd("~/moorea_holobiont/mr16s_fxn")
 countData_ko <- read.table("ko_abund_table_unnorm.txt",row.names=1,header=TRUE)
+colData <- read.csv("~/moorea_holobiont/mr_16S/mr16s_samdf.rare_12k.csv")
+row.names(colData) <- colData$id
 
 # Filter data where you only have 0 or 1 read count across all samples.
-countData2_ko = countData[rowSums(countData_ko)>1, ] #no difference
+countData2_ko = countData_ko[rowSums(countData_ko)>1, ] #no difference
 
 countData_ko_rounded <- floor(countData2_ko)
 
@@ -268,24 +266,70 @@ res.ko.tnw.sig <- subset(res.ko.tnw,padj<=0.1)
 
 #got an error at 01572 - removing for now
 res.ko.mnw.sig2 <- res.ko.mnw.sig[!(row.names(res.ko.mnw.sig) %in% "K01572"), ]
-mnw.ko.id <- get_kegg_info(database="ko",df=res.ko.mnw.sig2)
+mnw.ko.id <- get_kegg_info(database="ko",res=res.ko.mnw.sig2)
 
-mse.ko.id <- get_kegg_info(database="ko",df=res.ko.mse.sig)
-tnw.ko.id <- get_kegg_info(database="ko",df=res.ko.tnw.sig)
+res.ko.mse.sig2 <- res.ko.mse.sig[!(row.names(res.ko.mse.sig) %in% "K02756"), ]
+mse.ko.id <- get_kegg_info(database="ko",res=res.ko.mse.sig2)
 
-df <- res.ko.mnw.sig
+tnw.ko.id <- get_kegg_info(database="ko",res=res.ko.tnw.sig)
 
-paths <- rownames(df)
-df.paths <- data.frame(paths)
-df.paths$paths <- gsub("ko","",df.paths$paths) #kegg fxn needs just numbers
-df.paths$paths <- gsub("K","",df.paths$paths) #kegg feature needs just numbers
-df.paths$paths <- as.character(df.paths$paths)
-str(df.paths)
-n <- length(df.paths[,1])
-for (i in 1:n)
-{
-  call <- df.paths[i,1] #first column must be kegg call name
-  df.paths[i,2] <- kegg_name(database=database,query=call)
-}
+merge(tnw.ko.id,mnw.ko.id,by="V2")
 
+#need to save these dfs right now!
+write.csv(mnw.ko.id,file="mnw.ko.id.csv")
+write.csv(mse.ko.id,file="mse.ko.id.csv")
+write.csv(tnw.ko.id,file="tnw.ko.id.csv")
+
+#### read back in results for features ####
+setwd("~/moorea_holobiont/mr16s_fxn")
+mnw.ko.id <- read.csv(file="mnw.ko.id.csv",row.names=1,header=TRUE)
+mse.ko.id <- read.csv(file="mse.ko.id.csv",row.names=1,header=TRUE)
+tnw.ko.id <- read.csv(file="tnw.ko.id.csv",row.names=1,header=TRUE)
+
+mnw.mse <- merge(mnw.ko.id,mse.ko.id,by="paths") #6 in common
+mnw.tnw <- merge(mnw.ko.id,tnw.ko.id,by="paths") #7 in common
+mse.tnw <- merge(mse.ko.id,tnw.ko.id,by="paths") #28 in common
+#just realized I need to split by reef zone (pos or neg log change) first
+
+#venn diagram
+#BiocManager::install()
+#BiocManager::install("limma")
+library(limma)
+library(tidyverse)
+library(ggforce)
+set.seed((123))
+mydata <- data.frame(A = rbinom(100, 1, 0.8),
+                     B = rbinom(100, 1, 0.7),
+                     C = rbinom(100, 1, 0.6)) %>%
+  mutate_all(., as.logical)
+
+df.venn <- data.frame(x = c(0, 0.866, -0.866),
+                      y = c(1, -0.5, -0.5),
+                      labels = c('A', 'B', 'C'))
+
+vdc <- vennCounts(mydata)
+class(vdc) <- 'matrix'
+df.vdc <- as.data.frame(vdc)[-1,] %>%
+  mutate(x = c(0, 1.2, 0.8, -1.2, -0.8, 0, 0),
+         y = c(1.2, -0.6, 0.5, -0.6, 0.5, -1, 0))
+
+df.vdc$Counts2 <- c(1,2,3,4,5,6,7)
+
+ggplot(df.venn) +
+  geom_circle(aes(x0 = x, y0 = y, r = 1.5, fill = labels), alpha = .3, size = 1, colour = 'grey') +
+  coord_fixed() +
+  theme_void() +
+  theme(legend.position = 'bottom') +
+  scale_fill_manual(values = c('cornflowerblue', 'firebrick',  'gold')) +
+  scale_colour_manual(values = c('cornflowerblue', 'firebrick', 'gold'), guide = FALSE) +
+  labs(fill = NULL) +
+  annotate("text", x = df.vdc$x, y = df.vdc$y, label = df.vdc$Counts2, size = 5)
+
+#1 = MNW
+#2 = TNW
+#3 = MNW + TNW
+#4 = MSE
+#5 = MNW + MSE
+#6 = MSE + TNW
+#7 = all!
 

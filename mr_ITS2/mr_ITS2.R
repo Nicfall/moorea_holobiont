@@ -82,7 +82,7 @@ library(ShortRead)
 library(Biostrings)
 #packageVersion("Biostrings")
 
-path <- "/Users/nicolakriefall/Desktop/its2/files_rd3" # CHANGE ME to the directory containing the fastq files after unzipping.
+path <- "/Volumes/TOSHIBA EXT/WorkLaptop_2020_03/Desktop/its2/files_rd3" # CHANGE ME to the directory containing the fastq files after unzipping.
 
 fnFs <- sort(list.files(path, pattern = "_R1.fastq.gz", full.names = TRUE))
 fnRs <- sort(list.files(path, pattern = "_R2.fastq.gz", full.names = TRUE))
@@ -118,10 +118,10 @@ primerHits <- function(primer, fn) {
   nhits <- vcountPattern(primer, sread(readFastq(fn)), fixed = FALSE)
   return(sum(nhits > 0))
 }
-rbind(FWD.ForwardReads = sapply(FWD.orients, primerHits, fn = fnFs.filtN[[1]]), 
-      FWD.ReverseReads = sapply(FWD.orients, primerHits, fn = fnRs.filtN[[1]]), 
-      REV.ForwardReads = sapply(REV.orients, primerHits, fn = fnFs.filtN[[1]]), 
-      REV.ReverseReads = sapply(REV.orients, primerHits, fn = fnRs.filtN[[1]]))
+rbind(FWD.ForwardReads = sapply(FWD.orients, primerHits, fn = fnFs.filtN[[2]]), 
+      FWD.ReverseReads = sapply(FWD.orients, primerHits, fn = fnRs.filtN[[2]]), 
+      REV.ForwardReads = sapply(REV.orients, primerHits, fn = fnFs.filtN[[2]]), 
+      REV.ReverseReads = sapply(REV.orients, primerHits, fn = fnRs.filtN[[2]]))
 #no primers - amazing
 
 ###### Visualizing raw data
@@ -365,6 +365,93 @@ ps_no87
 samdf.no87 <- samdf[-92,]
 seqtab.no87 <- seqtab.nochim[-92,]
 
+#~##########################################~#
+###### Apply LULU to cluster ASVs ############
+#~##########################################~#
+
+##Necessary pre-steps after producing ASV table and associated fasta file:
+##Produce a match list using BLASTn
+
+##IN TERMINAL#
+
+##First produce a blastdatabase with the OTUs
+#module load blast+
+#makeblastdb -in mrits2.fasta -parse_seqids -dbtype nucl
+
+##Then blast the OTUs against the database to produce the match list 
+#blastn -db mrits2.fasta -outfmt '6 qseqid sseqid pident' -out match_list.txt -qcov_hsp_perc 80 -perc_identity 84 -query mrits2.fasta
+##HSP = high scoring pair 
+##perc_identity = percent of nucleotides in the highly similar pairings that match
+
+##transfer match_list.txt to R working directory
+##BACK IN R#
+
+#first, read in ASV table
+#install.packages("remotes")
+library("remotes")
+#install_github("https://github.com/tobiasgf/lulu.git")
+library("lulu")
+#rarefying
+library(vegan)
+
+#back to lulu sequence
+ASVs <- as.data.frame(t(seqtab.no87))
+
+#just made this in terminal
+matchList <- read.table("match_list.txt")
+
+#Now, run the LULU curation
+curated_result <- lulu(ASVs, matchList,minimum_match=99,minimum_relative_cooccurence=0.99)
+#default: minimum_relative_cooccurence = 0.95 default, changed to 0.70 to see what happens, nothing
+#default: minimum_match = 84 default, only 1 OTU different between 97 & 84
+summary(curated_result)
+#19 otus with match of 99%
+
+#Pull out the curated OTU list, re-transpose
+lulu.out <- data.frame(t(curated_result$curated_table))
+
+#Continue on to your favorite analysis
+#write.csv(lulu.out,"~/moorea_holobiont/mr_ITS2/lulu_output.csv")
+lulu.out <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_output.csv",row.names=1)
+
+#ps object with lulu
+ps.lulu <- phyloseq(otu_table(lulu.out, taxa_are_rows=FALSE), 
+                    sample_data(samdf), 
+                    tax_table(taxa2))
+ps.lulu
+
+#### rarefy ####
+library(vegan)
+
+rarecurve(lulu.out,step=100,label=FALSE) #after clustering
+
+total <- rowSums(lulu.out)
+total
+subset(total, total <1994)
+summary(total)
+
+row.names.remove <- c("117","311","402","414","505","513","530","58","72","76")
+lulu.out.rare <- lulu.out[!(row.names(lulu.out) %in% row.names.remove),]
+samdf.rare <- samdf.no87[!(row.names(samdf.no87) %in% row.names.remove), ]
+#85 samples left
+
+seq.rare <- rrarefy(lulu.out.rare,sample=1994)
+rarecurve(seq.rare,step=100,label=FALSE)
+
+rarecurve(seqtab.no87,step=100,label=FALSE) #before trimming
+
+#save
+#write.csv(seq.rare,"~/moorea_holobiont/mr_ITS2/seqtab.rare_1994.csv")
+write.csv(seq.rare,"~/moorea_holobiont/mr_ITS2/seqtab.rare_1994_rd2.csv")
+#read back in
+seq.rare <- read.csv("~/moorea_holobiont/mr_ITS2/seqtab.rare_1994.csv",row.names=1,header=TRUE)
+
+#phyloseq object
+ps.rare <- phyloseq(otu_table(seq.rare, taxa_are_rows=FALSE), 
+                    sample_data(samdf), 
+                    tax_table(taxa2))
+ps.rare
+
 #### Alpha diversity #####
 library(ggplot2)
 #install.packages("extrafontdb")
@@ -383,64 +470,100 @@ loadfonts()
 
 plot_richness(ps_no87, x="site", measures=c("Shannon", "Simpson"), color="zone") + theme_bw()
 
-df.div <- data.frame(estimate_richness(ps_no87, split=TRUE, measures =c("Shannon","InvSimpson")))
+df.div <- estimate_richness(ps.rare, split=TRUE, measures =c("Shannon","InvSimpson","Observed"))
+#df.div <- estimate_richness(ps.rare, split=TRUE, measures =c("Shannon","InvSimpson","Observed"))
 df.div
 
 df.div$Sample <- rownames(df.div)
+df.div$Sample <- gsub("X","",df.div$Sample)
 df.div <- merge(df.div,samdf.no87,by="Sample") #add sample data
 
-#write.csv(df.div,file="~/moorea_holobiont/mr_ITS2/mrits_diversity.csv") #saving
+#write.csv(df.div,file="~/moorea_holobiont/mr_ITS2/mrits_div_lulu.rare.csv") #saving
 #df.div <- read.csv("~/Desktop/mrits/mrits_diversity.csv") #reading back in 
 
-diver.sh <- summarySE(data=df.div,measurevar=c("Shannon"),groupvars=c("zone","site"))
-diver.si <- summarySE(data=df.div,measurevar=c("InvSimpson"),groupvars=c("zone","site"))
+df.div$zone <- gsub("Forereef","FR",df.div$zone)
+df.div$zone <- gsub("Backreef","BR",df.div$zone)
 
 quartz()
-gg.sh <- ggplot(diver.sh, aes(x=site, y=Shannon,color=zone,shape=zone))+
-  geom_errorbar(aes(ymin=Shannon-se,ymax=Shannon+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
-  geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
-  xlab("Site")+
+gg.sh <- ggplot(df.div, aes(x=zone, y=Shannon,color=zone,shape=zone))+
+  #geom_errorbar(aes(ymin=InvSimpson-se,ymax=InvSimpson+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
+  #geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
+  geom_boxplot(outlier.shape=NA)+
+  xlab("Reef zone")+
   ylab("Shannon diversity")+
   theme_cowplot()+
-  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
-  theme(text=element_text(family="Times"))+
-  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
-  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
+  scale_shape_manual(values=c(16,15),labels=c("BR","FR"))+
+  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("BR","FR"))+
+  #guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  theme(legend.position="none")+
+  geom_jitter(alpha=0.5)+
+  facet_wrap(~site)
 gg.sh
 
-gg.si <- ggplot(diver.si, aes(x=site, y=InvSimpson,color=zone,shape=zone))+
-  geom_errorbar(aes(ymin=InvSimpson-se,ymax=InvSimpson+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
-  geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
-  xlab("Site")+
+gg.si <- ggplot(df.div, aes(x=zone, y=InvSimpson,color=zone,shape=zone))+
+  geom_boxplot(outlier.shape=NA)+
+  xlab("Reef zone")+
   ylab("Inv. Simpson diversity")+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("BR","FR"))+
+  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("BR","FR"))+
+  #guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  theme(legend.position="none")+
+  geom_jitter(alpha=0.5)+
+  facet_wrap(~site)
+gg.si
+
+gg.ob <- ggplot(df.div, aes(x=zone, y=Observed,color=zone,shape=zone))+
+  geom_boxplot(outlier.shape=NA)+
+  xlab("Reef zone")+
+  ylab("ASV number")+
   theme_cowplot()+
   scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
   scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
-  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
-  theme(text=element_text(family="Times"))
-gg.si
+  #guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  theme(text=element_text(family="Times"),legend.position="none")+
+  geom_jitter(alpha=0.5)+
+  facet_wrap(~site)
+gg.ob
 
 quartz()
-ggarrange(gg.sh,gg.si,common.legend=TRUE,legend="right")
+ggarrange(gg.sh,gg.si,legend="none")
+
+library(bestNormalize)
+bestNormalize(df.div$Observed)
+obs.norm <- orderNorm(df.div$Observed)
+df.div$obs.norm <- obs.norm$x.t
+shapiro.test(df.div$obs.norm)
+#nothing worked
 
 mnw <- subset(df.div,site=="MNW")
 mse <- subset(df.div,site=="MSE")
 tah <- subset(df.div,site=="TNW")
 
 wilcox.test(Shannon~zone,data=mnw)
-#not different
+#p = 0.05286 . rare
 wilcox.test(InvSimpson~zone,data=mnw)
-#p = 0.01
+#p = 0.04687 * rare
+wilcox.test(Observed~zone,data=mnw)
+#no
 
 wilcox.test(Shannon~zone,data=mse)
-#p = 0.001
+#p = 0.0031 ** rare
 wilcox.test(InvSimpson~zone,data=mse)
-#p = 0.01
+#p = 0.01 * rare
+wilcox.test(Observed~zone,data=mse)
+#p = 0.01 * rare
 
 wilcox.test(Shannon~zone,data=tah)
-#p = 0.04
+#p = 0.49
 wilcox.test(InvSimpson~zone,data=tah)
-#p = 0.019
+#p = 0.65
+wilcox.test(Observed~zone,data=tah)
+#p = 0.59
+
+#install.packages("dunn.test")
+library(dunn.test)
+dunn.test(df.div$Shannon,df.div$site_zone,method="bh")
 
 ##checking out how diversity works with variables - nothing interesting
 #df.size <- read.csv("mr_size.csv",header=TRUE)
@@ -474,23 +597,125 @@ wilcox.test(InvSimpson~zone,data=tah)
 # kruskal.test(Shannon~het,data=mergeddf2)
 ## not significant!
 
-#### Bar plot - raw table ####
-top <- names(sort(taxa_sums(ps_no87), decreasing=TRUE))[1:30]
-ps.top <- transform_sample_counts(ps_no87, function(OTU) OTU/sum(OTU))
-ps.top <- prune_taxa(top, ps.top)
-plot_bar(ps.top, x="Sample",fill="Class") + facet_wrap(~zone, scales="free_x")
+#### MCMC.OTU to remove underrepresented ASVs ####
+library(MCMC.OTU)
 
-bot <- names(sort(taxa_sums(ps_no87), decreasing=TRUE))[5:118]
-ps.bot <- transform_sample_counts(ps_no87, function(OTU) OTU/sum(OTU))
-ps.bot <- prune_taxa(bot, ps.bot)
-plot_bar(ps.bot, x="Sample",fill="Class") #+ facet_wrap(~ColonyID+Timepoint, scales="free_x")
+#added a column with a blank name in the beginning, with 1-95 in the column, mcmc.otu likes this
+#also removed the X from the beginning of sample names
+lulu.rare.mcmc <- read.csv("~/moorea_holobiont/mr_ITS2/seqtab.rare_1994_rd2_mcmc.csv",header=TRUE)
+lulu.mcmc <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_output_mcmc.csv",header=TRUE)
+#& reading back in things
 
-#bar plot but without the lines between OTUs & no "NAs"
-ps_glom <- tax_glom(ps_no87, "Class")
-ps0 <- transform_sample_counts(ps_glom, function(x) x / sum(x))
-ps1 <- merge_samples(ps0, "Sample")
+goods <- purgeOutliers(lulu.rare.mcmc,count.columns=3:21,otu.cut=0.001,zero.cut=0.02)
+#otu.cut = 0.1% of reads represented by ASV 
+#zero.cut = present in more than 1 sample (2% of samples)
+colnames(goods)
+#sq 1, 2, 3, 6, 7, 12, 18, 24, 32 with min 99% matching in lulu
+
+#### Bar plot - clustered, trimmed ####
+rownames(goods) <- goods$sample
+counts <- goods[,3:11]
+
+#mcmc.otu removed 3 undersequenced samples: "513" "530" "76"
+#remove <- c("513","530","76")
+#samdf.mcmc <- samdf.no87[!row.names(samdf.no87)%in%remove,]
+
+#write.csv(samdf.mcmc,"~/Desktop/mr_samples.csv")
+write.csv(counts,file="seqtab_lulu.rare.trimmed.csv")
+
+ps.rare.mcmc <- phyloseq(otu_table(counts, taxa_are_rows=FALSE), 
+                    sample_data(samdf), 
+                    tax_table(taxa2))
+ps.rare.mcmc
+
+#bar plot
+ps_glom <- tax_glom(ps.rare.mcmc, "Class")
+ps1 <- merge_samples(ps_glom, "site_zone")
 ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
-plot_bar(ps2, fill="Class")
+plot_bar(ps2, fill="Class",x="site_zone")
+
+ps.mcmc.melt <- psmelt(ps.rare.mcmc)
+ps.mcmc.melt$newclass <- paste(ps.mcmc.melt$Class,ps.mcmc.melt$OTU,sep="_")
+
+#boxplot
+ggplot(ps.mcmc.melt,aes(x=site_zone,y=Abundance,color=newclass))+
+  geom_boxplot()
+
+#individually
+sq3 <- subset(ps.mcmc.melt,newclass==" C3k_sq3")
+ggplot(sq3,aes(x=site_zone,y=Abundance,color=Class))+
+  geom_boxplot()
+
+library(dplyr)
+ps.all <- transform_sample_counts(ps.rare.mcmc, function(OTU) OTU/sum(OTU))
+pa <- psmelt(ps.all)
+tb <- psmelt(ps.all)%>%
+  filter(!is.na(Abundance))%>%
+  group_by(site_zone,OTU)%>%
+  summarize_at("Abundance",mean)
+
+#some more grouping variables
+tb <- psmelt(ps.all)%>%
+  filter(!is.na(Abundance))%>%
+  group_by(site,zone,site_zone,OTU)%>%
+  summarize_at("Abundance",mean)
+
+ggplot(tb,aes(x=site_zone,y=Abundance,fill=OTU))+
+  geom_bar(stat="identity", colour="black")+
+  theme_cowplot()
+
+#renaming
+
+#ps.all@tax_table
+# Taxonomy Table:     [9 taxa by 4 taxonomic ranks]:
+#   Kingdom        Phylum     Class  
+# sq1  "Symbiodinium" " Clade C" " C3k" - 1
+# sq2  "Symbiodinium" " Clade C" " Cspc" - 1
+# sq3  "Symbiodinium" " Clade C" " C3k" - 2
+# sq6  "Symbiodinium" " Clade C" " C3k" - 3
+# sq7  "Symbiodinium" " Clade A" " A1"  
+# sq12 "Symbiodinium" " Clade C" NA - 1    
+# sq18 "Symbiodinium" " Clade C" NA - 2    
+# sq24 "Symbiodinium" " Clade C" " C3k" - 4
+# sq32 "Symbiodinium" " Clade C" " Cspc" - 2
+
+tb$sym <- gsub("sq12","C. - 1",tb$OTU)
+tb$sym <- gsub("sq18","C. - 2",tb$sym)
+tb$sym <- gsub("sq1","C3k - 1",tb$sym)
+tb$sym <- gsub("sq24","C3k - 4",tb$sym)
+tb$sym <- gsub("sq2","Cspc - 1",tb$sym)
+tb$sym <- gsub("sq32","Cspc - 2",tb$sym)
+tb$sym <- gsub("sq3","C3k - 2",tb$sym)
+tb$sym <- gsub("sq6","C3k - 3",tb$sym)
+tb$sym <- gsub("sq7","A1",tb$sym)
+
+tb$zone <- gsub("Forereef","FR",tb$zone)
+tb$zone <- gsub("Backreef","BR",tb$zone)
+
+tb$site <- gsub("MNW","Mo'orea NW",tb$site)
+tb$site <- gsub("MSE","Mo'orea SE",tb$site)
+tb$site <- gsub("TNW","Tahiti NW",tb$site)
+
+tb$sym <- factor(tb$sym, levels=c("C3k - 1","C3k - 2","C3k - 3","C3k - 4","Cspc - 1", "Cspc - 2","C. - 1","C. - 2","A1"))
+quartz()
+gg.bp <- ggplot(tb,aes(x=zone,y=Abundance,fill=sym))+
+  geom_bar(stat="identity")+
+  theme_cowplot()+
+  #theme(text=element_text(family="Times"))+
+  xlab('Reef zone')+
+  #  scale_fill_manual(name="Sym.",values=c("seagreen1","seagreen2","seagreen3","seagreen4","blue","darkblue","orange","yellow","purple"))
+  scale_fill_manual(name="Algal symbiont",values=c("#1E9C89FF","#25AB82FF","#58C765FF","#7ED34FFF","#365d8dff","#287d8eff","#C70039", "#8F0C3F","#d4e21aff"))+
+  facet_wrap(~site)
+gg.bp
+
+#"#1E9C89FF","#25AB82FF","#58C765FF","#7ED34FFF","#365d8dff","#287d8eff","#440154FF", "#48196bff","#d4e21aff"
+
+quartz()
+ggarrange(gg.bp,
+          ggarrange(gg.sh,gg.si,ncol=2,labels=c("(b)","(c)"),common.legend=T,legend="none"),nrow=2,labels="(a)")
+
+#new & improved:
+ggarrange(gg.bp,gg.sh,gg.si,ncol=1,nrow=2,labels=c("A.","B."))
 
 #getting raw average relative abundances
 ps.rel <- transform_sample_counts(ps_no87, function(x) x / sum(x))
@@ -617,234 +842,7 @@ iMDS  <- ordinate(ps.rel, "MDS", distance=iDist)
 plot_ordination(ps.rel, iMDS, color="site")+
   stat_ellipse()
 
-#~##########################################~#
-###### Apply LULU to cluster ASVs ############
-#~##########################################~#
 
-##Necessary pre-steps after producing ASV table and associated fasta file:
-##Produce a match list using BLASTn
-
-##IN TERMINAL#
-
-##First produce a blastdatabase with the OTUs
-#module load blast+
-#makeblastdb -in mrits2.fasta -parse_seqids -dbtype nucl
-
-##Then blast the OTUs against the database to produce the match list 
-#blastn -db mrits2.fasta -outfmt '6 qseqid sseqid pident' -out match_list.txt -qcov_hsp_perc 80 -perc_identity 84 -query mrits2.fasta
-##HSP = high scoring pair 
-##perc_identity = percent of nucleotides in the highly similar pairings that match
-
-##transfer match_list.txt to R working directory
-##BACK IN R#
-
-#first, read in ASV table
-#install.packages("remotes")
-library("remotes")
-#install_github("https://github.com/tobiasgf/lulu.git")
-library("lulu")
-#rarefying
-library(vegan)
-
-#must setting up table for lulu, saving it as a csv then reading back in 
-#write.csv(seqtab.no87,"seqtab.no87.csv")
-setwd("~/moorea_holobiont/mr_ITS2/")
-seq.lulu <- read.csv("seqtab.no87.csv",row.names=1)
-
-rarecurve(seq.lulu,step=100,label=FALSE)
-total <- rowSums(seq.lulu)
-total
-subset(total, total <1994)
-summary(total)
-
-row.names.remove <- c("117","311","402","414","505","513","530","58","72","76")
-lulu.rare <- seq.lulu[!(row.names(seq.lulu) %in% row.names.remove),]
-samdf.rare <- samdf.no87[!(row.names(samdf.no87) %in% row.names.remove), ]
-#85 samples left
-
-counts.rare <- rrarefy(lulu.rare,sample=1994)
-rarecurve(counts.rare,step=100,label=FALSE)
-#save
-#write.csv(counts.rare,"~/moorea_holobiont/mr_ITS2/seqtabno87.rare.csv")
-counts.rare <- read.csv("~/moorea_holobiont/mr_ITS2/seqtabno87.rare.csv",row.names=1)
-
-#back to lulu sequence
-ASVs<-data.frame(t(counts.rare)) 
-head(ASVs)
-
-#just made this in terminal
-matchList<-read.table("match_list.txt")
-
-#had some zeroes to get rid of after rarefying - not the case with the raw table
-ASVs <- subset(ASVs,rowSums(ASVs)!=0)
-#Now, run the LULU curation
-curated_result <- lulu(ASVs, matchList,minimum_match=99,minimum_relative_cooccurence=0.70)
-#default: minimum_relative_cooccurence = 0.95 default, changed to 0.70 to see what happens, nothing
-#default: minimum_match = 84 default, only 1 OTU different between 97 & 84
-summary(curated_result)
-#me: leaves 7 OTUs with 84% match - take home story is that they're all very similar
-#19 otus with match of 99%
-#17 otus with rarefied result
-
-#Pull out the curated OTU list, re-transpose
-lulu.out <- data.frame(t(curated_result$curated_table))
-
-#Continue on to your favorite analysis
-#write.csv(lulu.out,"~/moorea_holobiont/mr_ITS2/lulu_output.csv")
-write.csv(lulu.out,"~/moorea_holobiont/mr_ITS2/lulu_output.rare.csv")
-lulu.out <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_output.csv",row.names=1)
-lulu.out <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_output.rare.csv",row.names=1)
-
-#removing X from row names to match up with previous data frames, was only necesary from original out, is fine in my .csv file
-rownames(lulu.out) <- sub("X","",rownames(lulu.out))
-
-#phyloseq object with lulu results
-ps.lulu <- phyloseq(otu_table(lulu.out, taxa_are_rows=FALSE), 
-                    sample_data(samdf.no87), 
-                    tax_table(taxa2))
-
-#### Bar plot & alpha diversity - clustered results ####
-library(cowplot)
-
-ps.top <- transform_sample_counts(ps.lulu, function(OTU) OTU/sum(OTU))
-plot_bar(ps.top, x="Sample",fill="Class") + facet_wrap(~zone, scales="free_x")
-
-df.div <- data.frame(estimate_richness(ps.lulu, split=TRUE, measures =c("Shannon","InvSimpson")))
-df.div
-
-df.div$Sample <- rownames(df.div)
-df.div <- merge(df.div,samdf.no87,by="Sample") #add sample data
-
-diver.sh <- summarySE(data=df.div,measurevar=c("Shannon"),groupvars=c("zone","site"))
-diver.si <- summarySE(data=df.div,measurevar=c("InvSimpson"),groupvars=c("zone","site"))
-
-quartz()
-gg.sh <- ggplot(diver.sh, aes(x=site, y=Shannon,color=zone,shape=zone))+
-  geom_errorbar(aes(ymin=Shannon-se,ymax=Shannon+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
-  geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
-  xlab("Site")+
-  ylab("Shannon diversity")+
-  theme_cowplot()+
-  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
-  theme(text=element_text(family="Times"))+
-  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
-  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))
-gg.sh
-
-gg.si <- ggplot(diver.si, aes(x=site, y=InvSimpson,color=zone,shape=zone))+
-  geom_errorbar(aes(ymin=InvSimpson-se,ymax=InvSimpson+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
-  geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
-  xlab("Site")+
-  ylab("Inv. Simpson diversity")+
-  theme_cowplot()+
-  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
-  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
-  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
-  theme(text=element_text(family="Times"))
-gg.si
-
-#maybe a boxplot instead
-df.div$zone <- gsub("Backreef","Back",df.div$zone)
-df.div$zone <- gsub("Forereef","Fore",df.div$zone)
-gg.si <- ggplot(df.div, aes(x=zone, y=InvSimpson,color=zone,shape=zone))+
-  #geom_errorbar(aes(ymin=InvSimpson-se,ymax=InvSimpson+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
-  #geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
-  geom_boxplot(outlier.shape=NA)+
-  xlab("Reef zone")+
-  ylab("Inv. Simpson diversity")+
-  theme_cowplot()+
-  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
-  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
-  #guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
-  theme(text=element_text(family="Times"),legend.position="none")+
-  geom_jitter(alpha=0.5)+
-  facet_wrap(~site)
-  #geom_point()
-  #geom_jitter(aes(color=zone,shape=zone,group=zone))
-gg.si
-
-gg.sh <- ggplot(df.div, aes(x=zone, y=Shannon,color=zone,shape=zone))+
-  #geom_errorbar(aes(ymin=InvSimpson-se,ymax=InvSimpson+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
-  #geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
-  geom_boxplot(outlier.shape=NA)+
-  xlab("Reef zone")+
-  ylab("Shannon diversity")+
-  theme_cowplot()+
-  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
-  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
-  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
-  theme(text=element_text(family="Times"),legend.position="none")+
-  geom_jitter(alpha=0.5)+
-  facet_wrap(~site)
-gg.sh
-
-
-df.div$shlog <- log(df.div$Shannon+1)
-shapiro.test(df.div$shlog) #worse
-library(bestNormalize)
-bestNormalize(df.div$Shannon) #says to leave it 
-
-summary(aov(Shannon~zone + Error(site),data=df.div))
-wilcox.test(Shannon~zone,data=df.div,paired=FALSE)
-wilcox.test(InvSimpson~zone,data=df.div,paired=FALSE)
-
-ggplot(df.div,aes(x=site_zone,y=Shannon))+
-  geom_boxplot()
-
-mnw <- subset(df.div,site=="MNW")
-mse <- subset(df.div,site=="MSE")
-tah <- subset(df.div,site=="TNW")
-
-wilcox.test(Shannon~zone,data=mnw)
-#0.07459
-wilcox.test(InvSimpson~zone,data=mnw)
-#p-value = 0.05286
-
-wilcox.test(Shannon~zone,data=mse)
-#p = 0.004816
-wilcox.test(InvSimpson~zone,data=mse)
-#p-value = 0.01058
-
-wilcox.test(Shannon~zone,data=tah)
-#p-value = 0.5502
-wilcox.test(InvSimpson~zone,data=tah)
-#p-value = 0.6848
-
-#install.packages("dunn.test")
-library(dunn.test)
-dunn.test(df.div$Shannon,df.div$site_zone,method="bh")
-
-#### MCMC.OTU to remove underrepresented ASVs ####
-library(MCMC.OTU)
-
-#added a column with a blank name in the beginning, with 1-95 in the column, mcmc.otu likes this
-#also removed the X from the beginning of sample names
-lulu.mcmc <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_formcmc.csv")
-lulu.mcmc <- read.csv("~/moorea_holobiont/mr_ITS2/lulu_rare_formcmc.csv")
-#& reading back in things
-
-goods <- purgeOutliers(lulu.mcmc,count.columns=3:19,otu.cut=0.001,zero.cut=0.02)
-#otu.cut = 0.1% of reads represented by ASV 
-#zero.cut = present in more than 1 sample (2% of samples)
-colnames(goods)
-#sq 1, 3, 6, 7 retained with min 84% matching in lulu
-#sq 1, 2, 3, 6, 7, 12, 18, 24, 32, 33 with min 99% matching in lulu
-#sq 33 is only in one sample, but it has 800 reads there so I believe it
-
-#### Bar plot - clustered & trimmed ####
-rownames(goods) <- goods$sample
-counts <- goods[,3:11]
-
-#mcmc.otu removed 3 undersequenced samples: "513" "530" "76"
-remove <- c("513","530","76")
-samdf.mcmc <- samdf.no87[!row.names(samdf.no87)%in%remove,]
-
-write.csv(samdf.mcmc,"~/Desktop/mr_samples.csv")
-write.csv(counts,"~/Desktop/mr_counts.csv")
-
-ps.mcmc <- phyloseq(otu_table(counts, taxa_are_rows=FALSE), 
-                    sample_data(samdf.mcmc), 
-                    tax_table(taxa2))
 
 ps.rel <- transform_sample_counts(ps.mcmc, function(x) x / sum(x))
 plot_bar(ps.rel,fill="Class")
@@ -858,92 +856,6 @@ ps.glom <- tax_glom(ps.rel, "Class")
 #cs.otu <- as.data.frame(cs.mcmc@otu_table)
 #mean(cs.otu$sq2)
 #range(cs.otu$sq2)
-
-#bar plot
-ps_glom <- tax_glom(ps.mcmc, "Class")
-ps0 <- transform_sample_counts(ps_glom, function(x) x / sum(x))
-ps1 <- merge_samples(ps0, "site_zone")
-ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
-plot_bar(ps2, fill="Class")
-
-ps.mcmc.melt <- psmelt(ps.mcmc)
-ps.mcmc.melt$newclass <- paste(ps.mcmc.melt$Class,ps.mcmc.melt$OTU,sep="_")
-
-#boxplot
-ggplot(ps.mcmc.melt,aes(x=site_zone,y=Abundance,color=newclass))+
-  geom_boxplot()
-
-#individually
-sq3 <- subset(ps.mcmc.melt,newclass==" C3k_sq3")
-ggplot(sq3,aes(x=site_zone,y=Abundance,color=Class))+
-  geom_boxplot()
-
-library(dplyr)
-ps.all <- transform_sample_counts(ps.mcmc, function(OTU) OTU/sum(OTU))
-pa <- psmelt(ps.all)
-tb <- psmelt(ps.all)%>%
-  filter(!is.na(Abundance))%>%
-  group_by(site_zone,OTU)%>%
-  summarize_at("Abundance",mean)
-
-#some more grouping variables
-tb <- psmelt(ps.all)%>%
-  filter(!is.na(Abundance))%>%
-  group_by(site,zone,site_zone,OTU)%>%
-  summarize_at("Abundance",mean)
-
-ggplot(tb,aes(x=site_zone,y=Abundance,fill=OTU))+
-  geom_bar(stat="identity", colour="black")+
-  theme_cowplot()
-
-#renaming
-
-#ps.all@tax_table
-# Taxonomy Table:     [9 taxa by 4 taxonomic ranks]:
-#   Kingdom        Phylum     Class  
-# sq1  "Symbiodinium" " Clade C" " C3k" - 1
-# sq2  "Symbiodinium" " Clade C" " Cspc" - 1
-# sq3  "Symbiodinium" " Clade C" " C3k" - 2
-# sq6  "Symbiodinium" " Clade C" " C3k" - 3
-# sq7  "Symbiodinium" " Clade A" " A1"  
-# sq12 "Symbiodinium" " Clade C" NA - 1    
-# sq18 "Symbiodinium" " Clade C" NA - 2    
-# sq24 "Symbiodinium" " Clade C" " C3k" - 4
-# sq32 "Symbiodinium" " Clade C" " Cspc" - 2
-
-tb$sym <- gsub("sq12","C. - 1",tb$OTU)
-tb$sym <- gsub("sq18","C. - 2",tb$sym)
-tb$sym <- gsub("sq1","C3k - 1",tb$sym)
-tb$sym <- gsub("sq24","C3k - 4",tb$sym)
-tb$sym <- gsub("sq2","Cspc - 1",tb$sym)
-tb$sym <- gsub("sq32","Cspc - 2",tb$sym)
-tb$sym <- gsub("sq3","C3k - 2",tb$sym)
-tb$sym <- gsub("sq6","C3k - 3",tb$sym)
-tb$sym <- gsub("sq7","A1",tb$sym)
-
-tb$zone <- gsub("Forereef","Fore",tb$zone)
-tb$zone <- gsub("Backreef","Back",tb$zone)
-
-tb$sym <- factor(tb$sym, levels=c("C3k - 1","C3k - 2","C3k - 3","C3k - 4","Cspc - 1", "Cspc - 2","C. - 1","C. - 2","A1"))
-quartz()
-gg.bp <- ggplot(tb,aes(x=zone,y=Abundance,fill=sym))+
-  geom_bar(stat="identity")+
-  theme_cowplot()+
-  theme(text=element_text(family="Times"))+
-  xlab('Reef zone')+
-#  scale_fill_manual(name="Sym.",values=c("seagreen1","seagreen2","seagreen3","seagreen4","blue","darkblue","orange","yellow","purple"))
-  scale_fill_manual(name="Algal symbiont",values=c("#1E9C89FF","#25AB82FF","#58C765FF","#7ED34FFF","#365d8dff","#287d8eff","darkorchid4", "darkorchid1","#d4e21aff"))+
-  facet_wrap(~site)
-gg.bp
-
-#"#1E9C89FF","#25AB82FF","#58C765FF","#7ED34FFF","#365d8dff","#287d8eff","#440154FF", "#48196bff","#d4e21aff"
-
-quartz()
-ggarrange(gg.bp,
-          ggarrange(gg.sh,gg.si,ncol=2,labels=c("B.","C."),common.legend=T,legend="none",font.label=list(family="Times")),nrow=2,labels="A.",font.label=list(family="Times"))
-
-#new & improved:
-ggarrange(gg.bp,gg.si,ncol=1,nrow=2,labels=c("A.","B."))
 
 #### Pcoa - clustered & trimmed ####
 library(vegan)
@@ -1032,7 +944,7 @@ ggarrange(gg.mnw,gg.mse,gg.tah,nrow=1,common.legend=TRUE)
 library(DESeq2)
 
 #checking if any significant 
-ps.mnw = subset_samples(ps.mcmc, site=="MNW")
+ps.mnw = subset_samples(ps.rare, site=="MNW")
 ds.mnw = phyloseq_to_deseq2(ps.mnw, ~ zone)
 dds.mnw <- estimateSizeFactors(ds.mnw,type="poscounts")
 stat.mnw = DESeq(dds.mnw, test="Wald", fitType="parametric")
@@ -1045,7 +957,7 @@ head(sigtab.mnw)
 dim(sigtab.mnw)
 #none
 
-ps.mse = subset_samples(ps.mcmc, site=="MSE")
+ps.mse = subset_samples(ps.rare, site=="MSE")
 ds.mse = phyloseq_to_deseq2(ps.mse, ~ zone)
 dds.mse <- estimateSizeFactors(ds.mse,type="poscounts")
 stat.mse = DESeq(dds.mse, test="Wald", fitType="parametric")
@@ -1058,7 +970,7 @@ head(sigtab.mse)
 dim(sigtab.mse)
 #sq 2 & 3
 
-ps.t = subset_samples(ps.mcmc, site=="TNW")
+ps.t = subset_samples(ps.rare, site=="TNW")
 ds.t = phyloseq_to_deseq2(ps.t, ~ zone)
 dds.t <- estimateSizeFactors(ds.t,type="poscounts")
 stat.t = DESeq(dds.t, test="Wald", fitType="parametric")
@@ -1161,7 +1073,7 @@ seq.rare <- read.csv("~/moorea_holobiont/mr_ITS2/seqtab.rare_1994.csv",row.names
 
 #phyloseq object
 ps.rare <- phyloseq(otu_table(seq.rare, taxa_are_rows=FALSE), 
-                    sample_data(samdf.rare), 
+                    sample_data(samdf), 
                     tax_table(taxa2))
 
 ps_glom <- tax_glom(ps.rare, "Class")
@@ -1187,7 +1099,6 @@ all.pcoa=pcoa(all.dist)
 
 write.csv(counts,"~/Desktop/mr_counts_rare.csv")
 write.csv(samdf.rare,"~/Desktop/mr_samples_rare.csv")
-
 
 # plotting:
 scores=all.pcoa$vectors[,1:2]
@@ -1253,6 +1164,8 @@ adonis(lulu.out ~ zone, strata=samdf.no87$site, data=samdf.no87, permutations=99
 #p 0.009
 
 #clustered & trimmed 
+dist <- vegdist(counts)
+anova(betadisper(dist,samdf.mcmc$site))
 adonis(counts ~ zone, strata=samdf.mcmc$site, data=samdf.mcmc, permutations=999)
 #0.05 .
 
@@ -1266,9 +1179,13 @@ adonis(relabun ~ zone, strata=samdf.mcmc$site, data=samdf.mcmc, permutations=999
 
 #rarefied, clustered, trimmed
 dist.rare <- vegdist(seq.rare)
-dist.rare <- vegdist(counts.rare)
+#dist.rare <- vegdist(counts.rare)
 
-anova(betadisper(dist.rare,samdf.rare$site))
+bet <- betadisper(dist.rare,samdf.rare$site)
+#significant
+anova(bet)
+permutest(bet, pairwise = FALSE, permutations = 99)
+plot(bet)
 
 adonis(counts.rare ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=999)
 
@@ -1277,32 +1194,42 @@ adonis(seq.rare ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=99
 
 #Moorea NW
 mnw.rare <- subset(samdf.rare,site=="MNW")
-seq.rare2 <- as.data.frame(counts)
-seq.rare2$sample <- rownames(seq.rare2)
-mnw.seq <- subset(seq.rare2, sample %in% mnw.rare$Sample)
-mnw.seq2 <- mnw.seq[,1:9]
+mnw.seq <- seq.rare[(rownames(seq.rare) %in% mnw.rare$Sample),]
 
-adonis(mnw.seq2 ~ zone, data=mnw.rare, permutations=999)
+dist.mnw <- vegdist(mnw.seq)
+bet.mnw <- betadisper(dist.mnw,mnw.rare$zone)
+anova(bet.mnw)
+permutest(bet.mnw, pairwise = FALSE, permutations = 99)
+plot(bet.mnw) #not sig
+
+adonis(mnw.seq ~ zone, data=mnw.rare, permutations=999)
 #0.044 *
 
 #Moorea SE
 mse.rare <- subset(samdf.rare,site=="MSE")
-mse.seq <- subset(seq.rare2, sample %in% mse.rare$Sample)
-mse.seq2 <- mse.seq[,1:9]
+mse.seq <- seq.rare[(rownames(seq.rare) %in% mse.rare$Sample),]
 
-adonis(mse.seq2 ~ zone, strata=mse.rare$site, data=mse.rare, permutations=999)
-#0.018 *
+dist.mse <- vegdist(mse.seq)
+bet.mse <- betadisper(dist.mse,mse.rare$zone)
+anova(bet.mse)
+permutest(bet.mse, pairwise = FALSE, permutations = 99)
+plot(bet.mse) #not sig
+
+adonis(mse.seq ~ zone, data=mse.rare, permutations=999)
+#0.015 *
 
 #Tahiti
-tah.rare <- subset(samdf.rare,site=="TNW")
-tah.seq <- subset(seq.rare2, sample %in% tah.rare$Sample)
-tah.seq2 <- tah.seq[,1:9]
+tnw.rare <- subset(samdf.rare,site=="TNW")
+tnw.seq <- seq.rare[(rownames(seq.rare) %in% tnw.rare$Sample),]
 
-dist.tah <- vegdist(tah.seq2)
-anova(betadisper(dist.tah,tah.rare$zone))
-adonis(tah.seq2 ~ zone, strata=tah.rare$site, data=tah.rare, permutations=999)
-#0.055 rarefied
-#0.043 *
+dist.tnw <- vegdist(tnw.seq)
+bet.tnw <- betadisper(dist.tnw,tnw.rare$zone)
+anova(bet.tnw)
+permutest(bet.tnw, pairwise = FALSE, permutations = 99)
+plot(bet.tnw) #sig
+
+adonis(tnw.seq ~ zone, data=tnw.rare, permutations=999)
+#0.044 *
 
 #log-normalized
 df.seq <- as.data.frame(seqtab.no87)
@@ -1461,3 +1388,64 @@ summary(indval)
 #   sq35 0.436   0.019 *  
 #   sq37 0.404   0.017 *  
 #^ the same ones as unrarefied, but lost some & gained some
+
+#### mcmc.otu ####
+library(MCMC.OTU)
+
+dat <- read.csv(file="Nov6_OutputDADA_AllOTUs copy.csv", sep=",", header=TRUE, row.names=1)
+summary(dat)
+str(dat)
+colnames(dat)
+alldat<-dat[c(1:33,35:96),]
+goods=purgeOutliers(alldat, count.columns=6:61)
+head(goods)
+# what is the proportion of samples with data for these OTUs?
+apply(goods[,6:length(goods[1,])],2,function(x){sum(x>0)/length(x)})
+
+# what percentage of global total counts each OTU represents?
+apply(goods[,6:length(goods[1,])],2,function(x){sum(x)/sum(goods[,6:length(goods[1,])])})
+
+# stacking the data; adjust otu.columns and condition.columns values for your data
+gss=otuStack(goods,count.columns=c(6:length(goods[1,])),condition.columns=c(1:5))
+head(gss)
+gss$count=gss$count+1
+
+# fitting the model. Replace the formula specified in 'fixed' with yours, add random effects if present. 
+# See ?mcmc.otu for these and other options. 
+mm=mcmc.otu(
+  fixed="island",
+  data=gss,
+  nitt=55000,thin=50,burnin=5000 # a long MCMC chain to improve modeling of rare OTUs
+)
+plot(mm)	
+# selecting the OTUs that were modeled reliably
+# (OTUs that are too rare for confident parameter estimates are discarded) 
+acpass=otuByAutocorr(mm,gss)
+# # head(gss)
+# # ac=autocorr(mm$Sol)
+# # ac
+
+# calculating differences and p-values between all pairs of factor combinations
+smm0=OTUsummary(mm,gss,otus=acpass,summ.plot=FALSE) 
+
+# adjusting p-values for multiple comparisons:
+smmA=padjustOTU(smm0)
+
+# significant OTUs at FDR<0.05:
+sigs=signifOTU(smmA)
+sigs
+
+# plotting the significant ones
+smm1=OTUsummary(mm,gss,otus=sigs)
+
+# now plotting them by species
+# smm1=OTUsummary(mm,gss,otus=sigs,xgroup="species")
+
+# table of log10-fold changes and p-values: this one goes into supplementary info in the paper
+smmA$otuWise[sigs]
+
+
+
+
+
+

@@ -302,8 +302,8 @@ ords=plotAdmixture(data=tbl,npops=npops,angle=0,vshift=0,hshift=0)
 #http://www.uwyo.edu/dbmcd/popecol/maylects/fst.html
 
 library(vcfR)
-#install.packages("hierfstat")
-library(hierfstat)
+install.packages("hierfstat")
+library("hierfstat")
 library(adegenet)
 
 vcf <- read.vcfR("~/Google Drive/Moorea/2brad_moorea/part3_donresult.vcf")
