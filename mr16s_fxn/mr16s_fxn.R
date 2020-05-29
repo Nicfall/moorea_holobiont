@@ -136,20 +136,35 @@ kegg_name <- function(database=database,query=query){
   kegg_result <- keggFind(database=database,query=query)
   return(kegg_result)
 }
-#we'll see if this works
-get_kegg_info <- function(res=res,database=database){
+#pathways function
+kegg_info_paths <- function(res=res,database="pathway"){
   df <- data.frame(res)
   df$paths <- rownames(df)
   paths <- rownames(df)
   df.paths <- data.frame(paths)
   df.paths$paths.noko <- gsub("ko","",df.paths$paths) #kegg fxn needs just numbers
-  df.paths$paths.nok <- gsub("K","",df.paths$paths.noko) #kegg feature needs just numbers
-  df.paths$paths.nok <- as.character(df.paths$paths.nok)
+  df.paths$paths.noko <- as.character(df.paths$paths.noko)
+  n <- length(df.paths[,1])
+  for (i in 1:n)
+  {
+    call <- df.paths[i,2] 
+    df.paths[i,3] <- kegg_name(database=database,query=call)
+  }
+  df.out <- merge(df,df.paths,by="paths")
+  return(df.out)
+}
+
+#features function
+kegg_info_feats <- function(res=res,database="ko"){
+  df <- data.frame(res)
+  df$paths <- rownames(df)
+  paths <- rownames(df)
+  df.paths <- data.frame(paths)
   n <- length(df.paths[,1])
   for (i in 1:n)
   {
     call <- df.paths[i,1] #first column must be kegg call name
-    df.paths[i,4] <- kegg_name(database=database,query=call)
+    df.paths[i,2] <- kegg_name(database=database,query=call)
   }
   df.out <- merge(df,df.paths,by="paths")
   return(df.out)
@@ -323,6 +338,25 @@ tnw <- tnw.ko.id$V4
 #install.packages("VennDiagram")
 library(VennDiagram)
 
+#site
+all_shared_site = list("mnw" = mnw, "msei" = mse, "tnwi"=tnw)
+prettyvenn=venn.diagram(
+  x = all_shared_site,
+  filename=NULL,
+  #main="Back reef",
+  #col = "transparent",
+  fill = c("darkslategray3","darkslategray4","#000004"),
+  alpha = 0.5,
+  #label.col = c("darkred", "white", "darkgreen", "white", "white", "white", "blue4"),
+  # cex = 2.5,
+  fontfamily = "sans",
+  cat.fontfamily = "sans",
+  #cat.pos=1
+);
+quartz()
+grid.draw(prettyvenn)
+dev.off()
+
 all_shared = list("mnwi" = mnwi_id, "msei" = msei_id, "tnwi"=tnwi_id)
 prettyvenn=venn.diagram(
   x = all_shared,
@@ -404,3 +438,43 @@ ggplot(df.venn) +
 #6 = MSE + TNW
 #7 = all!
 
+#### heat map ####
+setwd("~/moorea_holobiont/mr16s_fxn")
+countData_ko <- read.table("ko_abund_table_unnorm.txt",row.names=1,header=TRUE)
+colData <- read.csv("~/moorea_holobiont/mr_16S/mr16s_samdf.rare_12k.csv")
+row.names(colData) <- colData$id
+
+
+
+
+
+
+mnw.ids <- as.character(mnw.ko.id$paths)
+mnw.counts <- counts(dds.ko.mnw)
+hm <- mnw.counts[rownames(mnw.counts) %in% mnw.ids,]
+#mnw.ko.id$paths == rownames(hm)
+#rownames(hm) <- mnw.ko.id$V4
+#colnames(hm) <- col.mnw$fullname
+
+## Turning into z-score table
+hm2 <- counts(dds.ko.mnw)
+dev.off()
+
+hm.z = data.matrix(hm2)
+hm.z = sweep(hm.z, 1L, rowMeans(hm.z), check.margin = FALSE)
+hm.z.sx = apply(hm.z, 1L, sd)
+hm.z = sweep(hm.z, 1L, hm.z.sx, "/", check.margin = FALSE)
+hm.z = data.matrix(hm.z)
+
+hm.z <- hm.z[rownames(hm.z) %in% mnw.ids,]
+rownames(hm.z) <- mnw.ko.id$V4
+colnames(hm.z) <- col.mnw$zone
+
+top50 <- hm.z[1:50,]
+top50 <- data.matrix(order(top50))
+
+colour = colorRampPalette(rev(c("chocolate1","#FEE090","grey10", "cyan3","cyan")))(100)
+heatmap.2(top50, col = colour, Rowv = TRUE, Colv = TRUE, scale = "row", 
+          dendrogram = "both",
+          trace = "none")
+dev.off()

@@ -428,16 +428,15 @@ seqtab.rare <- read.csv("mr16s_seqtab.rare_12k_rd2.csv",row.names=1)
 plot_richness(ps.rare, x="site", measures=c("Shannon", "Simpson"), color="zone") + theme_bw()
 
 df <- data.frame(estimate_richness(ps.rare, split=TRUE, measures=c("Shannon","InvSimpson","Observed")))
-df <- data.frame(estimate_richness(ps.clean, split=TRUE, measures=c("Shannon","InvSimpson")))
-df <- data.frame(estimate_richness(ps.rare, split=TRUE, measures=c("Observed")))
+df <- data.frame(estimate_richness(ps.clean, split=TRUE, measures=c("Shannon","InvSimpson","Observed")))
 df
 
 df$id <- rownames(df)
 df.div <- merge(df,samdf,by="id") #add sample data
 df.div <- merge(df,samdf.rare,by="id") #add sample data
 
-write.csv(df,file="mr16s_diversity_rare12k.csv") #saving
-df.div <- read.csv("mr16s_diversity.csv") #reading back in 
+write.csv(df.div,file="mr16s_diversity_rare12k.csv") #saving
+df.div <- read.csv("mr16s_diversity_rare12k.csv",row.names=1,header=TRUE) #reading back in 
 
 quartz()
 gg.site.sha <- ggplot(df.div,aes(x=site,y=Shannon))+
@@ -472,7 +471,7 @@ gg.sh <- ggplot(df.div, aes(x=zone, y=Shannon,color=zone,shape=zone))+
   scale_x_discrete(labels=c("BR","FR"))+
   scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
   #guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
-  theme(text=element_text(family="Times"),legend.position="none")+
+  theme(legend.position="none")+
   geom_jitter(alpha=0.5)+
   facet_wrap(~site)
 gg.sh
@@ -485,7 +484,7 @@ gg.si <- ggplot(df.div, aes(x=zone, y=InvSimpson,color=zone,shape=zone))+
   scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
   scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
   #guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
-  theme(text=element_text(family="Times"),legend.position="none")+
+  theme(legend.position="none")+
   geom_jitter(alpha=0.5)+
   facet_wrap(~site)+
   scale_x_discrete(labels=c("BR","FR"))
@@ -499,7 +498,7 @@ gg.obs <- ggplot(df.div, aes(x=zone, y=Observed,color=zone,shape=zone))+
   scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
   scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
   #guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
-  theme(text=element_text(family="Times"),legend.position="none")+
+  theme(legend.position="none")+
   geom_jitter(alpha=0.5)+
   facet_wrap(~site)+
   scale_x_discrete(labels=c("BR","FR"))
@@ -917,15 +916,29 @@ for (i in 1:nrow(tax.clean)){
 
 tax_table(ps.rare.trim) <- as.matrix(tax.clean)
 
-ps_glom <- tax_glom(ps.rare.trim, "Genus")
-ps0 <- transform_sample_counts(ps_glom, function(x) x / sum(x))
-plot_bar(ps0, x="id", fill="Genus")+
-  theme(legend.position="none")
+#### bar plot summed by reef zone & site ####
+library(dplyr)
+ps.all <- transform_sample_counts(ps.rare.trim, function(OTU) OTU/sum(OTU))
+pa <- psmelt(ps.all)
+tb <- psmelt(ps.all)%>%
+  filter(!is.na(Abundance))%>%
+  group_by(site,zone,site_zone,Class,OTU)%>%
+  summarize_at("Abundance",mean)
 
-ps1 <- merge_samples(ps0, "site_zone")
-ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
-plot_bar(ps2, x="site_zone", fill="Family")+
-  theme()
+tb$zone <- gsub("out","FR",tb$zone)
+tb$zone <- gsub("in","BR",tb$zone)
+
+tb$site <- gsub("MNW","Mo'orea NW",tb$site)
+tb$site <- gsub("MSE","Mo'orea SE",tb$site)
+tb$site <- gsub("TNW","Tahiti NW",tb$site)
+
+quartz()
+ggplot(tb,aes(x=zone,y=Abundance,fill=Class))+
+  geom_bar(stat="identity")+
+  theme_cowplot()+
+  #theme(legend.position="none")+
+  xlab('Reef zone')+  
+  facet_wrap(~site)
 
 #### core v accessory microbiome ####
 #BiocManager::install("microbiome")
@@ -935,19 +948,48 @@ library(microbiome)
 pseq.core <- core(ps.rare.trim, detection = 0, prevalence = .7)
 pseq.core
 
-ps_glom <- tax_glom(pseq.core, "Family")
+ps_glom <- tax_glom(pseq.core, "Genus")
 ps0 <- transform_sample_counts(ps_glom, function(x) x / sum(x))
 ps1 <- merge_samples(ps0, "site_zone")
 ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
 
-plot_bar(ps2, fill="Family")+
+plot_bar(ps2, fill="Genus")+
   geom_bar(stat="identity")+
   theme_cowplot()+
   scale_fill_brewer(palette="BrBG")
 
+#alternatively,
+library(dplyr)
+ps.all <- transform_sample_counts(pseq.core, function(OTU) OTU/sum(OTU))
+pa <- psmelt(ps.all)
+tb <- psmelt(ps.all)%>%
+  #filter(!is.na(Abundance))%>%
+  group_by(site_zone,Genus)#%>%
+  summarize_at("Abundance",mean)
+
+ggplot(tb,aes(x=site_zone,y=Abundance,fill=Genus))+
+  geom_bar(stat="identity")+
+  theme_cowplot()+
+  #theme(legend.position="none")+
+  xlab('Reef zone')#+  
+  #facet_wrap(~site)
+
 library(RColorBrewer)
 display.brewer.all(colorblindFriendly = TRUE)
 
+#alternatively alternatively
+ps.core.rel <- transform_sample_counts(pseq.core, function(x) x / sum(x))
+psm.all <- psmelt(ps.core.rel)
+#melt.mnw$Abundance[is.na(melt.mnw$Abundance)] <- 0
+psm.all.sum <- summarySE(psm.all,measurevar="Abundance",groupvars = c("Genus","site_zone"))
+ggplot(psm.all.sum,aes(x=zone,y=Abundance,fill=Genus))+
+  geom_bar(stat="identity")+
+  facet_wrap(~site)
+ggplot(psm.all.sum,aes(x=site_zone,y=Abundance,fill=Genus))+
+  geom_bar(stat="identity")#+
+  facet_wrap(~site)
+
+out <- data.frame(pseq.core@otu_table)
 # calculating core abundances #
 core.sqs <- tax_table(pseq.core)
 core.sqs.ids <- row.names(core.sqs)

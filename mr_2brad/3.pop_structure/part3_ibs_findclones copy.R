@@ -1,10 +1,14 @@
-bams=read.table("~/Google Drive/Moorea/2brad_moorea/part3_bams")[,1] # list of bam files, in the same order as you did your analysis
+setwd("~/moorea_holobiont/mr_2brad/3.pop_structure")
+##just bams names:
+#bams=read.table("bams")[,1] # list of bam files, in the same order as you did your analysis
+##renamed the long bam file names for plotting:
+bams=read.table("bams_renamedforplot")[,1] # list of bam files, in the same order as you did your analysis
 goods=c(1:length(bams))
 
 #-------------
 # clustering / PCoA based on identity by state (IBS) based on single read resampling
 # (for low and/or uneven coverage)
-ma = as.matrix(read.table("~/Google Drive/Moorea/2brad_moorea/part3_myresult.ibsMat"))
+ma = as.matrix(read.table("myresult.ibsMat"))
 ma=ma[goods,goods]
 dimnames(ma)=list(bams[goods],bams[goods])
 hc=hclust(as.dist(ma),"ave")
