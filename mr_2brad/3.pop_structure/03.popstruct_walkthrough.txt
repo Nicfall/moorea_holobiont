@@ -39,12 +39,12 @@ qsub angsd.sh
 # use IBS results to look for clones & technical replicates for removal
 # sftp (or some other transfer method) to file transfer 'myresult.ibsMat' & 'bams' to your local computer
 # use part3_ibs_findclones.R to see results
-# my input files are part3_myresult.ibsMat & part3_bams, my output file displaying clones dendrogram is part3_clones_dendro.pdf
+# my input files are myresult.ibsMat & bams, my output file displaying clones dendrogram is part3_clones_dendro.pdf
 # getting rid of all samples with 'd' after the same as these were intentional replicates, also saw 2 other samples that were incidental clones ('MNW-F_125 & MNW-B_58), removing from bams file
 
 #--------------- assessing site depth
 
-#re-did angsd without clones:
+#re-did angsd without clones (removed the .bam names from 'bams' & named it 'bamscl')
 #remember to change 'minInd' to new 80% (mine is now minInd 99 for 80% from 124 samples)
 
 nano angsd_cl.sh
@@ -75,39 +75,41 @@ vcftools --vcf clresult.vcf --depth --out clresult
 #results (mean depth of sites per individual) are in a file ending in '.idepth'
 #I transferred it to my desktop & arranged the column smallest -> largest in excel to check it out
 
+#re-ran this step after removing 10 samples with an average of <7 reads, went from 2150 SNPs to 3474
+
 #--------------- now for overall pop structure 
 
 #after looking at my site depths, I decided to get rid of samples with less than an average of 7 reads for my final analysis, increases the number of reliable SNPs you get from the total dataset
-#also removed technical replicates/clones from 'bams' file & saved it as 'bams_no7'
+#also removed technical replicates/clones from 'bamscl' file & saved it as 'bamscl_no7'
 #had 136 samples before, now left with 114 (removed 2 incidental clones, 10 tech replicates, 10 samples with less than 7 average reads/site)
 #that reduces my 80% minInd filter down to 91 now
 
 #re-running ANGSD without clones & without poorly covered samples:
-nano angsd_donish.sh
+nano angsd_cl_no7.sh
 # added the following text to .sh:
 #!/bin/bash -l
 #$ -V # inherit the submission environment
 #$ -cwd #start job in submission directory
-#$ -N angsd_donish.sh # job name, anything you want
+#$ -N angsd_cl_no7.sh # job name, anything you want
 #$ -l h_rt=24:00:00
 #$ -M thenicolakriefall@gmail.com
 #$ -m be
-FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 25 -dosnpstat 1 -doHWE 1 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 91 -snp_pval 1e-5 -minMaf 0.05 -minIndDepth 8 -hwe_pval 1e-5"
+FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 25 -dosnpstat 1 -doHWE 1 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 91 -snp_pval 1e-5 -minMaf 0.1 -minIndDepth 8 -hwe_pval 1e-5"
 TODO="-doMajorMinor 1 -doMaf 1 -doCounts 1 -makeMatrix 1 -doIBS 1 -doCov 1 -doGeno 8 -doVcf 1 -doPost 1 -doGlf 2 -dumpCounts 2"
-angsd -b bams_no7 -GL 1 $FILTERS $TODO -P 1 -out ./donresult/donresult.05
+angsd -b bamscl_no7 -GL 1 $FILTERS $TODO -P 1 -out ./tests/clresult_no7
 #exit & save
-#saves output to a directory I made called 'donresult'
+#saves output to a directory I made called 'tests'
 
-qsub angsd_donish.sh
+qsub angsd_cl_no7.sh
 
-gunzip donresult.05.vcf.gz
-#transferred donresult.05.vcf, donresult.05.ibsMat, and bams_no7 file to local working directory to use in 'part3_plotting_popstruct.R'
-#generated inds2pops file by hand: text file with 2 columns, first is your sample bam, second is your variable of interest
+gunzip clresult_no7.vcf.gz
+#transferred clresult_no7.vcf, clresult_no7.ibsMat, and bamscl_no7 file to local working directory to use in 'part3_plotting_popstruct.R'
+#I generated inds2pops file by hand in Excel: text file with 2 columns, first is your sample bam, second is your variable of interest
 
 #how many SNPs?
-NSITES=`zcat donresult.05.mafs.gz | wc -l`
+NSITES=`zcat clresult_no7.mafs.gz | wc -l`
 echo $NSITES
-#I have 5647 sites
+#I have 5647 sites at maf of 0.05, 3474 sites at 0.1 maf
 
 #--------------- K plots
 
