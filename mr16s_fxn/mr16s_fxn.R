@@ -206,6 +206,7 @@ merge(mse.paths.id,tnw.paths.id) #yesssssss
 
 #### just 'features' ####
 #count data
+#BiocManager::install("DESeq2")
 library(DESeq2)
 setwd("~/moorea_holobiont/mr16s_fxn")
 countData_ko <- read.table("ko_abund_table_unnorm.txt",row.names=1,header=TRUE)
@@ -444,17 +445,65 @@ countData_ko <- read.table("ko_abund_table_unnorm.txt",row.names=1,header=TRUE)
 colData <- read.csv("~/moorea_holobiont/mr_16S/mr16s_samdf.rare_12k.csv")
 row.names(colData) <- colData$id
 
-
-
-
-
-
 mnw.ids <- as.character(mnw.ko.id$paths)
 mnw.counts <- counts(dds.ko.mnw)
-hm <- mnw.counts[rownames(mnw.counts) %in% mnw.ids,]
+exp <- mnw.counts[rownames(mnw.counts) %in% mnw.ids,]
 #mnw.ko.id$paths == rownames(hm)
 #rownames(hm) <- mnw.ko.id$V4
 #colnames(hm) <- col.mnw$fullname
+
+# iso2go = read_tsv('astrangia_iso2go.tab') %>%
+#   rename(Iso = Gene_id)
+# cold_results_df = as.data.frame(cold_results) %>%
+#   rownames_to_column(var = 'Iso')
+# hot_results_df = as.data.frame(hot_results) %>%
+#   rownames_to_column(var = 'Iso')
+# cold_rlog = as.data.frame(assay(cold_rlogged)) %>%
+#   rownames_to_column(var = 'Iso') %>%
+#   left_join(cold_results_df) %>%
+#   filter(padj < 0.1) %>%
+#   dplyr::select(-baseMean, -log2FoldChange, -lfcSE, -stat, -pvalue, -padj)
+# hot_rlog = as.data.frame(assay(hot_rlogged)) %>%
+#   rownames_to_column(var = 'Iso') %>%
+#   left_join(hot_results_df) %>%
+#   filter(padj < 0.1) %>%
+#   dplyr::select(-baseMean, -log2FoldChange, -lfcSE, -stat, -pvalue, -padj)
+# 
+hot_colour = colorRampPalette(rev(c("#EA6227", "#F09167", "white", "grey40", "black")))(100)
+                                     GO_hot = iso2go %>%
+                                       filter(str_detect(GO_id, "GO:0004298") | str_detect(GO_id, "GO:0070003")) %>%
+#   left_join(gene) %>%
+#   left_join(hot_rlog) %>%
+#   mutate(gene_symbol = make.names(gene_symbol, unique = TRUE)) %>%
+#   column_to_rownames(var = "gene_symbol") %>%
+#   dplyr::select(-GO_id, -Gene, -Iso) %>%
+#   drop_na()%>%
+#   dplyr::select(sort(current_vars()))
+# exp = GO_hot
+
+means=apply(exp,1,mean) # means of rows
+
+explc=exp-means # subtracting them
+library(gplots)
+
+hot_colour = colorRampPalette(rev(c("#EA6227", "#F09167", "white", "grey40", "black")))(100)
+
+heatmap.2(as.matrix(explc), col = hot_colour, Rowv = TRUE, Colv = FALSE, scale = "row",
+          dendrogram = "both",
+          trace = "none")
+          #main = "GO:0004298;GO:0070003 threonine-type endopeptidase activity",
+          #margin = c(5,15))
+dev.off()
+
+#alternative
+pheatmap(trans,annotation_col=ann,annotation_colors=anno_colors,cex=1.2,border_color="grey",show_rownames=T, cluster_cols=F, color = colorRampPalette(c("white", "coral2"))(25))
+#install.packages("pheatmap")
+library('pheatmap')
+pheatmap(explc,scale="column",
+         cex=1.2,border_color="grey",show_rownames=T, 
+         cluster_cols=T)
+
+#### outdated heat map ####
 
 ## Turning into z-score table
 hm2 <- counts(dds.ko.mnw)
@@ -478,3 +527,8 @@ heatmap.2(top50, col = colour, Rowv = TRUE, Colv = TRUE, scale = "row",
           dendrogram = "both",
           trace = "none")
 dev.off()
+
+
+
+
+

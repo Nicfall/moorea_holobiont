@@ -94,22 +94,23 @@ nano angsd_cl_no7.sh
 #$ -l h_rt=24:00:00
 #$ -M thenicolakriefall@gmail.com
 #$ -m be
-FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 25 -dosnpstat 1 -doHWE 1 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 91 -snp_pval 1e-5 -minMaf 0.1 -minIndDepth 8 -hwe_pval 1e-5"
+FILTERS="-uniqueOnly 1 -remove_bads 1 -minMapQ 20 -minQ 25 -dosnpstat 1 -doHWE 1 -sb_pval 1e-5 -hetbias_pval 1e-5 -skipTriallelic 1 -minInd 91 -snp_pval 1e-5 -minMaf 0.1 -minIndDepth 8"
 TODO="-doMajorMinor 1 -doMaf 1 -doCounts 1 -makeMatrix 1 -doIBS 1 -doCov 1 -doGeno 8 -doVcf 1 -doPost 1 -doGlf 2 -dumpCounts 2"
-angsd -b bamscl_no7 -GL 1 $FILTERS $TODO -P 1 -out ./tests/clresult_no7
+angsd -b bamscl_no7 -GL 1 $FILTERS $TODO -P 1 -out clresult_no7
 #exit & save
-#saves output to a directory I made called 'tests'
 
 qsub angsd_cl_no7.sh
 
-gunzip clresult_no7.vcf.gz
-#transferred clresult_no7.vcf, clresult_no7.ibsMat, and bamscl_no7 file to local working directory to use in 'part3_plotting_popstruct.R'
-#I generated inds2pops file by hand in Excel: text file with 2 columns, first is your sample bam, second is your variable of interest
+#pcangsd program: http://www.popgen.dk/software/index.php/PCAngsd
+python ~/bin/pcangsd/pcangsd.py -beagle clresult_no7.beagle.gz -o clresult_no7 -threads 4
+
+#transferred resulting clresult_no7.cov file to local working directory to use in 'part3_plotting_popstruct.R'
+#I generated bamscl_no7_pops file by hand in Excel: text file with 2 columns, first is your sample bam, second is your variable of interest (or more columns with more variables)
 
 #how many SNPs?
 NSITES=`zcat clresult_no7.mafs.gz | wc -l`
 echo $NSITES
-#I have 5647 sites at maf of 0.05, 3474 sites at 0.1 maf
+#I have 3474 sites at 0.1 maf
 
 #--------------- K plots
 
@@ -127,18 +128,20 @@ done
 module load plink/1.90b6.4
 module load admixture
 
-plink --vcf donresult.vcf --make-bed --allow-extra-chr 0 --out done
+gunzip clresult_no7.vcf.gz
+
+plink --vcf clresult_no7.vcf --make-bed --allow-extra-chr 0 --out done
 for K in `seq 1 5`; \
-do admixture --cv done.bed $K | tee done_${K}.out; done
+do admixture --cv clresult_no7.bed $K | tee clresult_no7_${K}.out; done
 
 # which K is least CV error?
-grep -h CV done_*.out
+grep -h CV clresult_no7_*.out
 
-#CV error (K=1): 0.60678
-#CV error (K=2): 0.62188
-#CV error (K=3): 0.64356
-#CV error (K=4): 0.66027
-#CV error (K=5): 0.67737
+#CV error (K=1): 0.60548
+#CV error (K=2): 0.62195
+#CV error (K=3): 0.63702
+#CV error (K=4): 0.66038
+#CV error (K=5): 0.67912
 #lowest error for me was K=1
 
 # sftp the *.Q files to laptop, plot it in R:
