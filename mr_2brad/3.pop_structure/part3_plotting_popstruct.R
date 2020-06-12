@@ -59,6 +59,7 @@ ggplot(df,aes(x=score1,y=score2,color=zone,fill=zone,shape=site))+
   scale_linetype_manual(values=c("solid","twodash"),labels=c("BR","FR"))+
   labs(shape="Site",color="Reef zone",linetype="Reef zone",fill="Reef zone")
 
+#site
 quartz()
 ggplot(df,aes(x=score1,y=score2,color=site,fill=site,shape=site))+
   geom_point(size=2)+
@@ -71,6 +72,70 @@ ggplot(df,aes(x=score1,y=score2,color=site,fill=site,shape=site))+
   scale_shape_manual(values=c(8,4,9),labels=c("MNW","MSE","TNW"))+
   scale_fill_manual(values=c("darkslategray3","darkslategray4","#000004"),labels=c("MNW","MSE","TNW"))+
   labs(shape="Site",color="Site",linetype="Site",fill="Site")
+
+#### K plot from .vcf ####
+
+# primitive look at admixture data:
+tbl=read.table("clresult_no7.2.Q")
+barplot(t(as.matrix(tbl)), col=rainbow(5),xlab="Individual #", ylab="Ancestry", border=NA)
+
+#---
+# prettier:
+
+# assembling the input table
+dir="~/moorea_holobiont/mr_2brad/3.pop_structure/" # path to input files
+inName="clresult_no7.2.Q" # name of the input file to plot, output of ngsAdmix or ADMIXTURE run
+npops=2
+pops="bamscl_no7_pops.txt" # 2-column tab-delimited table of individual assignments to populations; must be in the same order as samples in the bam list or vcf file.
+tbl=read.table(paste(dir,inName,sep=""),header=F)
+i2p=read.table(paste(dir,pops,sep=""),header=F)
+#i2p <- i2p[,1:2]
+names(i2p)=c("ind","pop")
+tbl=cbind(tbl,i2p)
+row.names(tbl)=tbl$ind
+
+head(tbl,20) # this is how the resulting dataset must look
+
+source("~/moorea_holobiont/mr_2brad/3.pop_structure/plot_admixture_v4_function copy.R")
+
+# putting populaitons in desired order (edit pop names as needed or skip to plot them alphabetically)
+tbl$pop=factor(tbl$pop,levels=c("MNW-B","MNW-F","MSE-B","MSE-F","TNW-B","TNW-F"))
+
+quartz()
+ords=plotAdmixture(data=tbl,npops=npops,angle=0,vshift=0,hshift=0)
+
+#### FST from .vcf file ####
+#good webiste on calculating this stuff (by hand though):
+#http://www.uwyo.edu/dbmcd/popecol/maylects/fst.html
+
+library(vcfR)
+#install.packages("hierfstat")
+library("hierfstat")
+library(adegenet)
+
+setwd("~/")
+vcf <- read.vcfR("~/moorea_holobiont/mr_2brad/3.pop_structure/clresult_no7.vcf")
+genind <- vcfR2genind(vcf)
+pop(genind) <- i2p$V2
+
+basic.stats(genind)
+# $overall
+# Ho     Hs     Ht    Dst    Htp   Dstp    Fst   Fstp    Fis   Dest 
+# 0.3167 0.3410 0.3413 0.0003 0.3414 0.0004 0.0010 0.0012 0.0712 0.0006 
+
+fstat(genind, fstonly = FALSE, pop=NULL) #pop=null means you inherit the pops already there 
+pairwise.fst(genind, pop = NULL, res.type = c("dist", "matrix"))
+
+test.between(genind,test.lev="Locality",rand.unit="Patch")
+
+# 1          2          3          4          5
+# 2 0.01815735                                            
+# 3 0.01772569 0.01547715                                 
+# 4 0.01846476 0.01551543 0.01605031                      
+# 5 0.01549681 0.01305472 0.01372456 0.01394897           
+# 6 0.01571488 0.01373486 0.01399234 0.01395402 0.01154477
+
+#### ARCHIVE - OUTDATED ####
 
 ##### MDS plot/CCA from IBS matrix #####
 library(vegan)
@@ -205,7 +270,7 @@ ggplot(gg,aes(x=x,y=y,color=zone,shape=reef,fill=zone))+
   scale_linetype_manual(values=c("solid","twodash"),labels=c("Backreef","Forereef"))+
   labs(shape="Site",color="Reef zone",linetype="Reef zone",fill="Reef zone")+
   theme(text=element_text(family="Gill Sans MT"))
-  
+
 #### K plot from NGSadmix & beagle file ####
 
 # assembling the input table
@@ -230,72 +295,6 @@ ords=plotAdmixture(data=tbl,npops=npops,grouping.method="distance",vshift=0.1)
 ## recording cluster affiliations
 #cluster.admix=apply(tbl[,1:npops],1,function(x) {return(paste(which(x>0.25),collapse=".")) })
 #save(cluster.admix,file=paste(inName,"_clusters.RData",sep=""))
-
-#### K plot from .vcf ####
-
-# primitive look at admixture data:
-tbl=read.table("clresult_no7.2.Q")
-barplot(t(as.matrix(tbl)), col=rainbow(5),xlab="Individual #", ylab="Ancestry", border=NA)
-
-#---
-# prettier:
-
-# assembling the input table
-dir="~/moorea_holobiont/mr_2brad/3.pop_structure/" # path to input files
-inName="clresult_no7.2.Q" # name of the input file to plot, output of ngsAdmix or ADMIXTURE run
-npops=2
-pops="bamscl_no7_pops copy.txt" # 2-column tab-delimited table of individual assignments to populations; must be in the same order as samples in the bam list or vcf file.
-tbl=read.table(paste(dir,inName,sep=""),header=F)
-i2p=read.table(paste(dir,pops,sep=""),header=F)
-#i2p <- i2p[,1:2]
-names(i2p)=c("ind","pop")
-tbl=cbind(tbl,i2p)
-row.names(tbl)=tbl$ind
-
-head(tbl,20) # this is how the resulting dataset must look
-
-source("~/moorea_holobiont/mr_2brad/3.pop_structure/plot_admixture_v4_function copy.R")
-
-# putting populaitons in desired order (edit pop names as needed or skip to plot them alphabetically)
-tbl$pop=factor(tbl$pop,levels=c("MNW-B","MNW-F","MSE-B","MSE-F","TNW-B","TNW-F"))
-
-quartz()
-ords=plotAdmixture(data=tbl,npops=npops,angle=0,vshift=0,hshift=0)
-
-#### FST from .vcf file ####
-#good webiste on calculating this stuff (by hand though):
-#http://www.uwyo.edu/dbmcd/popecol/maylects/fst.html
-
-library(vcfR)
-install.packages("hierfstat")
-library("hierfstat")
-library(adegenet)
-
-vcf <- read.vcfR("~/Google Drive/Moorea/2brad_moorea/part3_donresult.vcf")
-genind <- vcfR2genind(vcf)
-pop(genind) <- i2p$pop
-
-basic.stats(genind)
-# $overall
-# Ho     Hs     Ht    Dst    Htp   Dstp    Fst   Fstp    Fis   Dest 
-# 0.3114 0.3383 0.3386 0.0003 0.3386 0.0003 0.0007 0.0009 0.0795 0.0005 
-
-fstat(genind, fstonly = FALSE, pop=NULL) #pop=null means you inherit the pops already there 
-pairwise.fst(genind, pop = NULL, res.type = c("dist", "matrix"))
-
-test.between(genind,test.lev="Locality",rand.unit="Patch")
-
-# 1          2          3          4          5
-# 2 0.01955097                                            
-# 3 0.01797238 0.01623331                                 
-# 4 0.01732276 0.01493712 0.01528038                      
-# 5 0.01559150 0.01361887 0.01387200 0.01315708           
-# 6 0.01580877 0.01421282 0.01412182 0.01329455 0.01175710
-
-
-
-
-#### ARCHIVED - OUTDATED ####
 
 #### PCA from .vcf file ####
 

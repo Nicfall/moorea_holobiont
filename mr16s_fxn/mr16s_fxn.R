@@ -106,6 +106,7 @@ res.mse = res.mse[order(res.mse$pvalue),]
 summary(res.mse) #26 up, 21 down, 146 low counts
 
 res.mse.sig <- subset(res.mse,padj<=0.1)
+saveRDS(res.mse.sig,file="paths.res.mse.sig.RDS")
 
 #Tahiti NW
 col.tnw <- subset(colData,site=="TNW")
@@ -127,7 +128,9 @@ res.tnw = res.tnw[order(res.tnw$pvalue),]
 summary(res.tnw) #10 up, 9 down, 155 low counts
 
 res.tnw.sig <- subset(res.tnw,padj<=0.1)
+saveRDS(res.tnw.sig,file="paths.res.tnw.sig.RDS")
 
+#### kegg name functions ####
 #now what are these guys?
 #BiocManager::install("KEGGREST")
 library("KEGGREST")
@@ -136,6 +139,7 @@ kegg_name <- function(database=database,query=query){
   kegg_result <- keggFind(database=database,query=query)
   return(kegg_result)
 }
+
 #pathways function
 kegg_info_paths <- function(res=res,database="pathway"){
   df <- data.frame(res)
@@ -176,33 +180,83 @@ df.mnw.paths <- data.frame(mnw.paths)
 df.mnw.paths$mnw.paths <- gsub("ko","",df.mnw.paths$mnw.paths) #kegg fxn needs just numbers
 df.mnw.paths$mnw.paths <- as.character(df.mnw.paths$mnw.paths)
 
-mnw.paths.id <- get_kegg_info(df=df.mnw.paths,n=19,database="pathway")
+mnw.paths.id <- kegg_info_paths(res=res.mnw.sig)
 #empty - doesn't work
 
-mse.paths <- rownames(res.mse.sig)
-df.mse.paths <- data.frame(mse.paths)
-df.mse.paths$mse.paths <- gsub("ko","",df.mse.paths$mse.paths) #kegg fxn needs just numbers
-df.mse.paths$mse.paths <- as.character(df.mse.paths$mse.paths)
+mse.paths.id <- kegg_info_paths(res=res.mse.sig)
+write.csv(mse.paths.id,file="mse.paths.id.csv")
 
-mse.paths.id <- get_kegg_info(df=df.mse.paths,n=19,database="pathway")
+tnw.paths.id <- kegg_info_paths(res=res.tnw.sig)
+write.csv(tnw.paths.id,file="tnw.paths.id.csv")
 
-tnw.paths <- rownames(res.tnw.sig)
-df.tnw.paths <- data.frame(tnw.paths)
-df.tnw.paths$tnw.paths <- gsub("ko","",df.tnw.paths$tnw.paths) #kegg fxn needs just numbers
-df.tnw.paths$tnw.paths <- as.character(df.tnw.paths$tnw.paths)
-
-tnw.paths.id <- get_kegg_info(df=df.tnw.paths,n=19,database="pathway")
+#### read back in deseq results & paths ####
+setwd("~/moorea_holobiont/mr16s_fxn")
+res.mse.sig <- readRDS("paths.res.mse.sig.RDS")
+res.tnw.sig <- readRDS("paths.res.tnw.sig.RDS")
+mse.paths.id <- read.csv(file="mse.paths.id.csv",row.names = 1,header=TRUE)
+tnw.paths.id <- read.csv(file="tnw.paths.id.csv",row.names = 1,header=TRUE)
 
 #are there any that are the same between the two?
-merge(mse.paths.id,tnw.paths.id) #yesssssss
-# V2 mse.paths tnw.paths
-# 1   Fatty acid degradation     00071     00071
-# 2    Fatty acid metabolism     01212     01212
-# 3 Homologous recombination     03440     03440
-# 4        Purine metabolism     00230     00230
-# 5    Pyrimidine metabolism     00240     00240
-# 6                 Ribosome     03010     03010
-# 7      Tyrosine metabolism     00350     00350
+incommon <- merge(mse.paths.id,tnw.paths.id,by="V3") #yesssssss, 15 
+
+#### heat map - pathways ####
+library(pheatmap)
+
+#Moorea SE
+mse.ids <- as.character(mse.paths.id$paths)
+mse.counts <- counts(dds.mse,normalized=T)
+exp.mse <- mse.counts[rownames(mse.counts) %in% mse.ids,]
+
+colnames(exp.mse) == col.mse$id
+colnames(exp.mse) <- col.mse$fullname
+
+rownames(exp.mse) == mse.paths.id$paths
+rownames(exp.mse) <- mse.paths.id$V3
+
+means=apply(exp.mse,1,mean) # means of rows
+explc.mse=exp.mse-means # subtracting them
+
+#plot
+colz = colorRampPalette(c("#440154","#365D8D","white","#58C765","#FDE725"))(100)
+
+exp2.mse <- exp.mse[,order(colnames(exp.mse))]
+explc2.mse <- explc.mse[,order(colnames(explc.mse))]
+
+col_order <- c("MSEI_B9","MSEI_C10","MSEI_C9","MSEI_A10","MSEI_E9","MSEI_F10","MSEI_G10","MSEI_H9",
+               "MSEI_D10", "MSEI_H10","MSEI_A9","MSEI_G9","MSEI_D9","MSEI_B10","MSEI_E10",
+               "MSEO_F12","MSEO_C11","MSEO_E12","MSEO_D12","MSEO_B12","MSEO_H11","MSEO_G11",
+               "MSEO_G12","MSEO_A12","MSEO_B11","MSEO_E11","MSEO_D11","MSEO_F11","MSEO_A11","MSEO_H12")
+
+exp2.mse <- exp.mse[, col_order]
+
+quartz()
+pheatmap(exp2.mse,scale="row",color=colz,show_rownames=T, border_color = "grey",
+         cluster_cols=F,main="Mo'orea SE")
+dev.off()
+
+#Tahiti NW
+tnw.ids <- as.character(tnw.paths.id$paths)
+tnw.counts <- counts(dds.tnw,normalized=T)
+exp.tnw <- tnw.counts[rownames(tnw.counts) %in% tnw.ids,]
+
+colnames(exp.tnw) == col.tnw$id
+colnames(exp.tnw) <- col.tnw$fullname
+
+rownames(exp.tnw) == tnw.paths.id$paths
+rownames(exp.tnw) <- tnw.paths.id$V3
+
+colz = colorRampPalette(c("#440154","#365D8D","white","#58C765","#FDE725"))(100)
+
+col_order <- c("TI_G5","TI_A6","TI_G6","TI_C6","TI_B6","TI_C5","TI_F5","TI_D5",
+               "TI_H6","TI_E6","TI_F6","TI_A5","TI_E5","TI_D6","TO_D7","TO_F7","TO_H7","TO_H8",
+               "TO_B7","TO_F8","TO_C7","TO_E7","TO_G8","TO_D8","TO_C8","TO_G7","TO_A7")
+  
+exp2.tnw <- exp.tnw[, col_order]
+
+quartz()
+pheatmap(exp2.tnw,scale="row",color=colz,show_rownames=T, border_color = "grey",
+         cluster_cols=F,main="Tahiti NW")
+dev.off()
 
 #### just 'features' ####
 #count data
@@ -440,95 +494,44 @@ ggplot(df.venn) +
 #7 = all!
 
 #### heat map ####
-setwd("~/moorea_holobiont/mr16s_fxn")
-countData_ko <- read.table("ko_abund_table_unnorm.txt",row.names=1,header=TRUE)
-colData <- read.csv("~/moorea_holobiont/mr_16S/mr16s_samdf.rare_12k.csv")
-row.names(colData) <- colData$id
-
-mnw.ids <- as.character(mnw.ko.id$paths)
-mnw.counts <- counts(dds.ko.mnw)
-exp <- mnw.counts[rownames(mnw.counts) %in% mnw.ids,]
-#mnw.ko.id$paths == rownames(hm)
-#rownames(hm) <- mnw.ko.id$V4
-#colnames(hm) <- col.mnw$fullname
-
-# iso2go = read_tsv('astrangia_iso2go.tab') %>%
-#   rename(Iso = Gene_id)
-# cold_results_df = as.data.frame(cold_results) %>%
-#   rownames_to_column(var = 'Iso')
-# hot_results_df = as.data.frame(hot_results) %>%
-#   rownames_to_column(var = 'Iso')
-# cold_rlog = as.data.frame(assay(cold_rlogged)) %>%
-#   rownames_to_column(var = 'Iso') %>%
-#   left_join(cold_results_df) %>%
-#   filter(padj < 0.1) %>%
-#   dplyr::select(-baseMean, -log2FoldChange, -lfcSE, -stat, -pvalue, -padj)
-# hot_rlog = as.data.frame(assay(hot_rlogged)) %>%
-#   rownames_to_column(var = 'Iso') %>%
-#   left_join(hot_results_df) %>%
-#   filter(padj < 0.1) %>%
-#   dplyr::select(-baseMean, -log2FoldChange, -lfcSE, -stat, -pvalue, -padj)
-# 
-hot_colour = colorRampPalette(rev(c("#EA6227", "#F09167", "white", "grey40", "black")))(100)
-                                     GO_hot = iso2go %>%
-                                       filter(str_detect(GO_id, "GO:0004298") | str_detect(GO_id, "GO:0070003")) %>%
-#   left_join(gene) %>%
-#   left_join(hot_rlog) %>%
-#   mutate(gene_symbol = make.names(gene_symbol, unique = TRUE)) %>%
-#   column_to_rownames(var = "gene_symbol") %>%
-#   dplyr::select(-GO_id, -Gene, -Iso) %>%
-#   drop_na()%>%
-#   dplyr::select(sort(current_vars()))
-# exp = GO_hot
-
-means=apply(exp,1,mean) # means of rows
-
-explc=exp-means # subtracting them
 library(gplots)
 
+#I want fewer, or else it's too much:
+mnw.order <- mnw.ko.id[order(mnw.ko.id$padj),]
+mnw.top50 <- mnw.order[1:50,]
+#mnw.p <- filter(mnw.ko.id, padj <= 0.01)
+
+mnw.ids <- as.character(mnw.top50$paths)
+mnw.counts <- counts(dds.ko.mnw)
+exp <- mnw.counts[rownames(mnw.counts) %in% mnw.ids,]
+
+mnw.top50 <- mnw.top50[order(mnw.top50$paths),]
+mnw.top50$paths == rownames(exp)
+rownames(exp) <- mnw.top50$V4
+colnames(exp) == col.mnw$id
+colnames(exp) <- col.mnw$fullname
+
+means=apply(exp,1,mean) # means of rows
+explc=exp-means # subtracting them
+
 hot_colour = colorRampPalette(rev(c("#EA6227", "#F09167", "white", "grey40", "black")))(100)
 
-heatmap.2(as.matrix(explc), col = hot_colour, Rowv = TRUE, Colv = FALSE, scale = "row",
-          dendrogram = "both",
-          trace = "none")
+explc2 <- explc[,order(colnames(explc))]
+heatmap.2(as.matrix(explc2), col = hot_colour, Rowv = TRUE, Colv = FALSE, scale = "row",
+          dendrogram = "none",trace="none",
           #main = "GO:0004298;GO:0070003 threonine-type endopeptidase activity",
-          #margin = c(5,15))
+          margin=c(5,10))
 dev.off()
 
-#alternative
-pheatmap(trans,annotation_col=ann,annotation_colors=anno_colors,cex=1.2,border_color="grey",show_rownames=T, cluster_cols=F, color = colorRampPalette(c("white", "coral2"))(25))
+#alternative - pheatmap
 #install.packages("pheatmap")
 library('pheatmap')
-pheatmap(explc,scale="column",
-         cex=1.2,border_color="grey",show_rownames=T, 
-         cluster_cols=T)
 
-#### outdated heat map ####
+colz = colorRampPalette(c("#440154","#365D8D","white","#58C765","#FDE725"))(100)
 
-## Turning into z-score table
-hm2 <- counts(dds.ko.mnw)
+exp2 <- exp[,order(colnames(exp))]
+quartz()
+pheatmap(exp2,scale="row",color=colz,
+         border_color="grey",show_rownames=T, 
+         cluster_cols=F,main="Mo'orea NW")
 dev.off()
-
-hm.z = data.matrix(hm2)
-hm.z = sweep(hm.z, 1L, rowMeans(hm.z), check.margin = FALSE)
-hm.z.sx = apply(hm.z, 1L, sd)
-hm.z = sweep(hm.z, 1L, hm.z.sx, "/", check.margin = FALSE)
-hm.z = data.matrix(hm.z)
-
-hm.z <- hm.z[rownames(hm.z) %in% mnw.ids,]
-rownames(hm.z) <- mnw.ko.id$V4
-colnames(hm.z) <- col.mnw$zone
-
-top50 <- hm.z[1:50,]
-top50 <- data.matrix(order(top50))
-
-colour = colorRampPalette(rev(c("chocolate1","#FEE090","grey10", "cyan3","cyan")))(100)
-heatmap.2(top50, col = colour, Rowv = TRUE, Colv = TRUE, scale = "row", 
-          dendrogram = "both",
-          trace = "none")
-dev.off()
-
-
-
-
-
