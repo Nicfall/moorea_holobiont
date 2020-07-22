@@ -1126,16 +1126,22 @@ mnw <- c(row.names(samdf.mnw))
 seq.trim.mnw <- seq.trim[row.names(seq.trim) %in% mnw, ]
 
 #rarefied
-indval_rare_1 = multipatt(seq.trim.mnw, samdf.mnw$zone, control = how(nperm=999))
-summary(indval_rare_1) #6 for in, 5 for off
+indval.mnw = multipatt(seq.trim.mnw, samdf.mnw$zone, control = how(nperm=999))
+summary(indval.mnw) #6 for in, 5 for off
+
+#benjamini hochberg correction
+sqs.mnw <- data.frame(indval.mnw[["sign"]])
+sqs.mnw.nona <- sqs.mnw[complete.cases(sqs.mnw),]
+sqs.mnw.adj <- p.adjust(sqs.mnw$p.value,method="BH")
+sqs.mnw.adj < 0.1
 
 #plotting abundances
-sqs1 <- data.frame(indval_rare_1[["sign"]])
-sqs_sig1_mnw <- subset(sqs1,p.value < 0.05)
-sqs_sig1_mnw$sqs <- rownames(sqs_sig1)
+sqs.mnw <- data.frame(indval.mnw[["sign"]])
+sqs.mnw <- subset(sqs.mnw,p.value < 0.05)
+sqs.mnw$sqs <- rownames(sqs.mnw)
 
 #saving
-#write.csv(sqs_sig1_mnw,"sqs_mnw.csv")
+#write.csv(sqs.mnw,"sqs_mnw.csv")
 sqs.mnw <- read.csv("sqs_mnw.csv",row.names=1)
 
 goodtaxa <- sqs.mnw$sqs
@@ -1174,6 +1180,11 @@ seq.trim.mse <- seq.trim[row.names(seq.trim) %in% mse, ]
 indval.mse = multipatt(seq.trim.mse, samdf.mse$zone, control = how(nperm=999))
 summary(indval.mse) #3 for in, 17 for out
 
+#multitest correction
+sqs.mse <- data.frame(indval.mse[["sign"]])
+sqs.mse.adj <- p.adjust(sqs.mse$p.value,method="BH")
+sqs.mse.adj
+
 #plotting abundances
 sqs.mse <- data.frame(indval.mse[["sign"]])
 sqs.mse <- subset(sqs.mse,p.value < 0.05)
@@ -1203,6 +1214,11 @@ seq.trim.tnw <- seq.trim[row.names(seq.trim) %in% tnw, ]
 #rarefied
 indval.tnw = multipatt(seq.trim.tnw, samdf.tnw$zone, control = how(nperm=999))
 summary(indval.tnw) #3 for in, 17 for out
+
+#multitest correction
+sqs.tnw <- data.frame(indval.tnw[["sign"]])
+sqs.tnw.adj <- p.adjust(sqs.tnw$p.value,method="BH")
+sqs.tnw.adj < 0.1
 
 #plotting abundances
 sqs.tnw <- data.frame(indval.tnw[["sign"]])

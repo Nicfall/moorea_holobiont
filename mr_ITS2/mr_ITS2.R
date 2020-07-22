@@ -632,6 +632,7 @@ samdf.mcmc <- samdf[!row.names(samdf)%in%remove,]
 #write.csv(samdf.mcmc,"~/Desktop/mr_samples.csv")
 write.csv(counts,file="seqtab_lulu.trimmed.csv")
 write.csv(counts,file="seqtab_lulu.rare.trimmed.csv")
+counts <- read.csv("seqtab_lulu.trimmed.csv",row.names=1,header=TRUE)
 counts <- read.csv("seqtab_lulu.rare.trimmed.csv",row.names=1,header=TRUE)
 
 ps.mcmc <- phyloseq(otu_table(counts, taxa_are_rows=FALSE), 
@@ -642,7 +643,7 @@ ps.mcmc
 ps.rare.mcmc <- phyloseq(otu_table(counts, taxa_are_rows=FALSE), 
                     sample_data(samdf), 
                     tax_table(taxa2))
-ps.rare.mcmc
+ps.rare.mcmc #9 taxa
 
 #### Bar plot - clustered, trimmed ####
 #bar plot
@@ -910,7 +911,7 @@ ggarrange(gg.mnw,gg.mse,gg.tnw,nrow=1,common.legend=TRUE,legend='right',labels=c
 library(DESeq2)
 
 #checking if any significant 
-ps.mnw = subset_samples(ps.rare, site=="MNW")
+ps.mnw = subset_samples(ps.rare.mcmc, site=="MNW")
 ds.mnw = phyloseq_to_deseq2(ps.mnw, ~ zone)
 dds.mnw <- estimateSizeFactors(ds.mnw,type="poscounts")
 stat.mnw = DESeq(dds.mnw, test="Wald", fitType="parametric")
@@ -923,7 +924,7 @@ head(sigtab.mnw)
 dim(sigtab.mnw)
 #none
 
-ps.mse = subset_samples(ps.rare, site=="MSE")
+ps.mse = subset_samples(ps.rare.mcmc, site=="MSE")
 ds.mse = phyloseq_to_deseq2(ps.mse, ~ zone)
 dds.mse <- estimateSizeFactors(ds.mse,type="poscounts")
 stat.mse = DESeq(dds.mse, test="Wald", fitType="parametric")
@@ -1372,28 +1373,26 @@ summary(indval)
 #### mcmc.otu ####
 library(MCMC.OTU)
 
-dat <- read.csv(file="Nov6_OutputDADA_AllOTUs copy.csv", sep=",", header=TRUE, row.names=1)
-summary(dat)
-str(dat)
-colnames(dat)
-alldat<-dat[c(1:33,35:96),]
-goods=purgeOutliers(alldat, count.columns=6:61)
+setwd("~/moorea_holobiont/mr_ITS2")
+dat <- read.csv(file="seqtab.rare_1994_rd2_mcmc_plussam.csv", sep=",", header=TRUE, row.names=1)
+
+goods <- purgeOutliers(dat,count.columns=5:23,otu.cut=0.001,zero.cut=0.02) #rare
 head(goods)
 # what is the proportion of samples with data for these OTUs?
-apply(goods[,6:length(goods[1,])],2,function(x){sum(x>0)/length(x)})
+apply(goods[,5:length(goods[1,])],2,function(x){sum(x>0)/length(x)})
 
 # what percentage of global total counts each OTU represents?
-apply(goods[,6:length(goods[1,])],2,function(x){sum(x)/sum(goods[,6:length(goods[1,])])})
+apply(goods[,5:length(goods[1,])],2,function(x){sum(x)/sum(goods[,5:length(goods[1,])])})
 
 # stacking the data; adjust otu.columns and condition.columns values for your data
-gss=otuStack(goods,count.columns=c(6:length(goods[1,])),condition.columns=c(1:5))
+gss=otuStack(goods,count.columns=c(5:length(goods[1,])),condition.columns=c(1:4))
 head(gss)
 gss$count=gss$count+1
 
 # fitting the model. Replace the formula specified in 'fixed' with yours, add random effects if present. 
 # See ?mcmc.otu for these and other options. 
 mm=mcmc.otu(
-  fixed="island",
+  fixed="site+zone+site:zone",
   data=gss,
   nitt=55000,thin=50,burnin=5000 # a long MCMC chain to improve modeling of rare OTUs
 )
@@ -1419,7 +1418,9 @@ sigs
 smm1=OTUsummary(mm,gss,otus=sigs)
 
 # now plotting them by species
-# smm1=OTUsummary(mm,gss,otus=sigs,xgroup="species")
+smm1=OTUsummary(mm,gss,otus=sigs,xgroup="zone")
+smm1+
+  ggtitle("test")
 
 # table of log10-fold changes and p-values: this one goes into supplementary info in the paper
 smmA$otuWise[sigs]
