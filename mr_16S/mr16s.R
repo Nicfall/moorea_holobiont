@@ -577,7 +577,7 @@ ps.trim <- phyloseq(otu_table(seq.trim, taxa_are_rows=FALSE),
 ps.trim #195 taxa
 
 ps.rare.trim <- phyloseq(otu_table(seq.trim, taxa_are_rows=FALSE), 
-               sample_data(samdf.rare), 
+               sample_data(samdf), 
                tax_table(taxa2))
 ps.rare.trim #207 taxa rd2
 
@@ -1132,19 +1132,17 @@ summary(indval.mnw) #6 for in, 5 for off
 #benjamini hochberg correction
 sqs.mnw <- data.frame(indval.mnw[["sign"]])
 sqs.mnw.nona <- sqs.mnw[complete.cases(sqs.mnw),]
-sqs.mnw.adj <- p.adjust(sqs.mnw$p.value,method="BH")
-sqs.mnw.adj < 0.1
+sqs.mnw.nona$padj <- p.adjust(sqs.mnw.nona$p.value,method="BH")
 
 #plotting abundances
-sqs.mnw <- data.frame(indval.mnw[["sign"]])
-sqs.mnw <- subset(sqs.mnw,p.value < 0.05)
-sqs.mnw$sqs <- rownames(sqs.mnw)
+sqs.mnw2 <- subset(sqs.mnw.nona,padj <= 0.1)
+sqs.mnw2$sqs <- rownames(sqs.mnw2)
 
 #saving
-#write.csv(sqs.mnw,"sqs_mnw.csv")
-sqs.mnw <- read.csv("sqs_mnw.csv",row.names=1)
+write.csv(sqs.mnw2,"sqs_mnw_padj.csv")
+sqs.mnw2 <- read.csv("sqs_mnw_padj.csv",row.names=1)
 
-goodtaxa <- sqs.mnw$sqs
+goodtaxa <- sqs.mnw2$sqs
 allTaxa <- taxa_names(ps.mnw)
 allTaxa <- allTaxa[(allTaxa %in% goodtaxa)]
 ps.mnw.rel <- transform_sample_counts(ps.mnw, function(x) x / sum(x))
@@ -1153,23 +1151,7 @@ plot_bar(indic.mnw,x="zone",fill="Genus")+
   facet_wrap(~Genus,scales="free")
 
 #now by more specific results
-sqs_mnwi <- subset(sqs.mnw,index==1)
-sqs_mnwo <- subset(sqs.mnw,index==2)
-
-taxa_mnwi <- sqs_mnwi$sqs
-allTaxa <- taxa_names(ps.mnw)
-allTaxa <- allTaxa[(allTaxa %in% taxa_mnwi)]
-indic.mnwi <- prune_taxa(allTaxa, ps.mnw.rel)
-plot_bar(indic.mnwi,x="zone",fill="Genus")+
-  facet_wrap(~Genus,scales="free")
-
-taxa_mnwo <- sqs_mnwo$sqs
-allTaxa <- taxa_names(ps.mnw)
-allTaxa <- allTaxa[(allTaxa %in% taxa_mnwo)]
-indic.mnwo <- prune_taxa(allTaxa, ps.mnw)
-indic.mnwo.rel <- transform_sample_counts(indic.mnwo, function(x) x / sum(x))
-plot_bar(indic.mnwo.rel,x="zone",fill="Genus")+
-  facet_wrap(~Genus,scales="free")
+sqs_mnwi <- subset(sqs.mnw2,index==1)
 
 #MSE
 ps.mse = subset_samples(ps.rare.trim, site=="MSE")
@@ -1182,29 +1164,28 @@ summary(indval.mse) #3 for in, 17 for out
 
 #multitest correction
 sqs.mse <- data.frame(indval.mse[["sign"]])
-sqs.mse.adj <- p.adjust(sqs.mse$p.value,method="BH")
-sqs.mse.adj
+sqs.mse.nona <- sqs.mse[complete.cases(sqs.mse),]
+sqs.mse.nona$padj <- p.adjust(sqs.mse.nona$p.value,method="BH")
 
 #plotting abundances
-sqs.mse <- data.frame(indval.mse[["sign"]])
-sqs.mse <- subset(sqs.mse,p.value < 0.05)
-sqs.mse$sqs <- rownames(sqs.mse)
+sqs.mse2 <- subset(sqs.mse.nona,padj <= 0.1)
+sqs.mse2$sqs <- rownames(sqs.mse2)
 #saving
-write.csv(sqs.mse,"sqs_mse.csv")
-sqs.mse <- read.csv("sqs_mse.csv",row.names=1)
+write.csv(sqs.mse2,"sqs_mse_padj.csv")
+sqs.mse2 <- read.csv("sqs_mse_padj.csv",row.names=1)
 
 #plotting
-goodtaxa <- sqs.mse$sqs
+goodtaxa <- sqs.mse2$sqs
 allTaxa <- taxa_names(ps.mse)
 allTaxa <- allTaxa[(allTaxa %in% goodtaxa)]
 ps.mse.rel <- transform_sample_counts(ps.mse, function(x) x / sum(x))
 indic.mse <- prune_taxa(allTaxa, ps.mse.rel)
-plot_bar(indic.mse.rel,x="zone",fill="Genus")+
+plot_bar(indic.mse,x="zone",fill="Genus")+
   facet_wrap(~Genus,scales="free")
 
 #now by more specific results
-sqs_msei <- subset(sqs.mse,index==1)
-sqs_mseo <- subset(sqs.mse,index==2)
+sqs_msei <- subset(sqs.mse2,index==1)
+sqs_mseo <- subset(sqs.mse2,index==2)
 
 #TAHITI NW
 ps.tnw = subset_samples(ps.rare.trim, site=="TNW")
@@ -1217,29 +1198,28 @@ summary(indval.tnw) #3 for in, 17 for out
 
 #multitest correction
 sqs.tnw <- data.frame(indval.tnw[["sign"]])
-sqs.tnw.adj <- p.adjust(sqs.tnw$p.value,method="BH")
-sqs.tnw.adj < 0.1
+sqs.tnw.nona <- sqs.tnw[complete.cases(sqs.tnw),]
+sqs.tnw.nona$padj <- p.adjust(sqs.tnw.nona$p.value,method="BH")
 
 #plotting abundances
-sqs.tnw <- data.frame(indval.tnw[["sign"]])
-sqs.tnw <- subset(sqs.tnw,p.value <= 0.05)
-sqs.tnw$sqs <- rownames(sqs.tnw)
+sqs.tnw2 <- subset(sqs.tnw.nona,padj <= 0.1)
+sqs.tnw2$sqs <- rownames(sqs.tnw2)
 #saving
-write.csv(sqs.tnw,"sqs_tnw.csv")
-sqs.tnw <- read.csv("sqs_tnw.csv",row.names=1)
+#write.csv(sqs.tnw2,"sqs_tnw_padj.csv")
+sqs.tnw2 <- read.csv("sqs_tnw_padj.csv",row.names=1)
 
 #plotting
-goodtaxa <- sqs.tnw$sqs
+goodtaxa <- sqs.tnw2$sqs
 allTaxa <- taxa_names(ps.tnw)
 allTaxa <- allTaxa[(allTaxa %in% goodtaxa)]
 ps.tnw.rel <- transform_sample_counts(ps.tnw, function(x) x / sum(x))
 indic.tnw <- prune_taxa(allTaxa, ps.tnw.rel)
-plot_bar(indic.tnw.rel,x="zone",fill="Genus")+
+plot_bar(indic.tnw,x="zone",fill="Genus")+
   facet_wrap(~Genus,scales="free")
 
 #now by more specific results
-sqs_tnwi <- subset(sqs.tnw,index==1)
-sqs_tnwo <- subset(sqs.tnw,index==2)
+sqs_tnwi <- subset(sqs.tnw2,index==1)
+sqs_tnwo <- subset(sqs.tnw2,index==2)
 
 #### bubble plot ####
 library(dplyr)
@@ -1257,13 +1237,13 @@ melt.mnw.sum$bool_col <- melt.mnw.sum$OTU %in% sqs_mnwi$sqs
 melt.mnw.sum$indic_res <- ifelse(melt.mnw.sum$bool_col == T, "Back reef", "Fore reef")
 
 #have to rename the 2 Pseudomonas instances
-melt.mnw.sum[5:6,2] <- NA
-melt.mnw.sum$Genus = factor(melt.mnw.sum$Genus, levels=c(levels(melt.mnw.sum$Genus), "Pseudomonas.1"))
-melt.mnw.sum$Genus[is.na(melt.mnw.sum$Genus)] = "Pseudomonas.1"
+#melt.mnw.sum[5:6,2] <- NA
+#melt.mnw.sum$Genus = factor(melt.mnw.sum$Genus, levels=c(levels(melt.mnw.sum$Genus), "Pseudomonas.1"))
+#melt.mnw.sum$Genus[is.na(melt.mnw.sum$Genus)] = "Pseudomonas.1"
 
-melt.mnw.sum[11:12,2] <- NA
-melt.mnw.sum$Genus = factor(melt.mnw.sum$Genus, levels=c(levels(melt.mnw.sum$Genus), "Pseudomonas.2"))
-melt.mnw.sum$Genus[is.na(melt.mnw.sum$Genus)] = "Pseudomonas.2"
+#melt.mnw.sum[11:12,2] <- NA
+#melt.mnw.sum$Genus = factor(melt.mnw.sum$Genus, levels=c(levels(melt.mnw.sum$Genus), "Pseudomonas.2"))
+#melt.mnw.sum$Genus[is.na(melt.mnw.sum$Genus)] = "Pseudomonas.2"
 
 #MOOREA SE
 melt.mse <- psmelt(indic.mse)
@@ -1272,14 +1252,14 @@ melt.mse.sum <- summarySE(melt.mse,measurevar="Abundance",groupvars = c("OTU","G
 melt.mse.sum$bool_col <- melt.mse.sum$OTU %in% sqs_msei$sqs
 melt.mse.sum$indic_res <- ifelse(melt.mse.sum$bool_col == T, "Back reef", "Fore reef")
 
-#2 endozoicos 
-melt.mse.sum[13:14,2] <- NA
-melt.mse.sum$Genus = factor(melt.mse.sum$Genus, levels=c(levels(melt.mse.sum$Genus), "Endozoicomonas.1"))
-melt.mse.sum$Genus[is.na(melt.mse.sum$Genus)] = "Endozoicomonas.1"
-
-melt.mse.sum[33:34,2] <- NA
-melt.mse.sum$Genus = factor(melt.mse.sum$Genus, levels=c(levels(melt.mse.sum$Genus), "Endozoicomonas.2"))
-melt.mse.sum$Genus[is.na(melt.mse.sum$Genus)] = "Endozoicomonas.2"
+# #2 endozoicos 
+# melt.mse.sum[13:14,2] <- NA
+# melt.mse.sum$Genus = factor(melt.mse.sum$Genus, levels=c(levels(melt.mse.sum$Genus), "Endozoicomonas.1"))
+# melt.mse.sum$Genus[is.na(melt.mse.sum$Genus)] = "Endozoicomonas.1"
+# 
+# melt.mse.sum[33:34,2] <- NA
+# melt.mse.sum$Genus = factor(melt.mse.sum$Genus, levels=c(levels(melt.mse.sum$Genus), "Endozoicomonas.2"))
+# melt.mse.sum$Genus[is.na(melt.mse.sum$Genus)] = "Endozoicomonas.2"
 
 #TAHITI NW
 melt.tnw <- psmelt(indic.tnw)
@@ -1289,28 +1269,30 @@ melt.tnw.sum$bool_col <- melt.tnw.sum$OTU %in% sqs_tnwi$sqs
 melt.tnw.sum$indic_res <- ifelse(melt.tnw.sum$bool_col == T, "Back reef", "Fore reef")
 
 #### indicspecies sites all at once ####
-melt.mnw.sum$site <- rep("mnw",20)
-melt.mse.sum$site <- rep("mse",40)
-melt.tnw.sum$site <- rep("tnw",26)
+melt.mnw.sum$site <- rep("mnw",2)
+melt.mse.sum$site <- rep("mse",14)
+melt.tnw.sum$site <- rep("tnw",10)
 allsites <- rbind(melt.mnw.sum,melt.mse.sum,melt.tnw.sum)
 
-#genera as indicators across both fore & back reef
-allsites[c(3:4,21:22),2] <- NA
-allsites$Genus = factor(allsites$Genus, levels=c(levels(allsites$Genus), "Enhydrobacter*"))
-allsites$Genus[is.na(allsites$Genus)] = "Enhydrobacter*"
+# #genera as indicators across both fore & back reef
+allsites[c(3:4,19:20),2] <- NA
+allsites$Genus[is.na(allsites$Genus)] = "Lacibacter*"
 
-allsites[c(47:48),2] <- NA
-allsites$Genus = factor(allsites$Genus, levels=c(levels(allsites$Genus), "Rubrobacter*"))
-allsites$Genus[is.na(allsites$Genus)] = "Rubrobacter*"
+allsites[c(5:6,21:22),2] <- NA
+allsites$Genus[is.na(allsites$Genus)] = "Phreatobacter*"
+# 
+# allsites[c(31:32,85:86),2] <- NA
+# allsites$Genus = factor(allsites$Genus, levels=c(levels(allsites$Genus), "Methylobacterium*"))
+# allsites$Genus[is.na(allsites$Genus)] = "Methylobacterium*"
 
-allsites[c(31:32,85:86),2] <- NA
-allsites$Genus = factor(allsites$Genus, levels=c(levels(allsites$Genus), "Methylobacterium*"))
-allsites$Genus[is.na(allsites$Genus)] = "Methylobacterium*"
+allsites$Genus <- as.factor(allsites$Genus)
+genera <- levels(allsites$Genus)
+write.csv(genera,file="genera2_padj.csv")
 
-#genera <- levels(allsites$Genus)
-#write.csv(genera,file="genera2.csv")
-
-allsites$Genus <- factor(allsites$Genus, levels=rev(c("Pseudomonas.1", 	"Pseudomonas.2", 	"Rheinheimera", 	"Rubrobacter", 	"Acinetobacter", 	"Class_Bacteroidia", 	"Order_Entomoplasmatales", 	"Family_Simkaniaceae", 	"Methylobacterium", 	"Enhydrobacter", 	"Finegoldia", 	"Peptoniphilus", 	"Enhydrobacter*", 	"Prochlorococcus_MIT9313", 	"Pseudomonas", 	"Algoriphagus", 	"Curvibacter", 	"DSSD61", 	"Endozoicomonas", 	"Family_Neisseriaceae", 		"Haemophilus", 	"Lacibacter", 	"Lactococcus", 	"Order_Obscuribacterales", 	"Phreatobacter", 	"Rhodobacter", 	"Veillonella", 	"Endozoicomonas.1", 	"Endozoicomonas.2", 	"Acidovorax", 	"Alteromonas", 	"Rubrobacter*", "Methylobacterium*","Asinibacterium", 	"Cloacibacterium", 	"Kingdom_Bacteria", 	"Order_Rhodospirillales", 	"Pseudoalteromonas")))
+##all of them:
+#allsites$Genus <- factor(allsites$Genus, levels=rev(c("Pseudomonas.1", 	"Pseudomonas.2", 	"Rheinheimera", 	"Rubrobacter", 	"Acinetobacter", 	"Class_Bacteroidia", 	"Order_Entomoplasmatales", 	"Family_Simkaniaceae", 	"Methylobacterium", 	"Enhydrobacter", 	"Finegoldia", 	"Peptoniphilus", 	"Enhydrobacter*", 	"Prochlorococcus_MIT9313", 	"Pseudomonas", 	"Algoriphagus", 	"Curvibacter", 	"DSSD61", 	"Endozoicomonas", 	"Family_Neisseriaceae", 		"Haemophilus", 	"Lacibacter", 	"Lactococcus", 	"Order_Obscuribacterales", 	"Phreatobacter", 	"Rhodobacter", 	"Veillonella", 	"Endozoicomonas.1", 	"Endozoicomonas.2", 	"Acidovorax", 	"Alteromonas", 	"Rubrobacter*", "Methylobacterium*","Asinibacterium", 	"Cloacibacterium", 	"Kingdom_Bacteria", 	"Order_Rhodospirillales", 	"Pseudoalteromonas")))
+##after multiple test correction:
+allsites$Genus <- factor(allsites$Genus, levels=rev(c("Pseudomonas","Family_Simkaniaceae","Phreatobacter*","Lacibacter*","Rubrobacter","Curvibacter","Endozoicomonas","Enhydrobacter","Order_Obscuribacterales","Kingdom_Bacteria","Acidovorax")))
 
 allsites$site <- gsub("mnw","Moorea NW",allsites$site)
 allsites$site <- gsub("mse","Moorea SE",allsites$site)
