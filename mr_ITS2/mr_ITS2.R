@@ -785,12 +785,47 @@ library(cowplot)
 #not sure if I need this one^
 
 #all
-plot_ordination(ps.rare.mcmc, ordinate(ps.rare.mcmc, "PCoA"), color = "site") + geom_point(size = 5)
+#original overview
+plot_ordination(ps.rare.mcmc, ordinate(ps.rare.mcmc, "PCoA"), color = "site") + 
+  geom_point(size = 5)
+  
+  
+  p3 = plot_ordination(GP1, GP.ord, type="biplot", color="SampleType", shape="Phylum", title="biplot")
+
+#site
+gg.site.alone <- plot_ordination(ps.rare.mcmc, ordinate(ps.rare.mcmc, "PCoA"), color="site", shape="site")+ 
+  geom_point(size=2)+
+  stat_ellipse(level=0.8,aes(lty=site),geom="polygon",alpha=0.1)+
+  xlab('Axis 1 (57.1%)')+
+  ylab('Axis 2 (35.2%)')+
+  theme_cowplot()+  
+  scale_linetype_manual(values=c("longdash","dotted","dotdash"),labels=c("MNW","MSE","TNW"))+
+  scale_color_manual(values=c("darkslategray3","darkslategray4","#000004"),labels=c("MNW","MSE","TNW"))+
+  scale_shape_manual(values=c(8,4,9),labels=c("MNW","MSE","TNW"))+
+  labs(shape="Site",color="Site",linetype="Site")
+quartz()
+gg.site.alone
+
+gg.site.taxa <- plot_ordination(ps.rare.mcmc, ordinate(ps.rare.mcmc, "PCoA"), type="biplot", color="site", shape="Class")+ 
+  geom_point(size=2)+
+  #stat_ellipse(level=0.8,aes(lty=site),geom="polygon",alpha=0.1)+
+  xlab('Axis 1 (57.1%)')+
+  ylab('Axis 2 (35.2%)')+
+  theme_cowplot()
+
+gg.site.taxa
+
+#### BIPLOT - VERY COOL ####
+plot_ordination(ps.rare.mcmc, ordinate(ps.rare.mcmc, "PCoA"), type="biplot", color="site", shape="Phylum", title="biplot")
 
 #by site
 ps.mnw <- subset_samples(ps.rare.mcmc,site=="MNW")
 #ps.mnw <- subset_samples(ps.trim,site=="mnw")
 ord.mnw <- ordinate(ps.mnw, "PCoA", "bray")
+
+plot_ordination(ps.mnw, ord.mnw, type="split", color="zone", shape="Class", title="biplot")#+
+  theme(legend.position="none")
+  
 gg.mnw <- plot_ordination(ps.mnw, ord.mnw,color="zone", shape="zone")+
   geom_point(size=2)+
   stat_ellipse()+
@@ -1134,13 +1169,24 @@ samdf.rare <- data.frame(sample_data(ps.rare))
 #clustered, trimmed, rarefied
 rownames(samdf.rare) == rownames(counts) #good
 
+#stats by site
+samdf.rare.mcmc <- data.frame(ps.rare.mcmc@sam_data)
 dist.rare <- vegdist(counts)
-bet <- betadisper(dist.rare,samdf.rare$site)
+bet <- betadisper(dist.rare,samdf.rare.mcmc$site)
 anova(bet)
 permutest(bet, pairwise = FALSE, permutations = 99)
 plot(bet)
-adonis(counts ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=999)
+adonis(counts ~ site, data=samdf.rare.mcmc, permutations=999)
 #0.061 .
+
+install.packages("remotes")
+remotes::install_github("Jtrachsel/funfuns")
+library("funfuns")
+pairwise.adonis(counts, factors = samdf.rare.mcmc$site, permutations = 999)
+# pairs   F.Model         R2 p.value p.adjusted
+# 1 MNW vs MSE  1.545093 0.02685012   0.122      0.122
+# 2 MNW vs TNW  5.737211 0.09936766   0.001      0.001
+# 3 MSE vs TNW 13.668578 0.19619431   0.001      0.001
 
 #relative abundance, does this by columns so must transform
 t.relabun <- scale(t(counts), center=F, scale=colSums(t(counts)))
