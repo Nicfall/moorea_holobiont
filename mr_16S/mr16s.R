@@ -946,7 +946,7 @@ ggplot(tb,aes(x=zone,y=Abundance,fill=Class))+
 library(microbiome)
 
 pseq.core <- core(ps.rare.trim, detection = 0, prevalence = .7)
-pseq.core
+pseq.core #10 taxa
 
 ps_glom <- tax_glom(pseq.core, "Genus")
 ps0 <- transform_sample_counts(ps_glom, function(x) x / sum(x))
@@ -958,8 +958,14 @@ plot_bar(ps2, fill="Genus")+
   theme_cowplot()+
   scale_fill_brewer(palette="BrBG")
 
+#by site
+ps.core.mnw <- subset_samples(pseq.core,site=="MNW")
+ps.core.mse <- subset_samples(pseq.core,site=="MSE")
+ps.core.tnw <- subset_samples(pseq.core,site=="TNW")
+
 #alternatively,
 library(dplyr)
+
 ps.all <- transform_sample_counts(pseq.core, function(OTU) OTU/sum(OTU))
 pa <- psmelt(ps.all)
 tb <- psmelt(ps.all)%>%
@@ -1032,14 +1038,176 @@ dim(sigtab.all) #sq 3 & 5
 
 #stats/plotting?
 library(vegan)
-dist.all <- vegdist(seq.core)
-row.names(seq.core) == row.names(samdf.rare)
-bet.all <- betadisper(dist.all,samdf.rare$zone,bias.adjust = TRUE,type="median")
+
+#MOOREA NW CORE
+mnw.core.otu <- data.frame(ps.core.mnw@otu_table)
+mnw.core.sam <- data.frame(ps.core.mnw@sam_data)
+
+dist.all <- vegdist(mnw.core.otu)
+row.names(mnw.core.otu) == row.names(mnw.core.sam)
+bet.all <- betadisper(dist.all,mnw.core.sam$zone,bias.adjust = TRUE,type="median")
 anova(bet.all) #nope
 permutest(bet.all, pairwise = FALSE, permutations = 99)
 plot(bet.all) #nope
-adonis(seq.core ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=999)
+adonis(mnw.core.otu ~ zone, data=mnw.core.sam, permutations=999)
 #nope nope
+
+#MOOREA SE CORE
+mse.core.otu <- data.frame(ps.core.mse@otu_table)
+mse.core.sam <- data.frame(ps.core.mse@sam_data)
+
+dist.all <- vegdist(mse.core.otu)
+row.names(mse.core.otu) == row.names(mse.core.sam)
+bet.all <- betadisper(dist.all,mse.core.sam$zone,bias.adjust = TRUE,type="median")
+anova(bet.all) #nope
+permutest(bet.all, pairwise = FALSE, permutations = 99)
+plot(bet.all) #nope
+adonis(mse.core.otu ~ zone, data=mse.core.sam, permutations=999)
+#yes
+# Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)   
+# zone       1    0.4215 0.42153  4.0226 0.12562  0.008 **
+#   Residuals 28    2.9341 0.10479         0.87438          
+# Total     29    3.3556                 1.00000          
+# ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#TAHITI NW
+tnw.core.otu <- data.frame(ps.core.tnw@otu_table)
+tnw.core.sam <- data.frame(ps.core.tnw@sam_data)
+
+dist.all <- vegdist(tnw.core.otu)
+row.names(tnw.core.otu) == row.names(tnw.core.sam)
+bet.all <- betadisper(dist.all,tnw.core.sam$zone,bias.adjust = TRUE,type="median")
+anova(bet.all) #nope
+permutest(bet.all, pairwise = FALSE, permutations = 99)
+plot(bet.all) #nope
+adonis(tnw.core.otu ~ zone, data=tnw.core.sam, permutations=999)
+# Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)   
+# zone       1   0.36622 0.36622  4.7046 0.15838  0.008 **
+#   Residuals 25   1.94610 0.07784         0.84162          
+# Total     26   2.31233                 1.00000          
+# ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#### BIPLOT - CORE ####
+plot_ordination(pseq.core, ordinate(pseq.core, "PCoA"), type="biplot", color="Genus", shape="zone", title="biplot")
+
+#MOOREA NW
+ord.mnw <- ordinate(ps.core.mnw, "PCoA", "bray")
+plot_ordination(ps.core.mnw, ord.mnw, type="split", color="Genus", shape="zone", title="biplot")#+
+theme(legend.position="none")
+
+plot_ordination(ps.core.mnw, ord.mnw,type="biplot",color="Genus", shape="zone")+
+  stat_ellipse(group="zone")
+  
+  
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("BR","FR"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("BR","FR"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  ggtitle("Mo'orea NW")+
+  #annotate(geom="text", x=0.7, y=0.2, label="p < 0.01**",size=4)+ #rarefied
+  #annotate(geom="text", x=-0.25, y=0.6, label="p < 0.01**",size=4)+ #not rarefied
+  xlab("Axis 1 (69.4%)")+ #rarefied
+  ylab("Axis 2 (25.6%)")+ #rarefied
+  #xlab("Axis 1 (34.3%)")+#non-rarefied
+  #ylab("Axis 2 (26.5%)")+#non-rarefied
+  theme(axis.text=element_text(size=10))
+gg.mnw
+
+#MOOREA SE
+ord.mse <- ordinate(ps.core.mse, "PCoA", "bray")
+plot_ordination(ps.core.mse, ord.mse, type="biplot", color="Genus", shape="zone", title="biplot")#+
+theme(legend.position="none")
+
+quartz()
+plot_ordination(ps.core.mse, ord.mse,type="biplot",color="Genus", shape="zone",label="Genus")+
+  theme_cowplot()
+
+gg.mse <- plot_ordination(ps.mse, ord.mse,color="zone", shape="zone")+
+  geom_point(size=2)+
+  stat_ellipse()+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("BR","FR"))+
+  scale_color_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("BR","FR"))+
+  guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  ggtitle("Mo'orea NW")+
+  #annotate(geom="text", x=0.7, y=0.2, label="p < 0.01**",size=4)+ #rarefied
+  #annotate(geom="text", x=-0.25, y=0.6, label="p < 0.01**",size=4)+ #not rarefied
+  xlab("Axis 1 (69.4%)")+ #rarefied
+  ylab("Axis 2 (25.6%)")+ #rarefied
+  #xlab("Axis 1 (34.3%)")+#non-rarefied
+  #ylab("Axis 2 (26.5%)")+#non-rarefied
+  theme(axis.text=element_text(size=10))
+gg.mse
+
+ord.tnw <- ordinate(ps.core.tnw, "PCoA", "bray")
+plot_ordination(ps.core.tnw, ord.tnw, type="biplot", color="Genus", shape="zone", title="biplot")#+
+theme(legend.position="none")
+
+quartz()
+plot_ordination(ps.core.tnw, ord.tnw,type="biplot",color="Genus", shape="zone",label="Genus")+
+  theme_cowplot()
+
+#### accessory ####
+ps.rare.trim.otu <- data.frame(ps.rare.trim@otu_table)
+core.ids <- c(colnames(mnw.core.otu))
+ps.rare.trim.acc.otu <- ps.rare.trim.otu[,!colnames(ps.rare.trim.otu) %in% core.ids ]
+
+#remake phyloseq object
+ps.acc <- phyloseq(otu_table(ps.rare.trim.acc.otu, taxa_are_rows=FALSE), 
+                         sample_data(samdf), 
+                         tax_table(taxa2))
+ps.acc #197 taxa accessory
+
+ps.acc.mnw <- subset_samples(ps.acc,site=="MNW")
+mnw.acc.otu <- data.frame(ps.acc.mnw@otu_table)
+mnw.acc.sam <- data.frame(ps.acc.mnw@sam_data)
+
+dist.all <- vegdist(mnw.acc.otu)
+row.names(mnw.acc.otu) == row.names(mnw.acc.sam)
+bet.all <- betadisper(dist.all,mnw.acc.sam$zone,bias.adjust = TRUE,type="median")
+anova(bet.all) #nope
+permutest(bet.all, pairwise = FALSE, permutations = 99)
+plot(bet.all) #nope
+adonis(mnw.acc.otu ~ zone, data=mnw.acc.sam, permutations=999)
+# Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)  
+# zone       1    0.6966 0.69663  1.8609 0.06928  0.011 *
+#   Residuals 25    9.3589 0.37436         0.93072         
+# Total     26   10.0555                 1.00000         
+
+ps.acc.mse <- subset_samples(ps.acc,site=="MSE")
+mse.acc.otu <- data.frame(ps.acc.mse@otu_table)
+mse.acc.sam <- data.frame(ps.acc.mse@sam_data)
+
+dist.all <- vegdist(mse.acc.otu)
+row.names(mse.acc.otu) == row.names(mse.acc.sam)
+bet.all <- betadisper(dist.all,mse.acc.sam$zone,bias.adjust = TRUE,type="median")
+anova(bet.all) #nope
+permutest(bet.all, pairwise = FALSE, permutations = 99)
+plot(bet.all) #nope
+adonis(mse.acc.otu ~ zone, data=mse.acc.sam, permutations=999)
+# Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)    
+# zone       1    0.9654 0.96535  2.7769 0.09023  0.001 ***
+#   Residuals 28    9.7338 0.34764         0.90977           
+# Total     29   10.6992                 1.00000          
+
+ps.acc.tnw <- subset_samples(ps.acc,site=="TNW")
+tnw.acc.otu <- data.frame(ps.acc.tnw@otu_table)
+tnw.acc.sam <- data.frame(ps.acc.tnw@sam_data)
+
+dist.all <- vegdist(tnw.acc.otu)
+row.names(tnw.acc.otu) == row.names(tnw.acc.sam)
+bet.all <- betadisper(dist.all,tnw.acc.sam$zone,bias.adjust = TRUE,type="median")
+anova(bet.all) #nope
+permutest(bet.all, pairwise = FALSE, permutations = 99)
+plot(bet.all) #nope
+adonis(tnw.acc.otu ~ zone, data=tnw.acc.sam, permutations=999)
+# Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)    
+# zone       1    0.9654 0.96535  2.7769 0.09023  0.001 ***
+#   Residuals 28    9.7338 0.34764         0.90977           
+# Total     29   10.6992                 1.00000          
 
 #### Bar-plots ####
 ps_glom <- tax_glom(ps.rare.trim, "Family")
