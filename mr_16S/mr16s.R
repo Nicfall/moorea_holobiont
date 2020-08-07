@@ -1089,6 +1089,16 @@ adonis(tnw.core.otu ~ zone, data=tnw.core.sam, permutations=999)
 # ---
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
+#biplot - not core
+ps.mnw <- subset_samples(ps.rare.trim, site=="MNW")
+plot_ordination(ps.mnw, ordinate(ps.rare.trim, "PCoA"), type="biplot", color="Class", shape="zone", title="biplot")
+
+ps.mnw.sam <- ps.mnw@sam_data
+
+ps.mse <- subset_samples(ps.rare.trim, site=="MSE")
+plot_ordination(ps.mse, ordinate(ps.mse, "PCoA"), type="split", color="Class", shape="zone", title="biplot")+
+  stat_ellipse()
+
 #### BIPLOT - CORE ####
 plot_ordination(pseq.core, ordinate(pseq.core, "PCoA"), type="biplot", color="Genus", shape="zone", title="biplot")
 
