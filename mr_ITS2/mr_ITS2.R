@@ -756,7 +756,6 @@ mean(cspc.otu$sq2)
 #background ones
 back <- subset_taxa(ps.rel,is.na(Class))
 
-
 all.otu <- ps2@otu_table
 # Taxonomy Table:     [6 taxa by 4 taxonomic ranks]:
 #   Kingdom        Phylum     Class     
@@ -782,6 +781,83 @@ ps.glom <- tax_glom(ps.rel, "Class")
 #mean(cs.otu$sq2)
 #range(cs.otu$sq2)
 
+#### Bar plots by individual sqs ####
+
+#adding sqs to taxa2 
+taxa3 <- data.frame(taxa2)
+taxa3$sqs <- c(rownames(taxa3))
+
+#renaming sqs
+taxa3$sqs <- gsub("sq12","C. - 1",taxa3$sqs)
+taxa3$sqs <- gsub("sq18","C. - 2",taxa3$sqs)
+taxa3$sqs <- gsub("sq1","C3k - 1",taxa3$sqs)
+taxa3$sqs <- gsub("sq24","C3k - 4",taxa3$sqs)
+taxa3$sqs <- gsub("sq2","Cspc - 1",taxa3$sqs)
+taxa3$sqs <- gsub("sq32","Cspc - 2",taxa3$sqs)
+taxa3$sqs <- gsub("sq3","C3k - 2",taxa3$sqs)
+taxa3$sqs <- gsub("sq6","C3k - 3",taxa3$sqs)
+taxa3$sqs <- gsub("sq7","A1",taxa3$sqs)
+
+taxa3 <- as.matrix(taxa3)
+
+#renaming reef zones
+samdf.new <- samdf
+samdf.new$zone <- gsub("Forereef","FR",samdf.new$zone)
+samdf.new$zone <- gsub("Backreef","BR",samdf.new$zone)
+
+ps.rare.mcmc.newnames <- phyloseq(otu_table(counts, taxa_are_rows=FALSE), 
+                         sample_data(samdf.new), 
+                         tax_table(taxa3))
+ps.rare.mcmc.newnames #9 taxa
+
+ps.mnw <- subset_samples(ps.rare.mcmc.newnames,site=="MNW")
+quartz()
+
+bar.mnw <- plot_bar(ps.mnw,x="zone",y="Abundance",fill="sqs")+
+  facet_wrap(~sqs,scales="free",ncol=5)+
+  ggtitle("(a) Mo'orea NW")+
+  theme_cowplot()+
+  scale_fill_manual(name="Algal symbiont",values=c("#d4e21aff","#C70039","#8F0C3F","#1E9C89FF","#25AB82FF","#58C765FF","#7ED34FFF","#365d8dff","#287d8eff"))+
+  xlab("")
+
+ps.mse <- subset_samples(ps.rare.mcmc.newnames,site=="MSE")
+bar.mse <- plot_bar(ps.mse,x="zone",y="Abundance",fill="sqs")+
+  facet_wrap(~sqs,scales="free",ncol=5)+
+  ggtitle("(b) Mo'orea SE")+
+  theme_cowplot()+
+  scale_fill_manual(name="Algal symbiont",values=c("#d4e21aff","#C70039","#8F0C3F","#1E9C89FF","#25AB82FF","#58C765FF","#7ED34FFF","#365d8dff","#287d8eff"))+
+  xlab("")
+bar.mse
+
+ps.tnw <- subset_samples(ps.rare.mcmc.newnames,site=="TNW")
+bar.tnw <- plot_bar(ps.tnw,x="zone",y="Abundance",fill="sqs")+
+  facet_wrap(~sqs,scales="free",ncol=5)+
+  ggtitle("(c) Tahiti NW")+
+  theme_cowplot()+
+  scale_fill_manual(name="Algal symbiont",values=c("#d4e21aff","#C70039","#8F0C3F","#1E9C89FF","#25AB82FF","#58C765FF","#7ED34FFF","#365d8dff","#287d8eff"))+
+  xlab("Reef zone")
+
+quartz()
+ggarrange(bar.mnw,bar.mse,bar.tnw,ncol=1,common.legend=TRUE,legend="none")
+
+#presence absence
+counts_pres <- counts
+counts_pres[counts_pres>0] <- 1
+
+ps.pres <- phyloseq(otu_table(counts_pres, taxa_are_rows=FALSE), 
+                    sample_data(samdf), 
+                    tax_table(taxa2))
+ps.pres #9 taxa
+
+ps.mnw.pres <- subset_samples(ps.pres,site=="MNW")
+plot_bar(ps.mnw.pres,x="zone",y="Abundance",fill="Class",facet_grid=~sqs)
+
+ps.mse.pres <- subset_samples(ps.pres,site=="MSE")
+plot_bar(ps.mse.pres,x="zone",y="Abundance",fill="Class",facet_grid=~sqs)
+
+ps.tnw.pres <- subset_samples(ps.pres,site=="TNW")
+plot_bar(ps.tnw.pres,x="zone",y="Abundance",fill="Class",facet_grid=~sqs)
+
 #### Pcoa - clustered & trimmed ####
 library(vegan)
 library(cowplot)
@@ -793,9 +869,9 @@ library(cowplot)
 #original overview
 plot_ordination(ps.rare.mcmc, ordinate(ps.rare.mcmc, "PCoA"), color = "site") + 
   geom_point(size = 5)
-  
-  
-  p3 = plot_ordination(GP1, GP.ord, type="biplot", color="SampleType", shape="Phylum", title="biplot")
+ 
+#not sure what this was 
+#p3 = plot_ordination(GP1, GP.ord, type="biplot", color="SampleType", shape="Phylum", title="biplot")
 
 #site
 gg.site.alone <- plot_ordination(ps.rare.mcmc, ordinate(ps.rare.mcmc, "PCoA"), color="site", shape="site")+ 
@@ -817,7 +893,6 @@ gg.site.taxa <- plot_ordination(ps.rare.mcmc, ordinate(ps.rare.mcmc, "PCoA"), ty
   xlab('Axis 1 (57.1%)')+
   ylab('Axis 2 (35.2%)')+
   theme_cowplot()
-
 gg.site.taxa
 
 #### BIPLOT - VERY COOL ####
@@ -828,7 +903,7 @@ ps.mnw <- subset_samples(ps.rare.mcmc,site=="MNW")
 #ps.mnw <- subset_samples(ps.trim,site=="mnw")
 ord.mnw <- ordinate(ps.mnw, "PCoA", "bray")
 
-plot_ordination(ps.mnw, ord.mnw, type="split", color="zone", shape="Class", title="biplot")#+
+plot_ordination(ps.mnw, ord.mnw, type="biplot", color="zone", shape="Class", title="biplot")#+
   theme(legend.position="none")
   
 gg.mnw <- plot_ordination(ps.mnw, ord.mnw,color="zone", shape="zone")+
@@ -1437,7 +1512,6 @@ apply(goods[,5:length(goods[1,])],2,function(x){sum(x)/sum(goods[,5:length(goods
 
 # stacking the data; adjust otu.columns and condition.columns values for your data
 gss=otuStack(goods,count.columns=c(5:length(goods[1,])),condition.columns=c(1:4))
-head(gss)
 gss$count=gss$count+1
 
 # fitting the model. Replace the formula specified in 'fixed' with yours, add random effects if present. 
@@ -1469,6 +1543,7 @@ sigs
 smm1=OTUsummary(mm,gss,otus=sigs)
 
 # now plotting them by species
+quartz()
 smm1=OTUsummary(mm,gss,otus=sigs,xgroup="zone")
 smm1+
   ggtitle("test")
