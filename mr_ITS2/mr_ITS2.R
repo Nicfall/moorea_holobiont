@@ -538,6 +538,10 @@ df.div$obs.norm <- obs.norm$x.t
 shapiro.test(df.div$obs.norm)
 #nothing worked
 
+wilcox.test(Shannon~zone,data=df.div)
+wilcox.test(InvSimpson~zone,data=df.div)
+wilcox.test(Observed~zone,data=df.div)
+
 mnw <- subset(df.div,site=="MNW")
 mse <- subset(df.div,site=="MSE")
 tah <- subset(df.div,site=="TNW")
@@ -547,7 +551,8 @@ wilcox.test(Shannon~zone,data=mnw)
 wilcox.test(InvSimpson~zone,data=mnw)
 #p = 0.04687 * rare
 wilcox.test(Observed~zone,data=mnw)
-#no
+#no 
+#W = 103.5, p-value = 0.506
 
 summary(aov(Shannon~zone,data=mse))
 wilcox.test(Shannon~zone,data=mse)
@@ -1167,7 +1172,7 @@ adonis(lulu.out ~ zone, strata=samdf.no87$site, data=samdf.no87, permutations=99
 
 samdf.rare <- data.frame(sample_data(ps.rare))
 #clustered, trimmed, rarefied
-rownames(samdf.rare) == rownames(counts) #good
+rownames(samdf.rare.mcmc) == rownames(counts) #good
 
 #stats by site
 samdf.rare.mcmc <- data.frame(ps.rare.mcmc@sam_data)
@@ -1179,8 +1184,8 @@ plot(bet)
 adonis(counts ~ site, data=samdf.rare.mcmc, permutations=999)
 #0.061 .
 
-install.packages("remotes")
-remotes::install_github("Jtrachsel/funfuns")
+#install.packages("remotes")
+#remotes::install_github("Jtrachsel/funfuns")
 library("funfuns")
 pairwise.adonis(counts, factors = samdf.rare.mcmc$site, permutations = 999)
 # pairs   F.Model         R2 p.value p.adjusted
@@ -1212,7 +1217,7 @@ adonis(seq.rare ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=99
 #0.07 . - 0.1
 
 #Moorea NW
-mnw.rare <- subset(samdf.rare,site=="MNW")
+mnw.rare <- subset(samdf.rare.mcmc,site=="MNW")
 mnw.seq <- counts[(rownames(counts) %in% mnw.rare$Sample),]
 
 dist.mnw <- vegdist(mnw.seq)
@@ -1227,7 +1232,7 @@ adonis(mnw.seq ~ zone, data=mnw.rare, permutations=999)
 # Total     26   1.28575                  1.00000         
 
 #Moorea SE
-mse.rare <- subset(samdf.rare,site=="MSE")
+mse.rare <- subset(samdf.rare.mcmc,site=="MSE")
 mse.seq <- counts[(rownames(counts) %in% mse.rare$Sample),]
 
 dist.mse <- vegdist(mse.seq)
