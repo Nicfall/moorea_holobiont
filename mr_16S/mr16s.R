@@ -605,6 +605,7 @@ gg.pcoa.site.rare <- plot_ordination(ps.rare.trim, ord,color="site", shape="site
   ylab("Axis 2 (20.1%)")+
   annotate(geom="text", x=0.35, y=0.65, label="p < 0.01**",size=4)+
   ggtitle("Rarefied")
+gg.pcoa.site.rare
 
 ord.rel <- ordinate(ps.trim.rel, "PCoA", "bray")
 gg.pcoa.site <- plot_ordination(ps.trim.rel, ord.rel,color="site", shape="site")+
@@ -756,6 +757,19 @@ sams.mnw.mse <- c(rownames(samdf.mnw.mse))
 seq.mnw.mse <- seq.trim.rel[(row.names(seq.trim.rel) %in% sams.mnw.mse),]
 adonis(seq.mnw.mse ~ site, data=samdf.mnw.mse, permutations=999)
 #MSE & MNW not sig different
+
+#easier method for site pairwise:
+samdf.trim.rare <- data.frame(ps.rare.trim@sam_data)
+row.names(samdf.trim.rare) == row.names(seq.trim)
+
+#install.packages("remotes")
+#remotes::install_github("Jtrachsel/funfuns")
+library("funfuns")
+pairwise.adonis(seq.trim, factors = samdf.trim.rare$site, permutations = 999)
+# pairs  F.Model         R2 p.value p.adjusted
+# 1 MNW vs MSE 2.909039 0.05023464   0.010      0.010
+# 2 MNW vs TNW 1.592082 0.02970741   0.141      0.141
+# 3 MSE vs TNW 3.450676 0.05903570   0.006      0.006
 
 #by site
 samdf.mnw <- subset(samdf.trim,site=="MNW")
@@ -1162,7 +1176,8 @@ plot_ordination(ps.core.tnw, ord.tnw,type="biplot",color="Genus", shape="zone",l
 
 #### accessory ####
 ps.rare.trim.otu <- data.frame(ps.rare.trim@otu_table)
-core.ids <- c(colnames(mnw.core.otu))
+core.tax <- data.frame(pseq.core@tax_table)
+core.ids <- c(rownames(core.tax))
 ps.rare.trim.acc.otu <- ps.rare.trim.otu[,!colnames(ps.rare.trim.otu) %in% core.ids ]
 
 #remake phyloseq object
@@ -1215,9 +1230,11 @@ permutest(bet.all, pairwise = FALSE, permutations = 99)
 plot(bet.all) #nope
 adonis(tnw.acc.otu ~ zone, data=tnw.acc.sam, permutations=999)
 # Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)    
-# zone       1    0.9654 0.96535  2.7769 0.09023  0.001 ***
-#   Residuals 28    9.7338 0.34764         0.90977           
-# Total     29   10.6992                 1.00000          
+# zone       1    0.9984 0.99840  2.7155 0.09798  0.001 ***
+#   Residuals 25    9.1915 0.36766         0.90202           
+# Total     26   10.1899                 1.00000           
+# ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1       
 
 #### Bar-plots ####
 ps_glom <- tax_glom(ps.rare.trim, "Family")

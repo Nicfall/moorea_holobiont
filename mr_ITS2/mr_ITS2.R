@@ -479,7 +479,7 @@ df.div$Sample <- gsub("X","",df.div$Sample)
 df.div <- merge(df.div,samdf,by="Sample") #add sample data
 
 #write.csv(df.div,file="~/moorea_holobiont/mr_ITS2/mrits_div_lulu.rare.csv") #saving
-#df.div <- read.csv("~/Desktop/mrits/mrits_diversity.csv") #reading back in 
+df.div <- read.csv("~/moorea_holobiont/mr_ITS2/mrits_div_lulu.rare.csv") #reading back in 
 
 df.div$zone <- gsub("Forereef","FR",df.div$zone)
 df.div$zone <- gsub("Backreef","BR",df.div$zone)
@@ -531,9 +531,25 @@ gg.ob
 quartz()
 ggarrange(gg.sh,gg.si,legend="none")
 
+#different version - with overall panel
+gg.total <- ggplot(df.div, aes(x=zone, y=InvSimpson,color=zone,shape=zone))+
+  geom_boxplot(outlier.shape=NA)+
+  xlab("Reef zone")+
+  ylab("Inv. Simpson diversity")+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("Back reef","Fore reef"))+
+  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("Back reef","Fore reef"))+
+  #guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  theme(legend.position="none")+
+  geom_jitter(alpha=0.5)
+
+quartz()
+ggarrange(gg.total,gg.si,widths=c(0.45,1),labels=c("(b)","(c)"))
+
+#stats
 library(bestNormalize)
-bestNormalize(df.div$Observed)
-obs.norm <- orderNorm(df.div$Observed)
+bestNormalize(df.div$InvSimpson)
+obs.norm <- orderNorm(df.div$InvSimpson)
 df.div$obs.norm <- obs.norm$x.t
 shapiro.test(df.div$obs.norm)
 #nothing worked
@@ -572,6 +588,28 @@ wilcox.test(Observed~zone,data=tah)
 #install.packages("dunn.test")
 library(dunn.test)
 dunn.test(df.div$Shannon,df.div$site_zone,method="bh")
+
+#just cladocopium
+ps.rare.c <- subset_taxa(ps.rare,Phylum==" Clade C")
+df.div.c <- estimate_richness(ps.rare.c, split=TRUE, measures =c("Shannon","InvSimpson","Observed"))
+df.div.c$Sample <- rownames(df.div.c)
+df.div.c$Sample <- gsub("X","",df.div.c$Sample)
+df.div.c <- merge(df.div.c,samdf,by="Sample") #add sample data
+
+ggplot(df.div.c, aes(x=zone, y=Observed,color=zone,shape=zone))+
+  #geom_errorbar(aes(ymin=InvSimpson-se,ymax=InvSimpson+se),position=position_dodge(0.5),lwd=0.4,width=0.4)+
+  #geom_point(aes(colour=zone, shape=zone),size=4,position=position_dodge(0.5))+
+  geom_boxplot(outlier.shape=NA)+
+  xlab("Reef zone")+
+  ylab("Shannon diversity")+
+  theme_cowplot()+
+  scale_shape_manual(values=c(16,15),labels=c("BR","FR"))+
+  scale_colour_manual(values=c("#ED7953FF","#8405A7FF"),labels=c("BR","FR"))+
+  #guides(color=guide_legend(title="Reef zone"),shape=guide_legend(title="Reef zone"))+
+  theme(legend.position="none")+
+  geom_jitter(alpha=0.5)+
+  facet_wrap(~site)#+
+  ylim(-0.01, 1.7)
 
 ##checking out how diversity works with variables - nothing interesting
 #df.size <- read.csv("mr_size.csv",header=TRUE)
@@ -867,8 +905,11 @@ library(cowplot)
 
 #all
 #original overview
-plot_ordination(ps.rare.mcmc, ordinate(ps.rare.mcmc, "PCoA"), color = "site") + 
-  geom_point(size = 5)
+ps.rare.mcmc.noa <- subset_taxa(ps.rare.mcmc,Phylum==" Clade C")
+
+plot_ordination(ps.rare.mcmc.noa, ordinate(ps.rare.mcmc.noa, "PCoA"), color = "zone") + 
+  geom_point()+
+  stat_ellipse(level=0.8,aes(lty=zone),geom="polygon",alpha=0.1)
  
 #not sure what this was 
 #p3 = plot_ordination(GP1, GP.ord, type="biplot", color="SampleType", shape="Phylum", title="biplot")
@@ -1362,6 +1403,83 @@ adonis(df.seq ~ zone, strata=samdf.no87$site, data=samdf.no87, permutations=999)
 rarecurve(counts.rare,label=F) #yep def rarefied
 adonis(counts.rare ~ zone, strata=samdf.rare$site, data=samdf.rare, permutations=999)
 #0.01 **
+
+#### stats plus size ####
+library(vegan)
+size <- read.csv("~/moorea_holobiont/mr_ITS2/mr_size.csv",header=TRUE,row.names=1)
+
+row.names.remove <- c(109)
+size2 <- size[!(row.names(size) %in% row.names.remove),]
+
+row.names(size2) <- size2$coral_id
+samdf.size <- merge(size2,samdf,by=0)
+
+row.names(samdf.size) <- c(samdf.size$coral_id)
+
+ord.mnw.df <- data.frame(ord.mnw[["vectors"]])
+ord.mnw.df2 <- ord.mnw.df[,1:2]
+
+ord.samdf.size.mnw <- merge(ord.mnw.df2,samdf.size,by=0)
+plot(Axis.1~log(size),data=ord.samdf.size.mnw)
+lm.size.mnw <- lm(Axis.1~size,data=ord.samdf.size.mnw)
+summary(lm.size.mnw)
+
+plot(Axis.2~log(size),data=ord.samdf.size.mnw)
+lm.size.mnw2 <- lm(Axis.2~size,data=ord.samdf.size.mnw)
+summary(lm.size.mnw2)
+
+ord.mnw.df <- data.frame(ord.mnw[["vectors"]])
+ord.mnw.df2 <- ord.mnw.df[,1:2]
+
+ord.samdf.size.mnw <- merge(ord.mnw.df2,samdf.size,by=0)
+plot(Axis.1~log(size),data=ord.samdf.size.mnw)
+lm.size.mnw <- lm(Axis.1~size,data=ord.samdf.size.mnw)
+summary(lm.size.mnw)
+
+plot(Axis.2~log(size),data=ord.samdf.size.mnw)
+lm.size.mnw2 <- lm(Axis.2~size,data=ord.samdf.size.mnw)
+summary(lm.size.mnw2)
+
+size3 <- counts[(row.names(counts) %in% size.rows),]
+size.rows2 <- c(row.names(size3))
+samdf.size2 <- samdf.size[(row.names(samdf.size) %in% size.rows2),]
+
+row.names(samdf.size2) <- samdf.size2$Row.names
+
+samdf.size.sorted <- samdf.size2[nrow(samdf.size2):1, ]
+size3.sorted <- size3[nrow(size3):1, ]
+
+#tahiti 
+samdf.size.tnw <- subset(samdf.size.sorted,site.y=="TNW")
+counts.size.tnw <- size3.sorted[(rownames(size3.sorted) %in% samdf.size.tnw$coral_id),]
+
+row.names(samdf.size.tnw) == row.names(counts.size.tnw)
+
+dist.tnw <- vegdist(counts.size.tnw)
+bet.tnw <- betadisper(dist.tnw,samdf.size.tnw$zone.y)
+anova(bet.tnw)
+permutest(bet.tnw, pairwise = FALSE, permutations = 99)
+plot(bet.tnw) #sig
+
+adonis(counts.size.tnw ~ zone.y*size, data=samdf.size.tnw, permutations=999)
+
+plot(log(counts.size.tnw$sq7)~log(samdf.size.tnw$size))
+
+#moorea nw 
+samdf.size.mnw <- subset(samdf.size.sorted,site.y=="MNW")
+counts.size.mnw <- size3.sorted[(rownames(size3.sorted) %in% samdf.size.mnw$coral_id),]
+
+row.names(samdf.size.mnw) == row.names(counts.size.mnw)
+
+dist.mnw <- vegdist(counts.size.mnw)
+bet.mnw <- betadisper(dist.mnw,samdf.size.mnw$zone.y)
+anova(bet.mnw)
+permutest(bet.mnw, pairwise = FALSE, permutations = 99)
+plot(bet.mnw) #sig
+
+adonis(counts.size.mnw ~ zone.y*size, data=samdf.size.mnw, permutations=999)
+
+plot(log(counts.size.mnw$sq7)~log(samdf.size.mnw$size))
 
 #### bray-curtis ####
 iDist <- distance(ps.rare, method="bray")
