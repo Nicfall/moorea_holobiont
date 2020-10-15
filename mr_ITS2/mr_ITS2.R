@@ -1440,18 +1440,18 @@ plot(Axis.2~log(size),data=ord.samdf.size.mnw)
 lm.size.mnw2 <- lm(Axis.2~size,data=ord.samdf.size.mnw)
 summary(lm.size.mnw2)
 
+#skipping the above ord correlations
+size.rows <- row.names(samdf.size)
 size3 <- counts[(row.names(counts) %in% size.rows),]
 size.rows2 <- c(row.names(size3))
 samdf.size2 <- samdf.size[(row.names(samdf.size) %in% size.rows2),]
 
-row.names(samdf.size2) <- samdf.size2$Row.names
-
-samdf.size.sorted <- samdf.size2[nrow(samdf.size2):1, ]
-size3.sorted <- size3[nrow(size3):1, ]
+#samdf.size.sorted <- samdf.size2[nrow(samdf.size2):1, ]
+#size3.sorted <- size3[nrow(size3):1, ]
 
 #tahiti 
-samdf.size.tnw <- subset(samdf.size.sorted,site.y=="TNW")
-counts.size.tnw <- size3.sorted[(rownames(size3.sorted) %in% samdf.size.tnw$coral_id),]
+samdf.size.tnw <- subset(samdf.size2,site.y=="TNW")
+counts.size.tnw <- size3[(rownames(size3) %in% samdf.size.tnw$coral_id),]
 
 row.names(samdf.size.tnw) == row.names(counts.size.tnw)
 
@@ -1462,12 +1462,20 @@ permutest(bet.tnw, pairwise = FALSE, permutations = 99)
 plot(bet.tnw) #sig
 
 adonis(counts.size.tnw ~ zone.y*size, data=samdf.size.tnw, permutations=999)
+# Df SumsOfSqs  MeanSqs F.Model      R2 Pr(>F)  
+# zone.y       1   0.22079 0.220788  3.0991 0.09789  0.018 *
+#   size         1   0.28944 0.289440  4.0628 0.12832  0.047 *
+#   zone.y:size  1   0.10674 0.106743  1.4983 0.04732  0.194  
+# Residuals   23   1.63857 0.071242         0.72646         
+# Total       26   2.25554                  1.00000         
+# ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-plot(log(counts.size.tnw$sq7)~log(samdf.size.tnw$size))
+#plot(log(counts.size.tnw$sq7)~log(samdf.size.tnw$size))
 
 #moorea nw 
-samdf.size.mnw <- subset(samdf.size.sorted,site.y=="MNW")
-counts.size.mnw <- size3.sorted[(rownames(size3.sorted) %in% samdf.size.mnw$coral_id),]
+samdf.size.mnw <- subset(samdf.size2,site.y=="MNW")
+counts.size.mnw <- size3[(rownames(size3) %in% samdf.size.mnw$coral_id),]
 
 row.names(samdf.size.mnw) == row.names(counts.size.mnw)
 
@@ -1475,9 +1483,17 @@ dist.mnw <- vegdist(counts.size.mnw)
 bet.mnw <- betadisper(dist.mnw,samdf.size.mnw$zone.y)
 anova(bet.mnw)
 permutest(bet.mnw, pairwise = FALSE, permutations = 99)
-plot(bet.mnw) #sig
+plot(bet.mnw) #not sig
 
 adonis(counts.size.mnw ~ zone.y*size, data=samdf.size.mnw, permutations=999)
+# Df SumsOfSqs  MeanSqs F.Model      R2 Pr(>F)  
+# zone.y       1   0.11117 0.111170 2.20961 0.08646  0.038 *
+#   size         1   0.00525 0.005254 0.10443 0.00409  0.845  
+# zone.y:size  1   0.01215 0.012148 0.24145 0.00945  0.684  
+# Residuals   23   1.15718 0.050312         0.90000         
+# Total       26   1.28575                  1.00000         
+# ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 plot(log(counts.size.mnw$sq7)~log(samdf.size.mnw$size))
 
