@@ -534,6 +534,29 @@ a.div <- aov(si.log~site*zone,data=df.div)
 summary(a.div)
 TukeyHSD(a.div) #nothing
 
+#### diversity + size stats ####
+size <- read.csv("~/moorea_holobiont/mr_ITS2/mr_size.csv",header=TRUE,row.names=1)
+
+row.names.remove <- c(109)
+size2 <- size[!(row.names(size) %in% row.names.remove),]
+
+row.names(df.div) <- df.div$sample
+row.names(size2) <- size2$coral_id
+
+df.div.size <- merge(df.div,size2,by=0)
+
+lm.sh.size <- lm(size~Shannon*zone.y*site.y,data=df.div.size)
+lm.sh.size <- lm(size~Shannon,data=df.div.size)
+summary(lm.sh.size) #not sig, with or without zone & site
+
+lm.si.size <- lm(size~si.log*zone.y*site.y,data=df.div.size)
+lm.si.size <- lm(size~si.log,data=df.div.size)
+summary(lm.si.size) #not sig, with or without zone & site
+
+lm.ob.size <- lm(size~obs.log*zone.y*site.y,data=df.div.size)
+lm.ob.size <- lm(size~obs.log,data=df.div.size)
+summary(lm.ob.size)
+
 #### trim underrepresented ASVs ####
 library(MCMC.OTU)
 
@@ -887,6 +910,75 @@ plot(bet.tnw)
 adonis(seq.tnw ~ zone, data=samdf.tnw, permutations=999)
 #sig! 0.003 **
 
+#### adonis stats with size ####
+library('vegan')
+size <- read.csv("~/moorea_holobiont/mr_ITS2/mr_size.csv",header=TRUE,row.names=1)
+
+row.names.remove <- c(109)
+size2 <- size[!(row.names(size) %in% row.names.remove),]
+
+row.names(samdf) <- samdf$sample
+row.names(size2) <- size2$coral_id
+
+samdf.size2 <- merge(samdf,size2,by=0)
+
+row.names(samdf.size2) <- samdf.size2$id
+
+size.rows <- row.names(samdf.size2)
+size3 <- seq.trim[(row.names(seq.trim) %in% size.rows),]
+# size.rows2 <- c(row.names(size3))
+# samdf.size2 <- samdf.size[(row.names(samdf.size) %in% size.rows2),]
+
+#samdf.size.sorted <- samdf.size2[nrow(samdf.size2):1, ]
+#size3.sorted <- size3[nrow(size3):1, ]
+
+#tahiti 
+samdf.size.tnw <- subset(samdf.size2,place=="T")
+names <- c(samdf.size.tnw$id)
+counts.size.tnw <- size3[(rownames(size3) %in% names),]
+samdf.size.tnw2 <- samdf.size.tnw[(rownames(samdf.size.tnw) %in% row.names(counts.size.tnw)),]
+
+samdf.size.tnw.sorted <- samdf.size.tnw2[sort(rownames(samdf.size.tnw2)),]
+counts.size.tnw.sorted <- counts.size.tnw[sort(rownames(counts.size.tnw)),]
+
+row.names(samdf.size.tnw.sorted) == row.names(counts.size.tnw.sorted)
+
+dist.tnw <- vegdist(counts.size.tnw.sorted)
+bet.tnw <- betadisper(dist.tnw,samdf.size.tnw.sorted$zone.y)
+anova(bet.tnw)
+permutest(bet.tnw, pairwise = FALSE, permutations = 99)
+plot(bet.tnw) #not sig
+
+adonis(counts.size.tnw.sorted ~ zone.y*size, data=samdf.size.tnw.sorted, permutations=999)
+# Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)   
+# zone.y       1   0.44388 0.44388  4.4881 0.14763  0.004 **
+#   size         1   0.24380 0.24380  2.4650 0.08108  0.097 . 
+# zone.y:size  1   0.04432 0.04432  0.4481 0.01474  0.784   
+# Residuals   23   2.27475 0.09890         0.75655          
+# Total       26   3.00675                 1.00000          
+# ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#moorea nw 
+samdf.size.mnw <- subset(samdf.size2,place=="MNW")
+names <- c(samdf.size.mnw$id)
+counts.size.mnw <- size3[(rownames(size3) %in% names),]
+samdf.size.mnw2 <- samdf.size.mnw[(rownames(samdf.size.mnw) %in% row.names(counts.size.mnw)),]
+
+samdf.size.mnw.sorted <- samdf.size.mnw2[sort(rownames(samdf.size.mnw2)),]
+counts.size.mnw.sorted <- counts.size.mnw[sort(rownames(counts.size.mnw)),]
+
+row.names(samdf.size.mnw.sorted) == row.names(counts.size.mnw.sorted)
+
+dist.mnw <- vegdist(counts.size.mnw.sorted)
+bet.mnw <- betadisper(dist.mnw,samdf.size.mnw.sorted$zone.y)
+anova(bet.mnw)
+permutest(bet.mnw, pairwise = FALSE, permutations = 99)
+plot(bet.mnw) #not sig
+
+adonis(counts.size.mnw.sorted ~ zone.y*size, data=samdf.size.mnw.sorted, permutations=999)
+#not sig
+
 #### rename ASVs ####
 library(rlang)
 library(stringr)
@@ -1174,6 +1266,79 @@ quartz()
 plot_ordination(ps.core.tnw, ord.tnw,type="biplot",color="Genus", shape="zone",label="Genus")+
   theme_cowplot()
 
+#### core + size ####
+library('vegan')
+size <- read.csv("~/moorea_holobiont/mr_ITS2/mr_size.csv",header=TRUE,row.names=1)
+
+row.names.remove <- c(109)
+size2 <- size[!(row.names(size) %in% row.names.remove),]
+
+row.names(samdf) <- samdf$sample
+row.names(size2) <- size2$coral_id
+
+samdf.size2 <- merge(samdf,size2,by=0)
+
+row.names(samdf.size2) <- samdf.size2$id
+
+size.rows <- row.names(samdf.size2)
+
+core.otu <- data.frame(pseq.core@otu_table)
+otu.size <- core.otu[(row.names(core.otu) %in% size.rows),]
+
+#tahiti 
+samdf.size.tnw <- subset(samdf.size2,place=="T")
+names <- c(samdf.size.tnw$id)
+counts.size.tnw <- otu.size[(rownames(otu.size) %in% names),]
+samdf.size.tnw2 <- samdf.size.tnw[(rownames(samdf.size.tnw) %in% row.names(counts.size.tnw)),]
+
+samdf.size.tnw.sorted <- samdf.size.tnw2[sort(rownames(samdf.size.tnw2)),]
+counts.size.tnw.sorted <- counts.size.tnw[sort(rownames(counts.size.tnw)),]
+
+row.names(samdf.size.tnw.sorted) == row.names(counts.size.tnw.sorted)
+
+dist.tnw <- vegdist(counts.size.tnw.sorted)
+bet.tnw <- betadisper(dist.tnw,samdf.size.tnw.sorted$zone.y)
+anova(bet.tnw)
+permutest(bet.tnw, pairwise = FALSE, permutations = 99)
+plot(bet.tnw) #not sig
+
+adonis(counts.size.tnw.sorted ~ zone.y*size, data=samdf.size.tnw.sorted, permutations=999)
+# Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)   
+# zone.y       1   0.36622 0.36622  5.0531 0.15838  0.003 **
+#   size         1   0.25267 0.25267  3.4864 0.10927  0.071 . 
+# zone.y:size  1   0.02652 0.02652  0.3659 0.01147  0.764   
+# Residuals   23   1.66691 0.07247         0.72088          
+# Total       26   2.31233                 1.00000          
+# ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#moorea nw 
+samdf.size.mnw <- subset(samdf.size2,place=="MNW")
+names <- c(samdf.size.mnw$id)
+counts.size.mnw <- otu.size[(rownames(otu.size) %in% names),]
+samdf.size.mnw2 <- samdf.size.mnw[(rownames(samdf.size.mnw) %in% row.names(counts.size.mnw)),]
+
+samdf.size.mnw.sorted <- samdf.size.mnw2[sort(rownames(samdf.size.mnw2)),]
+counts.size.mnw.sorted <- counts.size.mnw[sort(rownames(counts.size.mnw)),]
+
+row.names(samdf.size.mnw.sorted) == row.names(counts.size.mnw.sorted)
+
+dist.mnw <- vegdist(counts.size.mnw.sorted)
+bet.mnw <- betadisper(dist.mnw,samdf.size.mnw.sorted$zone.y)
+anova(bet.mnw)
+permutest(bet.mnw, pairwise = FALSE, permutations = 99)
+plot(bet.mnw) #not sig
+
+adonis(counts.size.mnw.sorted ~ zone.y*size, data=samdf.size.mnw.sorted, permutations=999)
+# Terms added sequentially (first to last)
+# 
+# Df SumsOfSqs  MeanSqs F.Model      R2 Pr(>F)
+# zone.y       1   0.07666 0.076664 0.72375 0.02920  0.583
+# size         1   0.08426 0.084263 0.79549 0.03210  0.516
+# zone.y:size  1   0.02786 0.027859 0.26300 0.01061  0.868
+# Residuals   23   2.43631 0.105926         0.92808       
+# Total       26   2.62509                  1.00000       
+
 #### accessory ####
 ps.rare.trim.otu <- data.frame(ps.rare.trim@otu_table)
 core.tax <- data.frame(pseq.core@tax_table)
@@ -1235,6 +1400,63 @@ adonis(tnw.acc.otu ~ zone, data=tnw.acc.sam, permutations=999)
 # Total     26   10.1899                 1.00000           
 # ---
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1       
+
+#### accessory + size ####
+#tahiti
+samdf.size.tnw <- subset(samdf.size2,place=="T")
+names <- c(samdf.size.tnw$id)
+counts.size.tnw <- ps.rare.trim.acc.otu[(rownames(ps.rare.trim.acc.otu) %in% names),]
+samdf.size.tnw2 <- samdf.size.tnw[(rownames(samdf.size.tnw) %in% row.names(counts.size.tnw)),]
+
+samdf.size.tnw.sorted <- samdf.size.tnw2[sort(rownames(samdf.size.tnw2)),]
+counts.size.tnw.sorted <- counts.size.tnw[sort(rownames(counts.size.tnw)),]
+
+row.names(samdf.size.tnw.sorted) == row.names(counts.size.tnw.sorted)
+
+dist.tnw <- vegdist(counts.size.tnw.sorted)
+bet.tnw <- betadisper(dist.tnw,samdf.size.tnw.sorted$zone.y)
+anova(bet.tnw)
+permutest(bet.tnw, pairwise = FALSE, permutations = 99)
+plot(bet.tnw) #not sig
+
+adonis(counts.size.tnw.sorted ~ zone.y*size, data=samdf.size.tnw.sorted, permutations=999)
+# Terms added sequentially (first to last)
+# 
+# Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)    
+# zone.y       1    0.9984 0.99840 2.70096 0.09798  0.001 ***
+#   size         1    0.3185 0.31854 0.86173 0.03126  0.727    
+# zone.y:size  1    0.3711 0.37114 1.00403 0.03642  0.451    
+# Residuals   23    8.5019 0.36965         0.83434           
+# Total       26   10.1899                 1.00000           
+# ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#moorea nw 
+samdf.size.mnw <- subset(samdf.size2,place=="MNW")
+names <- c(samdf.size.mnw$id)
+counts.size.mnw <- ps.rare.trim.acc.otu[(rownames(ps.rare.trim.acc.otu) %in% names),]
+samdf.size.mnw2 <- samdf.size.mnw[(rownames(samdf.size.mnw) %in% row.names(counts.size.mnw)),]
+
+samdf.size.mnw.sorted <- samdf.size.mnw2[sort(rownames(samdf.size.mnw2)),]
+counts.size.mnw.sorted <- counts.size.mnw[sort(rownames(counts.size.mnw)),]
+
+row.names(samdf.size.mnw.sorted) == row.names(counts.size.mnw.sorted)
+
+dist.mnw <- vegdist(counts.size.mnw.sorted)
+bet.mnw <- betadisper(dist.mnw,samdf.size.mnw.sorted$zone.y)
+anova(bet.mnw)
+permutest(bet.mnw, pairwise = FALSE, permutations = 99)
+plot(bet.mnw) #not sig
+
+adonis(counts.size.mnw.sorted ~ zone.y*size, data=samdf.size.mnw.sorted, permutations=999)
+# Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)   
+# zone.y       1    0.6966 0.69663 1.85696 0.06928  0.008 **
+#   size         1    0.4516 0.45160 1.20380 0.04491  0.213   
+# zone.y:size  1    0.2790 0.27901 0.74375 0.02775  0.855   
+# Residuals   23    8.6283 0.37514         0.85806          
+# Total       26   10.0555                 1.00000          
+# ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 #### Bar-plots ####
 ps_glom <- tax_glom(ps.rare.trim, "Family")

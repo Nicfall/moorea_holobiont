@@ -589,6 +589,30 @@ wilcox.test(Observed~zone,data=tah)
 library(dunn.test)
 dunn.test(df.div$Shannon,df.div$site_zone,method="bh")
 
+#### div stats with size ####
+row.names(df.div) <- df.div$Sample
+
+size <- read.csv("~/moorea_holobiont/mr_ITS2/mr_size.csv",header=TRUE,row.names=1)
+
+row.names.remove <- c(109)
+size2 <- size[!(row.names(size) %in% row.names.remove),]
+
+df.div.size <- merge(df.div,size2,by=0)
+lm.sh.size <- lm(size~Shannon,data=df.div.size)
+summary(lm.sh.size)
+
+row.names(df.div) <- df.div$Sample
+df.div.size <- merge(df.div,size2,by=0)
+lm.si.size <- lm(size~InvSimpson,data=df.div.size)
+summary(lm.si.size)
+
+row.names(df.div) <- df.div$Sample
+df.div.size <- merge(df.div,size2,by=0)
+lm.ob.size <- lm(size~Observed,data=df.div.size)
+summary(lm.ob.size)
+
+plot(size~Shannon,data=df.div.size)
+
 #just cladocopium
 ps.rare.c <- subset_taxa(ps.rare,Phylum==" Clade C")
 df.div.c <- estimate_richness(ps.rare.c, split=TRUE, measures =c("Shannon","InvSimpson","Observed"))
@@ -1496,6 +1520,8 @@ adonis(counts.size.mnw ~ zone.y*size, data=samdf.size.mnw, permutations=999)
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 plot(log(counts.size.mnw$sq7)~log(samdf.size.mnw$size))
+
+adonis(counts~zone*size,data=samdf.size2)
 
 #### bray-curtis ####
 iDist <- distance(ps.rare, method="bray")
