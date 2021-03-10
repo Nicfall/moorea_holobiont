@@ -3,6 +3,7 @@
 #https://benjjneb.github.io/dada2/tutorial.html
 #with edits by Carly D. Kenkel and modifications for my data by Nicola Kriefall
 #12/30/18
+#beginning revisions: 3/8/21
 
 #~########################~#
 ##### PRE-PROCESSING #######
@@ -382,7 +383,7 @@ seqtab.clean <- read.csv("seqtab.cleaned.csv",row.names=1)
 #### rarefy #####
 library(vegan)
 
-rarecurve(seqtab.clean,step=100,label=FALSE) #after removing contaminats
+rarecurve(seqtab.clean,step=100,label=FALSE) #after removing contaminants
 
 total <- rowSums(seqtab.clean)
 subset(total, total <12000)
